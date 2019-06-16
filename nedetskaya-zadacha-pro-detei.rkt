@@ -59,3 +59,21 @@
     (check-set-equal? (sums-n 3 4) '((2 1 1)))
     (check-set-equal? (sums-n 3 5) '((3 1 1) (2 2 1)))
     (check-set-equal? (sums-n 3 6) '((4 1 1) (3 2 1) (2 2 2)))))
+
+;; все варианты возрастов с заданной суммой - 13 лет
+(define ages (sums-n 3 13))
+
+(define (non-uniq-prod xss)
+  (define (prod xs) (apply * xs))
+  (define (not-single xs) (< 1 (length xs)))
+  (~>> xss
+       (group-by prod)
+       (filter not-single)
+       (apply append)))
+
+;; check that max of descending sorted xs is uniq
+(define (uniq-max? xs)
+  (> (first xs) (second xs)))
+
+(define answer
+  (filter uniq-max? (non-uniq-prod ages)))
