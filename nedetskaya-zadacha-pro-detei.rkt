@@ -34,39 +34,8 @@
   (define-binary-check
     (check-set-equal? set-equal? actual expected)))
 
-;; list all different pairs of positive natural numbers
-;; with passed sum
-(define (sums-2 sum)
-  (filter
-   (λ (x) (>= (first x) (second x) 1))
-   (map (λ (n1) (list n1 (- sum n1)))
-        (map add1 (range sum)))))
-
-(module+ test
-  (test-case "(sums-2 sum)"
-    (check-set-equal? (sums-2 1) '())
-    (check-set-equal? (sums-2 2) '((1 1)))
-    (check-set-equal? (sums-2 3) '((2 1)))
-    (check-set-equal? (sums-2 4) '((3 1) (2 2)))
-    (check-set-equal? (sums-2 5) '((4 1) (3 2)))
-    (check-set-equal? (sums-2 6) '((5 1) (4 2) (3 3)))))
-
-;; (define (sum-inc-n ms)
-;;   (map (λ (m) (cons (list m)
-;;                     (sums-2 m)))
-;;        ms))
-
-;; (define (sums-n n sum)
-;;   (cond
-;;     [(> n sum) empty]
-;;     [(> n 2)
-;;      (map
-;;       sum-inc-n
-;;       (sums-n (sub1 n) sum))]
-;;     [(= n 2) (sums-2 sum)]
-;;     [(= n 1) (list sum)]
-;;     [else empty]))
-
+;; lists all different n-tuples (sorted in descending order)
+;; of positive integers with a given sum
 (define (sums-n n sum)
   (~>> (make-list n sum)
        (map (λ (m) (range 1 (add1 m))))
