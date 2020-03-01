@@ -3,9 +3,11 @@ Object.entries(lock.children).forEach(([id, child]) => lock.removeChild(child));
 var SIZE = 7;
 var lock = document.getElementById('lock');
 
-var state = [];
-for(let i = 0; i < SIZE; i++) {
-    state.push(false);
+var state = new Array(SIZE).fill(false);
+var updates = new Array(SIZE);
+function updateAll() {
+    updates.filter(f => typeof f === 'function')
+        .forEach(f => f());
 }
 
 function changeable(id) {
@@ -23,7 +25,7 @@ function changeable(id) {
     return true;
 }
 
-function createToggle(id) {
+function addToggle(id) {
     const toggleState = () => state[id] = !state[id];
     const update = () => {
         toggle.style['background-color'] = state[id] ? 'green' : 'red';
@@ -43,15 +45,15 @@ function createToggle(id) {
     toggle.onclick = event => {
         if(changeable(id)) {
             toggleState();
-            update();
+            updateAll();
         }
     };
-    return toggle;
+    updates[id] = update;
+    lock.appendChild(toggle);
 }
 
 for(let i = 0; i < SIZE; i++) {
-    let toggle = createToggle(i);
-    lock.appendChild(toggle);
+    addToggle(i);
 }
 
 var tgl = lock.childNodes[0];
