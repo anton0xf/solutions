@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# http://www.pythonchallenge.com/pc/def/map.html
 import string
 
 # rules = {'k': 'm', 'o': 'q', 'e': 'g'}
