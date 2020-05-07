@@ -21,26 +21,19 @@ def from_linked(lst: ListNode):
         lst = lst.next
 
 
-def reverse(lst: ListNode):
-    res = None
-    while lst:
-        res = ListNode(lst.val, res)
-        lst = lst.next
-    return res
-
-
 class Solution:
     def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
-        res = None
+        head_ref = cur = ListNode()
         carry = 0
         while l1 or l2:
+            cur.next = ListNode()
+            cur = cur.next
             v1 = l1.val if l1 else 0
             v2 = l2.val if l2 else 0
             val = carry + v1 + v2
-            carry, digit = divmod(val, 10)
-            res = ListNode(digit, res)
+            carry, cur.val = divmod(val, 10)
             l1 = l1.next if l1 else l1
             l2 = l2.next if l2 else l2
         if carry > 0:
-            res = ListNode(carry, res)
-        return reverse(res)
+            cur.next = ListNode(carry)
+        return head_ref.next
