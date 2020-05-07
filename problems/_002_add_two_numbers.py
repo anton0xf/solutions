@@ -25,15 +25,15 @@ class Solution:
     def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
         head_ref = cur = ListNode()
         carry = 0
-        while l1 or l2:
+        while l1 or l2 or carry:
             cur.next = ListNode()
             cur = cur.next
             v1 = l1.val if l1 else 0
             v2 = l2.val if l2 else 0
             val = carry + v1 + v2
             carry, cur.val = divmod(val, 10)
-            l1 = l1.next if l1 else l1
-            l2 = l2.next if l2 else l2
-        if carry > 0:
-            cur.next = ListNode(carry)
+            if l1:
+                l1 = l1.next
+            if l2:
+                l2 = l2.next
         return head_ref.next
