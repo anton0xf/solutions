@@ -1,5 +1,5 @@
 from nose.tools import eq_
-import problems._002_add_two_numbers as sol
+import problems.add_two_numbers as sol
 
 
 s = sol.Solution()
