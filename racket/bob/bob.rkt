@@ -1,5 +1,6 @@
 #lang racket
 (provide response-for)
+(require syntax/parse/define)
 
 (define (string-empty? s)
   (string=? "" s))
@@ -19,15 +20,15 @@
 
 (define (any-string? s) #t)
 
-;;; list of pairs: (condition-function . answer-string)
-(define rules
-  `((,string-empty? . "Fine. Be that way!")
-    (,yell-question? . "Calm down, I know what I'm doing!")
-    (,question? . "Sure.")
-    (,yell? . "Whoa, chill out!")
-    (,any-string? . "Whatever.")))
+;; ничего тут не понимаю см. TODO про это
+(define-simple-macro
+  (switch value:expr (rule:id result:expr) ...)
+  (cond [(rule value) result] ...))
 
 (define (response-for phrase)
-  (define (check condition)
-    (condition (string-trim phrase)))
-  (cdr (assf check rules)))
+  (switch (string-trim phrase)
+          [string-empty? "Fine. Be that way!"]
+          [yell-question? "Calm down, I know what I'm doing!"]
+          [question? "Sure."]
+          [yell? "Whoa, chill out!"]
+          [any-string? "Whatever."]))
