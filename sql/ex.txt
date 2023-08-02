@@ -1,0 +1,38 @@
+-------------------------------
+ID | CUR  | RATE   | RATE_DATE|
+-------------------------------
+1 |  RUB  | 1.00   | 01.01.2000
+2 |  USD  | 67.2   | 01.05.2021
+3 |  USD  | 65.1   | 02.05.2021
+4 |  USD  | 69.1   | 05.05.2021
+5 |  ZBQ  | 100.00 | 01.01.2021
+
+-- написать запрос выводящий курс валюты на заданную дату
+-- 04.05.2021
+-- RUB 1.00
+-- USD 65.1
+-- ZBQ 100.00
+
+-- 01.01.2000
+--RUB 1.00
+
+select t.cur, 
+(select RATE
+from A
+where a.cur = t.cur, rate_date >= ?
+order by rate_date desc
+limit 1) as rate
+from (select distinct cur from A) as t;
+
+
+select cur, rate from (
+select cur, rate, OVER(partition by cur order by rate_date desc) as rn
+from A
+where rate_date >= ?)
+where rn = 1;
+
+select cur, rate from (
+select cur, rate, rank() OVER(partition by cur order by rate_date desc) as rn
+from cur_rates
+where rate_date <= '04.05.2021') as t
+where rn = 1;
