@@ -4,10 +4,8 @@ from typing import List
 
 class Solution:
     def twoSum(self, nums: List[int], target: int) -> List[int]:
-        m = {}  # value -> index in nums
-        for i, x in enumerate(nums):
-            m[x] = i
-        for i, x in enumerate(nums):
-            t = target - x
-            if t in m and i != m[t]:
-                return [i, m[t]]
+        idxs = {n: i for i, n in enumerate(nums)}
+        for i in range(len(nums)):
+            comp = target - nums[i]
+            if comp in idxs and idxs[comp] != i:
+                return [i, idxs[comp]]
