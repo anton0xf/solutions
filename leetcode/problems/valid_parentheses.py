@@ -2,20 +2,16 @@
 
 brackets = {'(': ')', '{': '}', '[': ']'}
 
-open_brakets = set(brackets.keys())
-
-close_brackets = {v: k for (k, v) in brackets.items()}
-
 
 class Solution:
     def isValid(self, s: str) -> bool:
         stack = []
         for c in s:
-            if c in open_brakets:
+            if c in brackets:
                 stack.append(c)
             elif stack:
                 head = stack.pop()
-                if close_brackets[c] != head:
+                if c != brackets[head]:
                     return False
                 # continue
             else:
