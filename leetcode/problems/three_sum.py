@@ -9,22 +9,22 @@ class Solution:
         nums.sort()
         res = set()
         for i in range(n - 2):
-            if nums[i] > 0:
+            ni = nums[i]
+            if ni > 0:
                 break
-            for j in range(i + 1, n - 1):
-                s = nums[i] + nums[j]
-                t = -s  # target
-                if t < nums[j]:
+            j = i + 1
+            k = n - 1
+            while j < k:
+                s1 = ni + nums[j]
+                if s1 > 0 or nums[k] < 0:
                     break
-                k_min = j + 1
-                k_max = n
-                while k_min < k_max:
-                    k = (k_min + k_max) // 2
-                    if nums[k] == t:
-                        res.add((nums[i], nums[j], nums[k]))
-                        break
-                    if nums[k] < t:
-                        k_min = k + 1
-                    else:
-                        k_max = k
+                s = s1 + nums[k]
+                if s == 0:
+                    res.add((ni, nums[j], nums[k]))
+                    j += 1
+                    k -= 1
+                elif s < 0:
+                    j += 1
+                else:
+                    k -= 1
         return res
