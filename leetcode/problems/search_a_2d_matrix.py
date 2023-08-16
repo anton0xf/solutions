@@ -6,16 +6,11 @@ class Solution:
     def searchMatrix(self, matrix: List[List[int]], target: int) -> bool:
         m = len(matrix)  # rows count
         n = len(matrix[0])  # cols count
-        N = m * n
-
-        def get(i):
-            return matrix[i // n][i % n]
-
         f = 0
-        t = N
+        t = m * n
         while f < t:
             c = (f + t) // 2
-            x = get(c)
+            x = matrix[c // n][c % n]
             if x == target:
                 return True
             if x > target:
@@ -23,5 +18,4 @@ class Solution:
             else:
                 assert x < target
                 f = c + 1
-
         return False
