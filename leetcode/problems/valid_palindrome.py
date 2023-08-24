@@ -4,5 +4,7 @@ class Solution:
     def isPalindrome(self, s: str) -> bool:
         chs = [ch for ch in s.lower() if ch.isalnum()]
         n = len(chs)
-        h = n // 2
-        return chs[:h] == chs[n:n-h-1:-1]
+        for i in range(n // 2):
+            if chs[i] != chs[-i-1]:
+                return False
+        return True
