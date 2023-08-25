@@ -1,11 +1,12 @@
 # https://leetcode.com/problems/valid-anagram/
+from collections import defaultdict
 from typing import Dict
 
 
 def count_chars(s: str) -> Dict[str, int]:
-    res = {}
+    res = defaultdict(int)
     for ch in s:
-        res[ch] = res.get(ch, 0) + 1
+        res[ch] += 1
     return res
 
 
