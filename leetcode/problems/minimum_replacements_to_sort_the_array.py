@@ -14,11 +14,7 @@ class Solution:
             if x <= m:
                 m = x
             else:
-                d = x // m
-                r = x % m
-                res += d
-                if r == 0:
-                    res -= 1
-                else:
-                    m = r
+                steps = (x - 1) // m
+                res += steps
+                m = x // (steps + 1)
         return res
