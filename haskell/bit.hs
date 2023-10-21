@@ -66,7 +66,7 @@ mul' x y = itoz $ ztoi x * ztoi y
 
 bitSum :: Bit -> Bit -> (Bit, Bit)
 bitSum Zero Zero = (Zero, Zero)
-bitSum One One = (One, One)
+bitSum One One = (Zero, One)
 bitSum _ _ = (One, Zero)
 
 {- mapM_ (\x -> print (x, (uncurry bitSum) x)) [(a, b) | a <- bits, b <- bits]
@@ -74,7 +74,7 @@ bitSum _ _ = (One, Zero)
 ((0,0),(0,0))
 ((0,1),(1,0))
 ((1,0),(1,0))
-((1,1),(1,1))
+((1,1),(0,1))
 -}
 
 testBitSum :: Bool
@@ -82,7 +82,7 @@ testBitSum = all (\(args, value) -> uncurry bitSum args == value)
   [((Zero, Zero), (Zero, Zero)),
    ((Zero, One), (One, Zero)),
    ((One, Zero), (One, Zero)),
-   ((One, One), (One, One))]
+   ((One, One), (Zero, One))]
 
 bitSum3 :: Bit -> Bit -> Bit -> (Bit, Bit)
 bitSum3 a b c = case bitSum a b of
@@ -95,10 +95,10 @@ bitSum3 a b c = case bitSum a b of
 ((0,0,0),(0,0))
 ((0,0,1),(1,0))
 ((0,1,0),(1,0))
-((0,1,1),(1,1))
+((0,1,1),(0,1))
 ((1,0,0),(1,0))
-((1,0,1),(1,1))
-((1,1,0),(1,1))
+((1,0,1),(0,1))
+((1,1,0),(0,1))
 ((1,1,1),(1,1))
 -}
 
@@ -107,10 +107,10 @@ testBitSum3 = all (\(args, value) -> uncurry3 bitSum3 args == value)
   [((Zero, Zero, Zero), (Zero, Zero)),
    ((Zero, Zero, One), (One, Zero)),
    ((Zero, One, Zero), (One, Zero)),
-   ((Zero, One, One), (One, One)),
+   ((Zero, One, One), (Zero, One)),
    ((One, Zero, Zero), (One, Zero)),
-   ((One, Zero, One), (One, One)),
-   ((One, One, Zero), (One, One)),
+   ((One, Zero, One), (Zero, One)),
+   ((One, One, Zero), (Zero, One)),
    ((One, One, One), (One, One))]
 
 -- add :: Z -> Z -> Z
