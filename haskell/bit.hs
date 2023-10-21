@@ -113,10 +113,25 @@ testBitSum3 = all (\(args, value) -> uncurry3 bitSum3 args == value)
    ((One, One, Zero), (Zero, One)),
    ((One, One, One), (One, One))]
 
--- add :: Z -> Z -> Z
--- add (Z _ []) y = y
--- add x (Z _ []) = x
--- add (Z sx (x:xs)) (Z sy (y:ys)) =
---   let rest = add (Z sx xs)
---   in undefined
+addPos :: Bit -> [Bit] -> [Bit] -> [Bit]
+addPos Zero bs [] = bs
+addPos One [] [] = [One]
+addPos One (b:bs) [] = let (s, c) = bitSum One b
+                       in s : addPos c bs []
+addPos c [] bs = addPos c bs []
+addPos c (a:as) (b:bs) = let (s, c') = bitSum3 c a b
+                         in s : addPos c' as bs
 
+add :: Z -> Z -> Z
+add (Z _ []) y = y
+add x (Z _ []) = x
+add (Z Plus xs) (Z Plus ys) = Z Plus $ addPos Zero xs ys
+
+checkAdd :: Integer -> Integer -> Bool
+checkAdd x y = s == s' where
+  s = ztoi $ add (itoz x) (itoz y)
+  s' = ztoi $ add' (itoz x) (itoz y)
+
+testAdd :: Bool
+testAdd = and [checkAdd x y | x <- [0..20], y <- [0..20]]
+-- TODO: negative
