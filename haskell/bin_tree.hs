@@ -11,10 +11,14 @@ data Tree a = Leaf a | Node (Tree a) (Tree a)
 
 data Tree a = Leaf a | Node (Tree a) (Tree a)
 
-height (Leaf _) = 0
-height (Node a b) = 1 + max ha hb
-  where ha = height a
-        hb = height b
+foldTree :: (a -> b) -> (b -> b -> b) -> Tree a -> b
+foldTree fl fn (Leaf x) = fl x
+foldTree fl fn (Node x y) = fn x' y' where
+  x' = foldTree fl fn x
+  y' = foldTree fl fn y
+
+height :: Tree a -> Int
+height = foldTree (const 0) (\x y -> 1 + max x y)
 
 testHeight :: Bool
 testHeight = and [
@@ -30,8 +34,7 @@ testHeight = and [
     t4 = Node t2 t3
 
 size :: Tree a -> Int
-size (Leaf _) = 1
-size (Node a b) = 1 + size a + size b
+size = foldTree (const 1) (\x y -> 1 + x + y)
 
 testSize :: Bool
 testSize = and [
