@@ -6,17 +6,18 @@
 только один проход по дереву. Это можно сделать при помощи вспомогательной функции,
 возвращающей количество листьев и сумму значений в них. Реализуйте эту функцию.
 -}
-
 data Tree a = Leaf a | Node (Tree a) (Tree a)
+
+foldTree :: (a -> b) -> (b -> b -> b) -> Tree a -> b
+foldTree fl fn (Leaf x) = fl x
+foldTree fl fn (Node x y) = fn x' y' where
+  x' = foldTree fl fn x
+  y' = foldTree fl fn y
 
 avg :: Tree Int -> Int
 avg t = s `div` c where
-  (c, s) = go t
-  go :: Tree Int -> (Int, Int)
-  go (Leaf x) = (1, x)
-  go (Node x y) = (cx + cy, sx + sy) where
-    (cx, sx) = go x
-    (cy, sy) = go y
+  (c, s) = foldTree (1,) f t where
+    f (c1, s1) (c2, s2) = (c1 + c2, s1 + s2)
 
 testAvg :: Bool
 testAvg = and [
