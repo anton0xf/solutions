@@ -6,7 +6,7 @@ data Log a = Log [String] a deriving (Eq, Show)
 {- Реализуйте вычисление с логированием, используя Log. Для начала определите функцию toLogger -}
 
 toLogger :: (a -> b) -> String -> a -> Log b
-toLogger = undefined
+toLogger f s x = Log [s] (f x)
 
 {- которая превращает обычную функцию, в функцию с логированием: -}
 
@@ -21,7 +21,9 @@ test2 = mult2Log 3 == Log ["multiplied by 2"] 6
 {- Далее, определите функцию execLoggers -}
 
 execLoggers :: a -> (a -> Log b) -> (b -> Log c) -> Log c
-execLoggers = undefined
+execLoggers x f g = let Log ss1 x1 = f x
+                        Log ss2 x2 = g x1
+                    in Log (ss1 ++ ss2) x2
 
 {- Которая принимает некоторый элемент и две функции с логированием.
 execLoggers возвращает результат последовательного применения функций к элементу
