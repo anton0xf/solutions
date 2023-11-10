@@ -55,6 +55,12 @@ instance Monad Log where
     -- return = returnLog
     (>>=) = bindLog
 
+{- Monad Laws:
+return a >>= k                  =  k a
+m        >>= return             =  m
+m        >>= (\x -> k x >>= h)  =  (m >>= k) >>= h
+-}
+
 {- Используя return и >>=, определите функцию execLoggersList -}
 
 execLoggersList :: a -> [a -> Log a] -> Log a
