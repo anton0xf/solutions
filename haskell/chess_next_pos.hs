@@ -29,7 +29,9 @@ nextPositions (Board n) = [Board (n-1), Board (n+1)]
 
 nextPositionsN :: Board -> Int -> (Board -> Bool) -> [Board]
 nextPositionsN b 0 pred = [b | pred b]
-nextPositionsN b n pred = if n < 0 then [] else do
+nextPositionsN b n pred = do
+  -- if n < 0 then [] else [()]
+  True <- [n >= 0]
   b1 <- nextPositions b
   nextPositionsN b1 (n-1) pred
 
