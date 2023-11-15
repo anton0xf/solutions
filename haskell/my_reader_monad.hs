@@ -149,6 +149,19 @@ reader = asks
 --   e <- ask
 --   return (f e)
 
+{- https://stepik.org/lesson/8441/step/7?unit=1576 -}
+local' :: (e1 -> e2) -> Env e2 a -> Env e1 a
+local' f (Env g) = Env (g . f)
+
+local'Ex :: Env UsersTable (Int, String)
+local'Ex = do
+  c1 <- usersCount
+  c2 <- local' (("Mike", "1"),) $ asks (fst . fst)
+  return (c1, c2)
+
+testLocal'Ex :: Bool
+testLocal'Ex = runEnv local'Ex pwds == (3, "Mike")
+
 test :: Bool
 test = testSafeHeads && testAsk && testFirstUser && testFirstUserPwd
-  && testUsersCount && testLocalEx
+  && testUsersCount && testLocalEx && testLocal'Ex
