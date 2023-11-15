@@ -2,6 +2,7 @@
 5.6 Монада Reader
 imppement it by myself
 -}
+
 newtype Env e v = Env {runEnv :: e -> v}
 
 {- Laws
@@ -79,8 +80,37 @@ safeHead4 = Env (\e ->
   then Nothing
   else Just (head e))
 
+checkSafeHead :: Eq a => [a] -> Maybe a -> Bool
 checkSafeHead x y = all (\f -> runEnv f x == y)
   [safeHead, safeHead1, safeHead2, safeHead3, safeHead4]
 
+testSafeHeads :: Bool
 testSafeHeads = checkSafeHead ([]::[Int]) Nothing
   && checkSafeHead [1,2,3] (Just 1)
+
+{- https://stepik.org/lesson/8441/step/5?unit=1576 -}
+ask :: Env e e
+ask = Env id
+
+testAsk :: Bool
+testAsk = runEnv ask 42 == 42
+
+type User = String
+type Password = String
+type UsersTable = [(User, Password)]
+
+pwds :: UsersTable
+pwds = [("Bill", "123"), ("Ann", "qwerty"), ("John", "2sRq8p")]
+
+firstUser :: Env UsersTable User
+firstUser = Env (fst . head)
+-- fst . head <$> ask
+
+-- do
+--   e <- ask
+--   return $ fst (head e)
+
+testFirstUser = runEnv firstUser pwds == "Bill"
+
+test :: Bool
+test = testSafeHeads && testAsk && testFirstUser
