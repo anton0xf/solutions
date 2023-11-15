@@ -104,13 +104,51 @@ pwds = [("Bill", "123"), ("Ann", "qwerty"), ("John", "2sRq8p")]
 
 firstUser :: Env UsersTable User
 firstUser = Env (fst . head)
--- fst . head <$> ask
-
 -- do
 --   e <- ask
 --   return $ fst (head e)
 
+testFirstUser :: Bool
 testFirstUser = runEnv firstUser pwds == "Bill"
 
+{- https://stepik.org/lesson/8441/step/6?unit=1576 -}
+asks :: (e -> a) -> Env e a
+asks = Env
+
+firstUserPwd :: Env UsersTable Password
+firstUserPwd = asks (snd . head)
+-- do
+--   pwd <- asks (snd . head)
+--   reutrn pwd
+
+testFirstUserPwd :: Bool
+testFirstUserPwd = runEnv firstUserPwd pwds == "123"
+
+usersCount :: Env UsersTable Int
+usersCount = asks length
+
+testUsersCount :: Bool
+testUsersCount = runEnv usersCount pwds == 3
+
+local :: (e -> e) -> Env e a -> Env e a
+local f (Env g) = Env (g . f)
+
+localEx :: Env UsersTable (Int, Int)
+localEx = do
+  c1 <- usersCount
+  c2 <- local (("Mike", "1"):) usersCount
+  return (c1, c2)
+
+testLocalEx :: Bool
+testLocalEx = runEnv localEx pwds == (3, 4)
+  && runEnv localEx [] == (0, 1)
+
+reader :: (e -> a) -> Env e a
+reader = asks
+-- reader f = do
+--   e <- ask
+--   return (f e)
+
 test :: Bool
-test = testSafeHeads && testAsk && testFirstUser
+test = testSafeHeads && testAsk && testFirstUser && testFirstUserPwd
+  && testUsersCount && testLocalEx
