@@ -162,6 +162,20 @@ local'Ex = do
 testLocal'Ex :: Bool
 testLocal'Ex = runEnv local'Ex pwds == (3, "Mike")
 
+{- 5.6.9 https://stepik.org/lesson/8441/step/9?unit=1576
+Реализуйте функцию, принимающую в качестве окружения UsersTable
+и возвращающую список пользователей, использующих пароль "123456"
+(в том же порядке, в котором они перечислены в базе).
+-}
+usersWithBadPasswords :: Env UsersTable [User]
+usersWithBadPasswords = asks $ map fst . filter ((== "123456") . snd)
+  -- \db -> [fst user | user <- db, snd user == "123456"]
+
+testUsersWithBadPasswords :: Bool
+testUsersWithBadPasswords = runEnv usersWithBadPasswords db == ["user", "root"]
+  where db = [("user", "123456"), ("x", "hi"), ("root", "123456")]
+
 test :: Bool
 test = testSafeHeads && testAsk && testFirstUser && testFirstUserPwd
   && testUsersCount && testLocalEx && testLocal'Ex
+  && testUsersWithBadPasswords
