@@ -93,7 +93,20 @@ testBindAssoc = checkEqIntStrSt ((m >>= k) >>= h) (m >>= (\x -> k x >>= h))
         k x = State $ \s -> ("B" ++ x, s * 2)
         h x = State $ \s -> (x ++ "C", s^2)
 
+execState :: State s a -> s -> s
+execState m s = snd $ runState m s
+
+testExecState :: Bool
+testExecState = execState stateA 0 == 1
+
+evalState :: State s a -> s -> a
+evalState m s = fst $ runState m s
+
+testEvalState :: Bool
+testEvalState = evalState stateA 0 == "A"
+
 test :: Bool
 test = testFmapId && testFmapComp
   && testAppId && testAppComp && testAppHom && testAppInt
   && testBindLId && testBindRId && testBindAssoc
+  && testExecState && testEvalState
