@@ -105,8 +105,42 @@ evalState m s = fst $ runState m s
 testEvalState :: Bool
 testEvalState = evalState stateA 0 == "A"
 
+{- https://stepik.org/lesson/8444/step/5?unit=1579 -}
+
+get :: State s s
+get = State $ \s -> (s, s)
+
+testGet :: Bool
+testGet = runState get 5 == (5, 5)
+  && runState (stateA >> get) 0 == (1, 1)
+
+put :: s -> State s ()
+put s = State $ const ((), s)
+
+testPut :: Bool
+testPut = runState (put 7) 5 == ((), 7)
+  && runState (stateA >> put 3) 0 == ((), 3)
+
+tick :: State Int Int
+tick = do
+  st <- get
+  put $ st + 1
+  return st
+
+testTick :: Bool
+testTick = runState tick 0 == (0, 1)
+  && checkStateEq tick (State $ \st -> (st, st + 1)) [0..5]
+
+modify :: (s -> s) -> State s ()
+modify f = State $ \s -> ((), f s)
+
+testModify :: Bool
+testModify = runState (modify (*2)) 3 == ((), 6)
+  && runState (tick >> modify (*2)) 100 == ((), 202)
+
 test :: Bool
 test = testFmapId && testFmapComp
   && testAppId && testAppComp && testAppHom && testAppInt
   && testBindLId && testBindRId && testBindAssoc
   && testExecState && testEvalState
+  && testGet && testPut && testTick && testModify
