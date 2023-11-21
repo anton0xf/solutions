@@ -12,16 +12,18 @@ data Tree a = Leaf a | Fork (Tree a) a (Tree a)
 Требуется пронумеровать вершины дерева данной формы, обойдя их in-order (то есть,
 сначала обходим левое поддерево, затем текущую вершину, затем правое поддерево): -}
 
+tick :: State Integer Integer
+tick = do
+  st <- get
+  put $ st + 1
+  return st
+
 numberTree :: Tree () -> Tree Integer
 numberTree t = evalState (num t) 1 where
-  num (Leaf _) = do
-    n <- get
-    put (n + 1)
-    return (Leaf n)
+  num (Leaf _) = fmap Leaf tick
   num (Fork t0 _ t1) = do
     t0' <- num t0
-    n <- get
-    put (n + 1)
+    n <- tick
     t1' <- num t1
     return $ Fork t0' n t1'
 
