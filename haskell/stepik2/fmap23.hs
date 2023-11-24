@@ -12,8 +12,10 @@ newtype Arr3 e1 e2 e3 a = Arr3 { getArr3 :: e1 -> e2 -> e3 -> a }
 
 instance Functor (Arr2 e1 e2) where
   fmap :: (a -> b) -> Arr2 e1 e2 a -> Arr2 e1 e2 b
-  fmap f arr = Arr2 $ (f .) . getArr2 arr
-  -- = Arr2 $ fmap f <$> getArr2 arr
+  -- fmap f arr = Arr2 $ (f .) . getArr2 arr
+  -- fmap f arr = Arr2 $ fmap f . getArr2 arr
+  -- fmap f arr = Arr2 $ fmap f <$> getArr2 arr
+  fmap f = Arr2 . (fmap . fmap $ f) . getArr2
 
 {-
 f :: a -> b
@@ -45,8 +47,10 @@ testArr2 = getArr2 (fmap length (Arr2 take)) 10 "abc" == 3
 
 instance Functor (Arr3 e1 e2 e3) where
   fmap :: (a -> b) -> Arr3 e1 e2 e3 a -> Arr3 e1 e2 e3 b
-  fmap f arr = Arr3 $ ((f .) .) . getArr3 arr
-  -- = Arr3 $ fmap (fmap f) <$> getArr3 arr
+  -- fmap f arr = Arr3 $ ((f .) .) . getArr3 arr
+  -- fmap f arr = Arr3 $ fmap (fmap f) <$> getArr3 arr
+  -- fmap f arr = Arr3 $ (fmap . fmap $ f) . getArr3 arr
+  fmap f = Arr3 . (fmap . fmap . fmap $ f) . getArr3
 
 testArr3 :: Bool
 testArr3 = getArr3 (tail <$> tail <$> Arr3 zipWith)
