@@ -45,11 +45,14 @@ testAppZip4 = getZipList ((\a b c d -> 2*a+3*b+5*c-4*d)
 
 infixl 4 >$<
 (>$<) :: (a -> b) -> [a] -> [b]
-f >$< xs = map f xs
+-- f >$< xs = map f xs
+f >$< xs = getZipList $ f <$> ZipList xs
+-- f >$< xs = getZipList $ pure f <*> ZipList xs
 
 infixl 4 >*<
 (>*<) :: [a -> b] -> [a] -> [b]
-fs >*< ys = zipWith ($) fs ys
+-- fs >*< ys = zipWith ($) fs ys
+fs >*< ys = getZipList $ ZipList fs <*> ZipList ys
 
 testHelpers1 :: Bool
 testHelpers1 = ((*2) >$< x1s) == [2, 4, 6]
