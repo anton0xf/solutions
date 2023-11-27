@@ -4,8 +4,7 @@
 Функция -}
 
 divideList :: Fractional a => [a] -> a
-divideList []     = 1
-divideList (x:xs) = (/) x (divideList xs)
+divideList = foldr (/) 1
 
 {- сворачивает список посредством деления. Модифицируйте ее, реализовав
 divideList' :: (Show a, Fractional a) => [a] -> (String,a), 
@@ -25,8 +24,8 @@ testDivideList' = divideList' [] == ("1.0", 1.0)
 сохраняя близкую к исходной функции структуру реализации -}
 
 divideList' :: (Show a, Fractional a) => [a] -> (String, a)
-divideList' []     = ("1.0", 1.0)
-divideList' (x:xs) = (/) <$> ("<-" ++ show x ++ "/", x) <*> divideList' xs
+divideList' = foldr reduce ("1.0", 1.0)
+  where reduce x acc = (/) <$> ("<-" ++ show x ++ "/", x) <*> acc
 
 test :: Bool
 test = testDivideList && testDivideList'
