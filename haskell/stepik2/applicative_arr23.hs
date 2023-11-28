@@ -41,6 +41,11 @@ instance Functor (Arr3 e1 e2 e3) where
   fmap f = Arr3 . (fmap . fmap . fmap $ f) . getArr3
 
 instance Applicative (Arr3 e1 e2 e3) where
+  pure :: a -> Arr3 e1 e2 e3 a
+  pure = Arr3 . const . const . const
+
+  (<*>) :: Arr3 e1 e2 e3 (a -> b) -> Arr3 e1 e2 e3 a -> Arr3 e1 e2 e3 b
+  (Arr3 f) <*> (Arr3 x) = Arr3 $ \e1 e2 e3 -> (fmap . fmap . fmap) (f e1 e2 e3) x e1 e2 e3
 
 test :: Bool
 test = testArr2 && testArr3
