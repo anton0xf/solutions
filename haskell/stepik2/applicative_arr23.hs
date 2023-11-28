@@ -24,19 +24,16 @@ instance Functor (Arr2 e1 e2) where
 
 instance Applicative (Arr2 e1 e2) where
   pure :: a -> Arr2 e1 e2 a
-  pure x = Arr2 $ const . const x
+  -- pure x = Arr2 $ \e1 e2 -> x
+  -- pure x = Arr2 $ const . const x
+  pure = Arr2 . const . const
 
-{-
-const :: a -> b -> a
-const (x :: a) :: c -> a
-(.) :: (b' -> c') -> (a' -> b') -> a' -> c'
--- b' = a
--- c' = b -> a
--- a' = c
--- b' = x = a
-(.) :: (a -> b -> a) -> (c -> a) -> c -> b -> a
--}
-
+  (<*>) :: Arr2 e1 e2 (a -> b) -> Arr2 e1 e2 a -> Arr2 e1 e2 b
+  -- (Arr2 f) <*> (Arr2 x) = Arr2 $ \e1 e2 -> f e1 e2 (x e1 e2)
+  -- (Arr2 f) <*> (Arr2 x) = Arr2 $ \e1 e2 -> ((f e1 e2 .) . x) e1 e2
+  -- (Arr2 f) <*> (Arr2 x) = Arr2 $ \e1 e2 -> fmap (f e1 e2 .) x e1 e2
+  -- (Arr2 f) <*> (Arr2 x) = Arr2 $ \e1 e2 -> fmap (fmap (f e1 e2)) x e1 e2
+  (Arr2 f) <*> (Arr2 x) = Arr2 $ \e1 e2 -> (fmap . fmap) (f e1 e2) x e1 e2
 
 -- from fmap23.hs
 instance Functor (Arr3 e1 e2 e3) where
