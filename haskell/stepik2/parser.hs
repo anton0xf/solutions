@@ -44,5 +44,18 @@ testFmap2 = null (apply p "")
     && apply p "1bc" == [(1, "bc")]
   where p = fmap digitToInt anyChar
 
+{- https://stepik.org/lesson/30425/step/5?unit=11042 -}
+
+instance Applicative Parser where
+  pure :: a -> Parser a
+  pure x = Parser $ \s -> [(x, s)]
+
+  (<*>) :: Parser (a -> b) -> Parser a -> Parser b
+  (Parser pf) <*> (Parser px) = Parser $ \s -> [(f x, s2) | (f, s1) <- pf s, (x, s2) <- px s1]
+
+testAp :: Bool
+testAp = apply ((,) <$> anyChar <*> anyChar) "ABCDE" == [(('A', 'B'), "CDE")]
+  && apply (anyChar *> anyChar) "ABCD" == [('B', "CD")]
+
 test :: Bool
-test = testAnyChar && testOneOf && testFmap1 && testFmap2
+test = testAnyChar && testOneOf && testFmap1 && testFmap2 && testAp
