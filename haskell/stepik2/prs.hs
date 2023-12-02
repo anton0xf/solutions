@@ -2,6 +2,8 @@
 1.4.4. Аппликативный парсер своими руками -}
 
 import Data.Char
+import Data.Maybe
+import Data.Bifunctor
 
 {- Предположим, тип парсера определен следующим образом: -}
 
@@ -13,8 +15,7 @@ newtype Prs a = Prs { runPrs :: String -> Maybe (a, String) }
 
 instance Functor Prs where
   fmap :: (a -> b) -> Prs a -> Prs b
-  -- fmap f p = Prs $ fmap (first f) (runPrs p)
-  fmap f p = Prs $ fmap (\(x, s) -> (f x, s)) . runPrs p
+  fmap f p = Prs $ fmap (first f) . runPrs p
 
 anyChr :: Prs Char
 anyChr = Prs p where
@@ -23,6 +24,6 @@ anyChr = Prs p where
 
 test :: Bool
 test = runPrs anyChr "ABC" == Just ('A',"BC")
-  && runPrs anyChr "" == Nothing
+  && isNothing (runPrs anyChr "")
   && runPrs (digitToInt <$> anyChr) "BCD" == Just (11,"CD")
 
