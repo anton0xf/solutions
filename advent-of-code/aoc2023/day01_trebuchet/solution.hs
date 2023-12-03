@@ -56,9 +56,21 @@ processInput = do
 spelledDigits :: [String]
 spelledDigits = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
 
+parseSpelledDigit :: Int -> String -> Parsec String u [Int]
+parseSpelledDigit n s = do
+  _ <- try (string s)
+  is <- getInput
+  setInput $ last s : is
+  return [n]
+
+testParseSpelledDigit :: Bool
+testParseSpelledDigit = parse (parseSpelledDigit 2 "two") "" "twone" == Right [2]
+  && parse ((,) <$> parseSpelledDigit 2 "two" <*> parseSpelledDigit 1 "one") "" "twone"
+     == Right ([2], [1])
+
 getDigits :: Parsec [Char] u [Int]
 getDigits = (singleton . digitToInt <$> digit)
-  <|> choice (zipWith (\n s -> [n] <$ try (string s)) [1..] spelledDigits)
+  <|> choice (zipWith parseSpelledDigit [1..] spelledDigits)
   <|> [] <$ letter
 
 testGetDigits :: Bool
@@ -67,6 +79,7 @@ testGetDigits = isLeft (parse getDigits "" "")
   && parse (concat <$> many1 getDigits) "" "1a2" == Right [1, 2]
   && parse (concat <$> many1 getDigits) "" "1aone2" == Right [1, 1, 2]
   && parse (concat <$> many1 getDigits) "" "ttwothree" == Right [2, 3]
+  && parse (concat <$> many1 getDigits) "" "ttwone" == Right [2, 1]
 
 parseInput2 :: Parsec [Char] u [[Int]]
 parseInput2 = (concat <$> many getDigits) `sepBy` newline
@@ -96,7 +109,8 @@ testSumDss :: Bool
 testSumDss = (sumDss <$> parse parseInput2 "" testInput2) == Right 281
 
 test2 :: Bool
-test2 = testGetDigits && testParseInput2 && testDigitsTails && testSumDss
+test2 = testParseSpelledDigit && testGetDigits && testParseInput2
+  && testDigitsTails && testSumDss
 
 processInput2 :: IO ()
 processInput2 = do
@@ -106,7 +120,7 @@ processInput2 = do
   print (sumDss <$> parse parseInput2 fname input)
   hClose fh
 
--- processInput2 == Right 53519
+-- processInput2 == Right 53515
 
 test :: Bool
 test = test1 && test2
