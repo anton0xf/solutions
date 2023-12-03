@@ -19,10 +19,15 @@ testAnyChar = null (apply anyChar "")
   && apply anyChar "a" == [('a', "")]
   && apply anyChar "ab" == [('a', "b")]
 
-oneOf :: [Char] -> Parser Char
-oneOf cs = Parser p where
+-- https://stepik.org/lesson/30425/step/7?unit=11042
+satisfy :: (Char -> Bool) -> Parser Char
+satisfy pred = Parser p where
   p "" = []
-  p (c : s) = [(c, s) | c `elem` cs]
+  p (c : cs) = [(c, cs) | pred c]
+
+oneOf :: [Char] -> Parser Char
+-- oneOf cs = satisfy (`elem` cs)
+oneOf = satisfy . flip elem
 
 testOneOf :: Bool
 testOneOf = null (apply p "")
