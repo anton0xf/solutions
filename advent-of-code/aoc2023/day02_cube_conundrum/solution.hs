@@ -86,5 +86,52 @@ solution1 = do
 
 -- solution1 == Right 2810
 
+bag0 :: Bag
+bag0 = Bag 0 0 0
+
+minResultBag :: Result -> Bag
+minResultBag (Result R n) = bag0 { red = n }
+minResultBag (Result G n) = bag0 { green = n }
+minResultBag (Result B n) = bag0 { blue = n }
+
+maxBag :: Bag -> Bag -> Bag
+maxBag (Bag {red = r1, green = g1, blue = b1})
+       (Bag {red = r2, green = g2, blue = b2})
+  = Bag { red = max r1 r2, green = max g1 g2, blue = max b1 b2 }
+
+minResultsBag :: [[Result]] -> Bag
+minResultsBag = foldr maxBag bag0 . concatMap (map minResultBag)
+
+minResultsBagTest :: Bool
+minResultsBagTest = map (minResultsBag . results) testGames
+  == [Bag {red = 4, green = 2, blue = 6},
+      Bag {red = 1, green = 3, blue = 4},
+      Bag {red = 20, green = 13, blue = 6},
+      Bag {red = 14, green = 3, blue = 15},
+      Bag {red = 6, green = 3, blue = 2}]
+
+power :: Bag -> Integer
+power (Bag r g b) = r * g * b
+
+powerTest :: Bool
+powerTest = map (power . minResultsBag . results) testGames == [48, 12, 1560, 630, 36]
+
+minPowerSum :: [Game] -> Integer
+minPowerSum = sum . map (power . minResultsBag . results)
+
+minPowerSumTest :: Bool
+minPowerSumTest = minPowerSum testGames == 2286
+
 test :: Bool
 test = parseResultTest && parseGameTest && isGamePossibleTest
+  && minResultsBagTest && powerTest && minPowerSumTest
+
+solution2 :: IO ()
+solution2 = do
+  let fname = "input.txt"
+  fh <- openFile fname ReadMode
+  input <- hGetContents fh
+  print (minPowerSum <$> parse parseInput fname input)
+  hClose fh
+
+-- solution2 == Right 69110
