@@ -1,11 +1,12 @@
 {- --- Day 3: Gear Ratios --- https://adventofcode.com/2023/day/3 -}
 
-import Data.Char
+import Data.Char (isDigit)
 import Data.Function ((&))
-import Data.Functor ((<&>)) 
+import Data.Functor ((<&>))
+import Data.Maybe (mapMaybe)
+import Data.Bifunctor (bimap, second)
+import System.IO ( IOMode(ReadMode), hClose, hGetContents, openFile )
 import Text.Parsec
-import Text.Parsec.Char
-import System.IO
 
 import Data.Set (Set)
 import qualified Data.Set as Set
@@ -86,3 +87,43 @@ solution1 = do
   input <- hGetContents fh
   print (sum $ getPartNums fname input)
   hClose fh
+
+getNeighboursMap :: [(Pos, String)] -> Map Pos [(Pos, String)]
+getNeighboursMap nums = Map.fromListWith (++) (concatMap invNeighbours nums)
+  where invNeighbours :: (Pos, String) -> [(Pos, [(Pos, String)])]
+        invNeighbours pn = map (, [pn]) (neighbours pn)
+
+getGear :: Map Pos [(Pos, String)] -> (Pos, Char)
+  -> Maybe (Pos, ((Pos, String), (Pos, String)))
+getGear neighboursMap (pos, sym) = do
+  gearNums <- Map.lookup pos neighboursMap
+  if sym == '*' && length gearNums == 2
+    then let [n1, n2] = gearNums in return (pos, (n1, n2))
+    else Nothing
+
+getGears :: String -> String -> [(Pos, (Integer, Integer))]
+getGears fname s = let
+    Right nums = parse (many partNum) fname s
+    Right (symbols :: [(Pos, Char)]) = parse (many symbol) fname s
+    neighboursMap = getNeighboursMap nums :: Map Pos [(Pos, String)]
+    getNum = read . snd
+  in map (second (bimap getNum getNum)) . mapMaybe (getGear neighboursMap) $ symbols
+
+getGearsTest :: Bool
+getGearsTest = getGears "" testInput
+  == [(Pos {row = 2, col = 4}, (35, 467)),
+      (Pos {row = 9, col = 6}, (598, 755))]
+
+test2 :: Bool
+test2 = getGearsTest
+
+solution2 :: IO ()
+solution2 = do
+  let fname = "input.txt"
+  fh <- openFile fname ReadMode
+  input <- hGetContents fh
+  print (sum . map (uncurry (*) . snd) $ getGears fname input)
+  hClose fh
+
+test :: Bool
+test = test1 && test2
