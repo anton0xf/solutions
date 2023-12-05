@@ -2,6 +2,9 @@
 import Text.Parsec (Parsec, parse, many, many1, sepEndBy, digit, char, spaces, string)
 import System.IO
 
+import Data.Map (Map, (!))
+import qualified Data.Map as Map
+
 testInput :: String
 testInput = "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53\n"
          ++ "Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19\n"
@@ -63,12 +66,45 @@ solve1Test = solve1 (parseInput testInput) == 13
 test1 :: Bool
 test1 = parseInputTest && getWinningNsTest && winningPointsTest && solve1Test
 
-solution1 :: IO ()
-solution1 = do
+solution :: ([Card] -> Integer) -> IO ()
+solution solve = do
   fh <- openFile "input.txt" ReadMode
   input <- hGetContents fh
-  print (solve1 $ parseInput input)
+  print $ solve $ parseInput input
   hClose fh
 
+solution1 :: IO ()
+solution1 = solution solve1
+
+-- solution1 ==> 21568
+
+solve2 :: [Card] -> Integer
+solve2 cards = sum $ Map.elems countMap where
+  cardsMap = Map.fromList $ map (\card -> (cardId card, card)) cards
+
+  makeCountMap [] countMap = countMap
+  makeCountMap (card : cs) countMap = makeCountMap cs countMap'
+    where
+      winCount = length $ getWinningNs card
+      id = cardId card
+      cardCount = countMap ! id
+      newCards = map (id +) [1 .. winCount]
+      addCountMap = Map.fromList $ map (, cardCount) newCards
+      countMap' = Map.unionWith (+) countMap addCountMap
+    
+  countMap0 = Map.map (const 1) cardsMap
+  countMap = makeCountMap cards countMap0
+
+solve2Test :: Bool
+solve2Test = solve2 (parseInput testInput) == 30
+
+test2 :: Bool
+test2 = solve2Test
+
+solution2 :: IO ()
+solution2 = solution solve2
+
+-- solution2 ==> 11827296
+
 test :: Bool
-test = test1
+test = test1 && test2
