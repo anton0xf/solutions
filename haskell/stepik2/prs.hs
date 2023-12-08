@@ -4,6 +4,7 @@
 import Data.Char
 import Data.Maybe
 import Data.Bifunctor
+import Control.Applicative
 
 {- Предположим, тип парсера определен следующим образом: -}
 
@@ -46,5 +47,29 @@ testApp :: Bool
 testApp = runPrs ((,,) <$> anyChr <*> anyChr <*> anyChr) "ABCDE" == Just (('A','B','C'),"DE")
   && runPrs (anyChr *> anyChr) "ABCDE" == Just ('B',"CDE")
 
+{- https://stepik.org/lesson/30425/step/12?unit=11042
+Сделайте парсер представителем класса типов Alternative с естественной для парсера семантикой
+-}
+
+instance Alternative Prs where
+  empty :: Prs a
+  empty = Prs $ const Nothing
+  
+  (<|>) :: Prs a -> Prs a -> Prs a
+  (Prs p1) <|> (Prs p2) = Prs $ \s -> p1 s <|> p2 s
+
+satisfy :: (Char -> Bool) -> Prs Char
+satisfy pred = Prs p where
+  p "" = Nothing
+  p (c:s) = if pred c then Just (c, s) else Nothing
+
+char :: Char -> Prs Char
+char c = satisfy (== c)
+
+testAlt :: Bool
+testAlt = runPrs (char 'A' <|> char 'B') "ABC" == Just ('A',"BC")
+  && runPrs (char 'A' <|> char 'B') "BCD" == Just ('B',"CD")
+  && isNothing (runPrs (char 'A' <|> char 'B') "CDE")
+
 test :: Bool
-test = testFunctor && testApp
+test = testFunctor && testApp && testAlt
