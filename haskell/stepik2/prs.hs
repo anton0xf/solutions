@@ -71,5 +71,13 @@ testAlt = runPrs (char 'A' <|> char 'B') "ABC" == Just ('A',"BC")
   && runPrs (char 'A' <|> char 'B') "BCD" == Just ('B',"CD")
   && isNothing (runPrs (char 'A' <|> char 'B') "CDE")
 
+{- https://stepik.org/lesson/30425/step/14?unit=11042 -}
+many1 :: Prs a -> Prs [a]
+many1 p = (:) <$> p <*> (many1 p <|> pure [])
+
+many1Test :: Bool
+many1Test = runPrs (many1 $ char 'A') "AAABCDE" == Just ("AAA","BCDE")
+  && isNothing (runPrs (many1 $ char 'A') "BCDE")
+
 test :: Bool
-test = testFunctor && testApp && testAlt
+test = testFunctor && testApp && testAlt && many1Test
