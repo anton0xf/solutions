@@ -61,4 +61,5 @@ test-suite ex-test
     main-is:          MyLibTest.hs
     build-depends:
         base ^>=4.16.4.0,
+        HUnit,
         ex
