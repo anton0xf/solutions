@@ -79,5 +79,24 @@ many1Test :: Bool
 many1Test = runPrs (many1 $ char 'A') "AAABCDE" == Just ("AAA","BCDE")
   && isNothing (runPrs (many1 $ char 'A') "BCDE")
 
+{- https://stepik.org/lesson/30425/step/15?unit=11042
+Реализуйте парсер nat :: Prs Int для натуральных чисел -}
+
+nat :: Prs Int
+nat = read <$> many1 (satisfy isDigit)
+
+{- так чтобы парсер -}
+mult :: Prs Int
+mult = (*) <$> nat <* char '*' <*> nat
+
+{- обладал таким поведением -}
+
+multTest :: Bool
+multTest = runPrs mult "14*3" == Just (42,"")
+  && runPrs mult "64*32" == Just (2048,"")
+  && runPrs mult "77*0" == Just (0,"")
+  && runPrs mult "2*77AAA" == Just (154,"AAA")
+
+
 test :: Bool
-test = testFunctor && testApp && testAlt && many1Test
+test = testFunctor && testApp && testAlt && many1Test && multTest
