@@ -21,3 +21,10 @@ b = Cmps (True, id, Left "asdf")
 
 c :: C
 c  = Cmps $ const (+1)
+
+{- https://stepik.org/lesson/30426/step/6?unit=11043
+Functor -}
+
+instance (Functor f, Functor g) => Functor (f |.| g) where
+  fmap :: (a -> b) -> (|.|) f g a -> (|.|) f g b
+  fmap h = Cmps . (fmap . fmap) h . getCmps
