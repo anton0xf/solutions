@@ -24,7 +24,15 @@ c  = Cmps $ const (+1)
 
 {- https://stepik.org/lesson/30426/step/6?unit=11043
 Functor -}
-
 instance (Functor f, Functor g) => Functor (f |.| g) where
   fmap :: (a -> b) -> (|.|) f g a -> (|.|) f g b
   fmap h = Cmps . (fmap . fmap) h . getCmps
+
+{- https://stepik.org/lesson/30426/step/8?unit=11043
+Applicative -}
+instance (Applicative f, Applicative g) => Applicative (f |.| g) where
+  pure :: a -> (|.|) f g a
+  pure = Cmps . pure . pure
+
+  (<*>) :: (f |.| g) (a -> b) -> (f |.| g) a -> (f |.| g) b
+  (Cmps ch) <*> (Cmps cx) = Cmps $ ((<*>) <$> ch) <*> cx
