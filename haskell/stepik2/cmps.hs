@@ -36,3 +36,21 @@ instance (Applicative f, Applicative g) => Applicative (f |.| g) where
 
   (<*>) :: (f |.| g) (a -> b) -> (f |.| g) a -> (f |.| g) b
   (Cmps ch) <*> (Cmps cx) = Cmps $ ((<*>) <$> ch) <*> cx
+
+{- https://stepik.org/lesson/30426/step/9?unit=11043
+Напишите универсальные функции -}
+
+unCmps3 :: Functor f => (f |.| g |.| h) a -> f (g (h a))
+unCmps3 = fmap getCmps . getCmps
+
+unCmps4 :: (Functor f2, Functor f1) => (f2 |.| f1 |.| g |.| h) a -> f2 (f1 (g (h a)))
+-- unCmps4 = (fmap . fmap) getCmps . fmap getCmps . getCmps
+unCmps4 = fmap (fmap getCmps . getCmps) . getCmps
+
+{- позволяющие избавляться от синтаксического шума для композиции нескольких функторов: -}
+
+unCmpsTest :: Bool
+unCmpsTest = (pure 42 :: ([] |.| [] |.| []) Int) == Cmps [Cmps [[42]]]
+  && unCmps3 (pure 42 :: ([] |.| [] |.| []) Int) ==  [[[42]]]
+  && unCmps3 (pure 42 :: ([] |.| Maybe |.| []) Int) == [Just [42]]
+  && unCmps4 (pure 42 :: ([] |.| [] |.| [] |.| []) Int) == [[[[42]]]]
