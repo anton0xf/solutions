@@ -2,6 +2,9 @@
 1.5.2. Композиция на уровне типов -}
 {-# LANGUAGE TypeOperators #-}
 
+import Data.Function ((&))
+import Control.Applicative
+
 infixr 9 |.|
 newtype (|.|) f g a = Cmps { getCmps :: f (g a) }
   deriving (Show, Eq)
@@ -35,7 +38,14 @@ instance (Applicative f, Applicative g) => Applicative (f |.| g) where
   pure = Cmps . pure . pure
 
   (<*>) :: (f |.| g) (a -> b) -> (f |.| g) a -> (f |.| g) b
+  -- (Cmps ch) <*> (Cmps cx) = Cmps $ liftA (<*>) ch <*> cx
   (Cmps ch) <*> (Cmps cx) = Cmps $ ((<*>) <$> ch) <*> cx
+  -- (Cmps ch) <*> (Cmps cx) = Cmps $ liftA2 (<*>) ch cx
+
+{- https://stepik.org/lesson/30426/step/10?unit=11043 -}
+apTest :: Bool
+apTest = getCmps (Cmps [Just (+1), Nothing, Just (+2)] <*> Cmps [Just 30, Just 40, Nothing])
+    == [Just 31, Just 41, Nothing, Nothing, Nothing, Nothing, Just 32, Just 42, Nothing]
 
 {- https://stepik.org/lesson/30426/step/9?unit=11043
 Напишите универсальные функции -}
@@ -54,3 +64,6 @@ unCmpsTest = (pure 42 :: ([] |.| [] |.| []) Int) == Cmps [Cmps [[42]]]
   && unCmps3 (pure 42 :: ([] |.| [] |.| []) Int) ==  [[[42]]]
   && unCmps3 (pure 42 :: ([] |.| Maybe |.| []) Int) == [Just [42]]
   && unCmps4 (pure 42 :: ([] |.| [] |.| [] |.| []) Int) == [[[[42]]]]
+
+test :: Bool
+test = apTest && unCmpsTest
