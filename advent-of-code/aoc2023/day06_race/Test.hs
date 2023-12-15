@@ -1,6 +1,6 @@
 module Test where
 
-import Solution
+import Solution hiding (main)
 import Test.HUnit
 import System.Exit
 
@@ -26,8 +26,18 @@ solve1Test = "solve1" ~: solve1 testRaces ~?= 288
 tests1 :: Test
 tests1 = test [parseInputTest, timesToDistTest, waysToWinTest, solve1Test]
 
+-- part 2
+testBigRace :: Race
+testBigRace = Race {time = 71530, dist = 940200}
+
+parseInput2Test :: Test
+parseInput2Test = "parseInput2" ~: parseInput2 testInput ~?= testBigRace
+
+solve2Test :: Test
+solve2Test = "solve2" ~: solve2 testBigRace ~?= 71503
+
 tests2 :: Test
-tests2 = test [True ~? "stub"]
+tests2 = test [parseInput2Test, solve2Test]
 
 main :: IO ()
 main = do

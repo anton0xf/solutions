@@ -56,17 +56,38 @@ waysToWin (Race t d) = [0 .. t] & map (timesToDist t)
 solve1 :: [Race] -> Integer
 solve1 = product . map waysToWin
 
-solution :: ([Race] -> Integer) -> IO ()
-solution solve = do
+solution1 :: IO ()
+solution1 = do
   fh <- openFile "input.txt" ReadMode
   input <- hGetContents fh
-  print $ solve $ parseInput input
+  print $ solve1 $ parseInput input
   hClose fh
 
-solution1 :: IO ()
-solution1 = solution solve1
+-- part 2
+
+bigIntP :: Parsec String u Integer
+bigIntP = read <$> many1 (digit <* spaces)
+
+bigRaceP :: Parsec String u Race
+bigRaceP = Race <$> (string "Time:" *> spaces *> bigIntP <* newline)
+  <*> (string "Distance:" *> spaces *> bigIntP <* newline)
+
+parseInput2 :: String -> Race
+parseInput2 = tryParse bigRaceP
+
+solve2 :: Race -> Integer
+solve2 = waysToWin
+
+solution2 :: IO ()
+solution2 = do
+  fh <- openFile "input.txt" ReadMode
+  input <- hGetContents fh
+  print $ solve2 $ parseInput2 input
+  hClose fh
 
 main :: IO ()
 main = do
   putStr "Part 1: "
   solution1
+  putStr "Part 2: "
+  solution2
