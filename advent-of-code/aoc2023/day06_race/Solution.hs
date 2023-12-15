@@ -3,11 +3,7 @@
 $ cabal install --lib parsec -}
 module Solution where
 
-import Data.Maybe
-import Data.Either
-import Data.List
 import Data.Function ((&))
-import Control.Monad
 import System.IO
 import Text.Parsec hiding (space, spaces)
 
@@ -50,8 +46,14 @@ timesToDist :: Integer -> Integer -> Integer
 timesToDist rt t = if t >= rt then 0 else t * (rt - t)
 
 waysToWin :: Race -> Integer
-waysToWin (Race t d) = [0 .. t] & map (timesToDist t)
-  & filter (> d) & length & fromIntegral
+waysToWin (Race t d) = if t^2 < 4*d then 0
+  else let
+      discr = fromIntegral $ t^2 - 4*d :: Double
+      w = sqrt discr
+      t1 = max 0 $ floor $ (fromIntegral t - w) / 2 + 1
+      t2 = min t $ ceiling $ (fromIntegral t + w) / 2 - 1
+  in if t1 > t then 0
+  else t2 - t1 + 1
 
 solve1 :: [Race] -> Integer
 solve1 = product . map waysToWin
