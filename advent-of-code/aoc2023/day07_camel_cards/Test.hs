@@ -45,7 +45,7 @@ tests1 :: Test
 tests1 = test [parseInputTest, handTypeTest, rankBidsTest, solve1Test]
 
 tests2 :: Test
-tests2 = "part2" ~: True ~? "stub"
+tests2 = "part2" ~: solve2 testBids ~?= 5905
 
 main :: IO ()
 main = do

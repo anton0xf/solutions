@@ -49,7 +49,7 @@ cardIds :: Map Char Int
 cardIds = Map.fromList $ zip cards [1..]
 
 cardId :: Char -> Int
-cardId card = Map.lookup card cardIds & fromMaybe 0
+cardId card = Map.lookup card cardIds & fromJust
 
 handOrd :: Hand -> Down (Type, [Int])
 handOrd h = Down (typ h, map cardId $ str h)
@@ -62,15 +62,20 @@ countCards :: String -> Map Char Int
 countCards = foldl add Map.empty
   where add m card = Map.insertWith (+) card 1 m
 
+cardCounts :: String -> [Int]
+cardCounts h = countCards h & Map.elems & sortOn Down
+
+countsType :: [Int] -> Type
+countsType (5 : _)     = Five
+countsType (4 : _)     = Four
+countsType (3 : 2 : _) = FullHouse
+countsType (3 : _)     = Three
+countsType (2 : 2 : _) = TwoPair
+countsType (2 : _)     = Pair
+countsType _           = High
+
 handType :: String -> Type
-handType h = case countCards h & Map.elems & sortOn Down of
-  5 : _ -> Five
-  4 : _ -> Four
-  3 : 2 : _ -> FullHouse
-  3 : _ -> Three
-  2 : 2 : _ -> TwoPair
-  2 : _ -> Pair
-  _ -> High
+handType = countsType . cardCounts
 
 toHand :: String -> Hand
 toHand s = Hand (handType s) s
@@ -84,14 +89,55 @@ rankBids bids = bids & map (first toHand) & sortOn fst & zip [1..]
 solve1 :: [(String, Integer)] -> Integer
 solve1 = sum . map (uncurry (*) . second snd) . rankBids
 
-solution1 :: IO ()
-solution1 = do
+solution :: ([(String, Integer)] -> Integer) -> IO ()
+solution solve = do
   fh <- openFile "input.txt" ReadMode
   input <- hGetContents fh
-  print $ solve1 $ parseInput input
+  print $ solve $ parseInput input
   hClose fh
+
+solution1 :: IO ()
+solution1 = solution solve1
+
+-- part 2
+
+cardId2 :: Char -> Int
+cardId2 'J' = 14 -- 1 + length cards
+cardId2 card = cardId card
+
+cardCounts2 :: String -> [Int]
+cardCounts2 h = let
+      m = countCards h
+      j = Map.findWithDefault 0 'J' m
+      -- add count of 'J's to head of list
+      addj [] = [j]
+      addj (x : xs) = x + j : xs
+  in m & Map.delete 'J' & Map.elems & sortOn Down & addj
+
+handType2 :: String -> Type
+handType2 = countsType . cardCounts2
+
+toHand2 :: String -> Hand
+toHand2 s = Hand (handType2 s) s
+
+handOrd2 :: Hand -> Down (Type, [Int])
+handOrd2 h = Down (typ h, map cardId2 $ str h)
+
+-- [(hand str, bid)] -> [(rank, hand, bid)]
+rankBids2 :: [(String, Integer)] -> [(Integer, (Hand, Integer))]
+rankBids2 bids = bids & map (first toHand2) & sortOn (handOrd2 . fst) & zip [1..]
+
+solve2 :: [(String, Integer)] -> Integer
+solve2 = sum . map (uncurry (*) . second snd) . rankBids2
+
+solution2 :: IO ()
+solution2 = solution solve2
+
+-- main
 
 main :: IO ()
 main = do
   putStr "Part 1: "
   solution1
+  putStr "Part 2: "
+  solution2
