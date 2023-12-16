@@ -71,11 +71,42 @@ solution solve = do
 solution1 :: IO ()
 solution1 = solution solve1
 
+-- part 2
+
+isStart :: String -> Bool
+isStart = (== 'A') . last
+
+isFinish :: String -> Bool
+isFinish = (== 'Z') . last
+
+step2 :: NetSearch -> [String] -> Char -> [String]
+step2 s nodes c = map (command c . s) nodes
+
+run2 :: NetMap -> [[String]]
+run2 (NetMap commands rules) = let
+      s = netSearch rules
+      cmds = cycle commands
+      start = filter isStart $ map node rules
+  in takeWhile (not . all isFinish) $ scanl' (step2 s) start cmds
+
+solve2 :: NetMap -> Integer
+-- solve2 = fromIntegral . length . run2
+solve2 (NetMap commands rules) = let
+      s = netSearch rules
+      cmds = cycle $ map command commands
+      start = filter isStart $ map node rules
+      st (cmd : cmds) n nodes = if all isFinish nodes then n
+        else st cmds (n + 1) (map (cmd . s) nodes)
+  in st cmds 0 start
+
+solution2 :: IO ()
+solution2 = solution solve2
+
 -- main
 
 main :: IO ()
 main = do
   putStr "Part 1: "
   solution1
-  -- putStr "Part 2: "
-  -- solution2
+  putStr "Part 2: "
+  solution2

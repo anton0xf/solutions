@@ -65,8 +65,36 @@ solve1Test = "solve1" ~: test [
 tests1 :: Test
 tests1 = test [rulePTest, parseInTest, runTest, solve1Test]
 
+-- part 2
+
+inEx3 :: String
+inEx3 = "LR\n"
+     ++ "\n"
+     ++ "11A = (11B, XXX)\n"
+     ++ "11B = (XXX, 11Z)\n"
+     ++ "11Z = (11B, XXX)\n"
+     ++ "22A = (22B, XXX)\n"
+     ++ "22B = (22C, 22C)\n"
+     ++ "22C = (22Z, 22Z)\n"
+     ++ "22Z = (22B, 22B)\n"
+     ++ "XXX = (XXX, XXX)\n"
+
+run2Test :: Test
+run2Test = "run2" ~: run2 (parseIn inEx3)
+  ~?= [["11A", "22A"],
+       ["11B", "22B"],
+       ["11Z", "22C"],
+       ["11B", "22Z"],
+       ["11Z", "22B"],
+       ["11B", "22C"]]
+
+solve2Test :: Test
+solve2Test = "solve2" ~: solve2 (parseIn inEx3) ~?= 6
+
 tests2 :: Test
-tests2 = "part2" ~: True ~? "stub"
+tests2 = "part2" ~: test [run2Test, solve2Test]
+
+-- main
 
 main :: IO ()
 main = do
