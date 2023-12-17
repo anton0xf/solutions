@@ -48,8 +48,14 @@ solve1Test = "solve1" ~: solve1 intsEx ~?= 114
 tests1 :: Test
 tests1 = "part 1" ~: test [intPTest, parseInTest, diffsTest, allDiffsTest, nextIntTest, solve1Test]
 
+prevIntTest :: Test
+prevIntTest = "prevInt" ~: map prevInt intsEx ~?= [-3, 0, 5]
+
+solve2Test :: Test
+solve2Test = "solve2" ~: solve2 intsEx ~?= 2
+
 tests2 :: Test
-tests2 = "part 2" ~: test [True ~? "stub"]
+tests2 = "part 2" ~: test [prevIntTest, solve2Test]
 
 -- main
 

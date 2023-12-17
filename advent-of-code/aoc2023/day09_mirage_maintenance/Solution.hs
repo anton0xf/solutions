@@ -54,11 +54,21 @@ solution solve = do
 solution1 :: IO ()
 solution1 = solution solve1
 
+-- part 2
+prevInt :: [Integer] -> Integer
+prevInt = foldr ((-) . head) 0 . allDiffs
+
+solve2 :: [[Integer]] -> Integer
+solve2 = sum . map prevInt
+
+solution2 :: IO ()
+solution2 = solution solve2
+
 -- main
 
 main :: IO ()
 main = do
   putStr "Part 1: "
   solution1
-  -- putStr "Part 2: "
-  -- solution2
+  putStr "Part 2: "
+  solution2
