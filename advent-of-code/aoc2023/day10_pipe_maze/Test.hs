@@ -27,7 +27,8 @@ mazeEx1 = Maze { start = (1,1),
                  pipes = Map.fromList [
                    ((1, 1), 'S'), ((1, 2), '-'), ((1, 3), '7'),
                    ((2, 1), '|'), ((2, 3), '|'),
-                   ((3, 1), 'L'), ((3, 2), '-'), ((3, 3), 'J')]}
+                   ((3, 1), 'L'), ((3, 2), '-'), ((3, 3), 'J')],
+                 size = (5, 5)}
 
 parseInTest :: Test
 parseInTest = "parseIn" ~: convMaze (parseIn mazeInEx1) ~?= mazeEx1
@@ -45,7 +46,7 @@ adjTest = "adj" ~: test [
   where m = pipes mazeEx1
 
 bfsiTest :: Test
-bfsiTest = "bfsi" ~: let (Maze start m) = mazeEx1
+bfsiTest = "bfsi" ~: let (Maze start m _) = mazeEx1
   in (iterate (bfsi m) (Set.empty, Set.singleton start) & map snd & take 6)
      ~?= [Set.fromList [(1,1)],
           Set.fromList [(1,2),(2,1)],
@@ -73,8 +74,14 @@ mazeInEx2 = "...........\n"
          ++ ".L--J.L--J.\n"
          ++ "...........\n"
 
+diagsTest :: Test
+diagsTest = "diags" ~: diags (2, 3) ~?= [[(0, 0)], [(1, 0), (0, 1)], [(1, 1), (0, 2)], [(1, 2)]]
+
+solve2Test :: Test
+solve2Test = "solve2" ~: solve2 (parseIn mazeInEx2) ~?= 4
+
 tests2 :: Test
-tests2 = "part 2" ~: test [solve2 (parseIn mazeInEx2) ~?= 4]
+tests2 = "part 2" ~: test [diagsTest, solve2Test]
 
 -- main
 

@@ -17,7 +17,7 @@ import qualified Data.Set as Set
 
 type Loc = (Int, Int) -- (row, col), 0-based
 
-data Maze = Maze { start :: Loc, pipes :: Map Loc Char }
+data Maze = Maze { start :: Loc, pipes :: Map Loc Char, size :: Loc }
   deriving (Show, Eq)
 
 isPipe :: Char -> Bool
@@ -43,7 +43,7 @@ convMaze css = let
       locs = concat $ zipWith convRow [0..] css
       pipes = filter (isPipe . snd) locs
       start = fromJust $ find (isStart . snd) pipes
-  in Maze (fst start) (Map.fromList pipes)
+  in Maze (fst start) (Map.fromList pipes) (length css, length (head css))
 
 parseIn :: String -> [String]
 parseIn = tryParse mazeP
@@ -98,7 +98,7 @@ bfsi m (visited, q) = let
   in (visited', adjs)
 
 solve1 :: [String] -> Integer
-solve1 maze = let (Maze start m) = convMaze maze
+solve1 maze = let (Maze start m _) = convMaze maze
   in (Set.empty, Set.singleton start) & iterate (bfsi m)
      & takeWhile (not . Set.null . snd) & length & pred & fromIntegral
 
@@ -113,19 +113,36 @@ solution1 :: IO ()
 solution1 = solution solve1
 
 -- part 2
-solve2 :: [String] -> Integer
-solve2 maze = let
-      (Maze start m) = convMaze maze
+
+-- size of bounds -> loc -> is loc in bounds
+inBounds :: Loc -> Loc -> Bool
+inBounds (n, m) (row, col) = row < n && col < m
+
+-- size -> d -> locs
+-- where d is sum of coordinates of any of locs
+diag :: Loc -> Int -> [Loc]
+diag size d = filter (inBounds size) $ zip [d, (d-1) .. 0] [0 .. d]
+
+diags :: Loc -> [[Loc]]
+diags size@(n, m) = map (diag size) [0 .. (n + m - 2)]
+
+countTiles :: Map Loc Char -> Set Loc -> [Loc] -> Integer
+countTiles m path = snd . foldl step (0, 0)
+  where step (pipes, tiles) loc@(row, col)
+          | loc `Set.member` path = let ch = m ! loc
+            in (pipes + if ch `elem` "FJS" then 0 else 1, tiles)
+          | odd pipes             = (pipes, tiles + 1)
+          | otherwise             = (pipes, tiles)  
+
+solve2' :: [String] -> [Integer]
+solve2' maze = let
+      (Maze start m size) = convMaze maze
       path = (Set.empty, Set.singleton start) & iterate (bfsi m)
-             & takeWhile (not . Set.null . snd) & last & fst
-      countStep (pipes, tiles) (loc, ch)
-        | ch == '-'             = (pipes, tiles)
-        | loc `Set.member` path = (pipes + 1, tiles)
-        | odd pipes             = (pipes, tiles + 1)
-        | otherwise             = (pipes, tiles)
-      countInRow row s = snd $ foldl countStep (0, 0)
-        $ zipWith (\col ch -> ((row, col), ch)) [0..] s
-  in sum $ zipWith countInRow [0..] maze
+             & dropWhile (not . Set.null . snd) & head & fst
+  in map (countTiles m path) (diags size)
+
+solve2 :: [String] -> Integer
+solve2 = sum . solve2'
 
 solution2 :: IO ()
 solution2 = solution solve2
