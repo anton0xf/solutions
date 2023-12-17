@@ -79,25 +79,16 @@ isStart = (== 'A') . last
 isFinish :: String -> Bool
 isFinish = (== 'Z') . last
 
-step2 :: NetSearch -> [String] -> Char -> [String]
-step2 s nodes c = map (command c . s) nodes
+run2 :: NetSearch -> [Char] -> String -> [String]
+run2 s cmds start = takeWhile (not . isFinish) $ scanl (step s) start cmds
 
-run2 :: NetMap -> [[String]]
-run2 (NetMap commands rules) = let
+solve2 :: NetMap -> Integer
+solve2 (NetMap commands rules) = let
       s = netSearch rules
       cmds = cycle commands
       start = filter isStart $ map node rules
-  in takeWhile (not . all isFinish) $ scanl' (step2 s) start cmds
-
-solve2 :: NetMap -> Integer
--- solve2 = fromIntegral . length . run2
-solve2 (NetMap commands rules) = let
-      s = netSearch rules
-      cmds = cycle $ map command commands
-      start = filter isStart $ map node rules
-      st (cmd : cmds) n nodes = if all isFinish nodes then n
-        else st cmds (n + 1) (map (cmd . s) nodes)
-  in st cmds 0 start
+      ns = map (fromIntegral . length . run2 s cmds) start
+  in foldr lcm 1 ns -- WAT!!? -- TODO
 
 solution2 :: IO ()
 solution2 = solution solve2

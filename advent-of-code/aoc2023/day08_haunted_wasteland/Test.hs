@@ -79,20 +79,11 @@ inEx3 = "LR\n"
      ++ "22Z = (22B, 22B)\n"
      ++ "XXX = (XXX, XXX)\n"
 
-run2Test :: Test
-run2Test = "run2" ~: run2 (parseIn inEx3)
-  ~?= [["11A", "22A"],
-       ["11B", "22B"],
-       ["11Z", "22C"],
-       ["11B", "22Z"],
-       ["11Z", "22B"],
-       ["11B", "22C"]]
-
 solve2Test :: Test
 solve2Test = "solve2" ~: solve2 (parseIn inEx3) ~?= 6
 
 tests2 :: Test
-tests2 = "part2" ~: test [run2Test, solve2Test]
+tests2 = "part2" ~: test [solve2Test]
 
 -- main
 
