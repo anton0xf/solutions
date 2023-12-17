@@ -45,8 +45,8 @@ convMaze css = let
       start = fromJust $ find (isStart . snd) pipes
   in Maze (fst start) (Map.fromList pipes)
 
-parseIn :: String -> Maze
-parseIn = convMaze . tryParse mazeP
+parseIn :: String -> [String]
+parseIn = tryParse mazeP
 
 -- part 1
 
@@ -90,23 +90,19 @@ adjInDir m loc dir = do
 adj :: Map Loc Char -> Loc -> [Loc]
 adj m loc = mapMaybe (adjInDir m loc) (charDirs $ m ! loc)
 
+-- pipes map -> (visited, q) -> (visited', q')
 bfsi :: Map Loc Char -> (Set Loc, Set Loc) -> (Set Loc, Set Loc)
 bfsi m (visited, q) = let
       visited' = Set.union visited q
       adjs = Set.fromList (concatMap (adj m) q) \\ visited'
   in (visited', adjs)
 
-bfs :: Map Loc Char -> Integer -> Set Loc -> Set Loc -> Integer
-bfs m n visited q = let
-      visited' = Set.union visited q
-      adjs = Set.fromList (concatMap (adj m) q) \\ visited'
-  in if Set.null adjs then n
-     else bfs m (n + 1) visited' adjs
+solve1 :: [String] -> Integer
+solve1 maze = let (Maze start m) = convMaze maze
+  in (Set.empty, Set.singleton start) & iterate (bfsi m)
+     & takeWhile (not . Set.null . snd) & length & pred & fromIntegral
 
-solve1 :: Maze -> Integer
-solve1 (Maze start m) = bfs m 0 Set.empty (Set.singleton start)
-
-solution :: (Maze -> Integer) -> IO ()
+solution :: ([String] -> Integer) -> IO ()
 solution solve = do
   fh <- openFile "input.txt" ReadMode
   input <- hGetContents fh
@@ -117,8 +113,19 @@ solution1 :: IO ()
 solution1 = solution solve1
 
 -- part 2
-solve2 :: Maze -> Integer
-solve2 _ = 0
+solve2 :: [String] -> Integer
+solve2 maze = let
+      (Maze start m) = convMaze maze
+      path = (Set.empty, Set.singleton start) & iterate (bfsi m)
+             & takeWhile (not . Set.null . snd) & last & fst
+      countStep (pipes, tiles) (loc, ch)
+        | ch == '-'             = (pipes, tiles)
+        | loc `Set.member` path = (pipes + 1, tiles)
+        | odd pipes             = (pipes, tiles + 1)
+        | otherwise             = (pipes, tiles)
+      countInRow row s = snd $ foldl countStep (0, 0)
+        $ zipWith (\col ch -> ((row, col), ch)) [0..] s
+  in sum $ zipWith countInRow [0..] maze
 
 solution2 :: IO ()
 solution2 = solution solve2

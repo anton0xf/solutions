@@ -30,7 +30,7 @@ mazeEx1 = Maze { start = (1,1),
                    ((3, 1), 'L'), ((3, 2), '-'), ((3, 3), 'J')]}
 
 parseInTest :: Test
-parseInTest = "parseIn" ~: parseIn mazeInEx1 ~?= mazeEx1
+parseInTest = "parseIn" ~: convMaze (parseIn mazeInEx1) ~?= mazeEx1
 
 adjTest :: Test
 adjTest = "adj" ~: test [
@@ -55,15 +55,26 @@ bfsiTest = "bfsi" ~: let (Maze start m) = mazeEx1
           Set.fromList []]
 
 solve1Test :: Test
-solve1Test = "solve1" ~: solve1 mazeEx1 ~?= 4
+solve1Test = "solve1" ~: solve1 (parseIn mazeInEx1) ~?= 4
 
 tests1 :: Test
 tests1 = "part 1" ~: test [parseInTest, adjTest, bfsiTest, solve1Test]
 
 -- part 2
 
+mazeInEx2 :: String
+mazeInEx2 = "...........\n"
+         ++ ".S-------7.\n"
+         ++ ".|F-----7|.\n"
+         ++ ".||.....||.\n"
+         ++ ".||.....||.\n"
+         ++ ".|L-7.F-J|.\n"
+         ++ ".|..|.|..|.\n"
+         ++ ".L--J.L--J.\n"
+         ++ "...........\n"
+
 tests2 :: Test
-tests2 = "part 2" ~: test [True ~? "stub"]
+tests2 = "part 2" ~: test [solve2 (parseIn mazeInEx2) ~?= 4]
 
 -- main
 
