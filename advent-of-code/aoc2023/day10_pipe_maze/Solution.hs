@@ -128,7 +128,7 @@ diags size@(n, m) = map (diag size) [0 .. (n + m - 2)]
 
 countTiles :: Map Loc Char -> Set Loc -> [Loc] -> Integer
 countTiles m path = snd . foldl step (0, 0)
-  where step (pipes, tiles) loc@(row, col)
+  where step (pipes, tiles) loc
           | loc `Set.member` path = let ch = m ! loc
             in (pipes + if ch `elem` "FJS" then 0 else 1, tiles)
           | odd pipes             = (pipes, tiles + 1)
