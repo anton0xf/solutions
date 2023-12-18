@@ -59,13 +59,13 @@ emptyColsTest :: Test
 emptyColsTest = "emptyCols" ~: emptyCols boundsEx locsEx ~?= emptyColsEx
 
 expandEmptyRowsTest :: Test
-expandEmptyRowsTest = "expandEmptyRows" ~: expandEmptyRows emptyRowsEx locsEx ~?= locsEREx
+expandEmptyRowsTest = "expandEmptyRows" ~: expandEmptyRows 1 emptyRowsEx locsEx ~?= locsEREx
 
 expandEmptyColsTest :: Test
-expandEmptyColsTest = "expandEmptyCols" ~: expandEmptyCols emptyColsEx locsEREx ~?= locsEEx
+expandEmptyColsTest = "expandEmptyCols" ~: expandEmptyCols 1 emptyColsEx locsEREx ~?= locsEEx
 
 expandTest :: Test
-expandTest = "expand" ~: expand boundsEx locsEx ~?= locsEEx
+expandTest = "expand" ~: expand 1 boundsEx locsEx ~?= locsEEx
 
 manhattanTest :: Test
 manhattanTest = "manhattan" ~: manhattan (6, 1) (11, 5) ~?= 9
@@ -88,8 +88,13 @@ tests1 = "part 1" ~: test [
 
 -- part 2
 
+solveTest :: Test
+solveTest = "solve" ~: test [
+  "10" ~: solve 9 inEx ~?= 1030,
+  "100" ~: solve 99 inEx ~?= 8410]
+
 tests2 :: Test
-tests2 = "part 2" ~: test [True ~? "stub"]
+tests2 = "part 2" ~: test [solveTest]
 
 -- main
 

@@ -62,25 +62,25 @@ emptyCols ((_, minCol), (_, maxCol)) locs = let
   in filter (not . (`Set.member` cols)) [minCol .. maxCol]
 
 -- asc ordered rows' nums -> locs -> new locs
-expandEmptyRows :: [Integer] -> [Loc] -> [Loc]
-expandEmptyRows rows locs = foldr (map . incGtRows) locs rows
+expandEmptyRows :: Integer -> [Integer] -> [Loc] -> [Loc]
+expandEmptyRows n rows locs = foldr (map . incGtRows) locs rows
   where incGtRows emptyRow loc@(row, col) = if row > emptyRow
-          then (row + 1, col) else loc
+          then (row + n, col) else loc
 
 -- asc ordered cols' nums -> locs -> new locs
-expandEmptyCols :: [Integer] -> [Loc] -> [Loc]
-expandEmptyCols cols locs = foldr (map . incGtCols) locs cols
+expandEmptyCols :: Integer -> [Integer] -> [Loc] -> [Loc]
+expandEmptyCols n cols locs = foldr (map . incGtCols) locs cols
   where incGtCols emptyCol loc@(row, col) = if col > emptyCol
-          then (row, col + 1) else loc
+          then (row, col + n) else loc
 
-expand :: Bounds -> [Loc] -> [Loc]
-expand bounds locs = let
+expand :: Integer -> Bounds -> [Loc] -> [Loc]
+expand n bounds locs = let
     rs = emptyRows bounds locs
     cs = emptyCols bounds locs
-  in expandEmptyCols cs . expandEmptyRows rs $ locs
+  in expandEmptyCols n cs . expandEmptyRows n rs $ locs
 
-expand' :: [Loc] -> [Loc]
-expand' locs = expand (bounds locs) locs
+expand' :: Integer -> [Loc] -> [Loc]
+expand' n locs = expand n (bounds locs) locs
 
 manhattan :: Loc -> Loc -> Integer
 manhattan (r1, c1) (r2, c2) = fromIntegral $ abs (r2 - r1) + abs (c2 - c1)
@@ -93,8 +93,11 @@ pairsOf (x : xs) = map (x,) xs ++ pairsOf xs
 allDists :: [Loc] -> [Integer]
 allDists = map (uncurry manhattan) . pairsOf
 
+solve :: Integer -> String -> Integer
+solve n = sum . allDists . expand' n . parseIn
+
 solve1 :: String -> Integer
-solve1 = sum . allDists . expand' . parseIn
+solve1 = solve 1
 
 solution :: (String -> Integer) -> IO ()
 solution solve = do
@@ -109,7 +112,7 @@ solution1 = solution solve1
 -- part 2
 
 solve2 :: String -> Integer
-solve2 _ = 0
+solve2 = solve (1000000 - 1)
 
 solution2 :: IO ()
 solution2 = solution solve2
