@@ -17,7 +17,7 @@ import qualified Data.Set as Set
 
 -- data
 
-type Loc = (Int, Int) -- (row, col), 0-based
+type Loc = (Integer, Integer) -- (row, col), 0-based
 type Bounds = (Loc, Loc) -- (top left corner, bottom right corner) inclusive
 
 -- parsing
@@ -29,7 +29,8 @@ emptyP :: Parsec String u ()
 emptyP = skipMany $ char '.'
 
 sourceLoc :: SourcePos -> Loc
-sourceLoc pos = (sourceLine pos - 1, sourceColumn pos - 1)
+sourceLoc pos = (fromIntegral $ sourceLine pos - 1,
+                 fromIntegral $ sourceColumn pos - 1)
 
 starP :: Parsec String u Loc
 starP = (sourceLoc <$> getPosition) <* char '#'
@@ -49,25 +50,25 @@ bounds locs = let rows = map fst locs
                   (maximum rows, maximum cols))
 
 -- return asc ordered list of empty rows' nums
-emptyRows :: Bounds -> [Loc] -> [Int]
+emptyRows :: Bounds -> [Loc] -> [Integer]
 emptyRows ((minRow, _), (maxRow, _)) locs = let
       rows = Set.fromList $ map fst locs
   in filter (not . (`Set.member` rows)) [minRow .. maxRow]
 
 -- return asc ordered list of empty cols' nums
-emptyCols :: Bounds -> [Loc] -> [Int]
+emptyCols :: Bounds -> [Loc] -> [Integer]
 emptyCols ((_, minCol), (_, maxCol)) locs = let
       cols = Set.fromList $ map snd locs
   in filter (not . (`Set.member` cols)) [minCol .. maxCol]
 
 -- asc ordered rows' nums -> locs -> new locs
-expandEmptyRows :: [Int] -> [Loc] -> [Loc]
+expandEmptyRows :: [Integer] -> [Loc] -> [Loc]
 expandEmptyRows rows locs = foldr (map . incGtRows) locs rows
   where incGtRows emptyRow loc@(row, col) = if row > emptyRow
           then (row + 1, col) else loc
 
 -- asc ordered cols' nums -> locs -> new locs
-expandEmptyCols :: [Int] -> [Loc] -> [Loc]
+expandEmptyCols :: [Integer] -> [Loc] -> [Loc]
 expandEmptyCols cols locs = foldr (map . incGtCols) locs cols
   where incGtCols emptyCol loc@(row, col) = if col > emptyCol
           then (row, col + 1) else loc

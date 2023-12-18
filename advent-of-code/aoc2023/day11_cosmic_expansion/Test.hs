@@ -34,10 +34,10 @@ locsEx = [(0, 3), (1, 7), (2, 0), (4, 6), (5, 1), (6, 9), (8, 7), (9, 0), (9, 4)
 boundsEx :: Bounds
 boundsEx = ((0, 0), (9, 9))
 
-emptyRowsEx :: [Int]
+emptyRowsEx :: [Integer]
 emptyRowsEx = [3, 7]
 
-emptyColsEx :: [Int]
+emptyColsEx :: [Integer]
 emptyColsEx = [2, 5, 8]
 
 locsEREx :: [Loc]
