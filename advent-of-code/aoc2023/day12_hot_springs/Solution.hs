@@ -66,7 +66,7 @@ instance Applicative (Prs s) where
 charPrs :: Char -> Prs s Char
 charPrs ch = Prs p where
   p _ "" = []
-  p st (ch:chs) = [((st, chs), ch) | ch == ch]
+  p st (h:chs) = [((st, chs), ch) | h == ch]
 
 stringPrs :: String -> Prs s String
 stringPrs "" = pure ""
@@ -77,6 +77,10 @@ orPrs (Prs p1) (Prs p2) = Prs p where
   p st chs = let r1 = p1 st chs
                  r2 = p2 st chs
              in if null r1 then r2 else r1
+
+varintPrs :: Prs s v -> Prs s v -> Prs s v
+varintPrs (Prs p1) (Prs p2) = Prs p where
+  p st chs = p1 st chs ++ p2 st chs
 
 manyPrs :: Prs s v -> Prs s [v]
 manyPrs p = ((:) <$> p <*> manyPrs p) `orPrs` pure []
