@@ -3,8 +3,9 @@ module Solution where
 
 import Data.Maybe
 import Data.List hiding ((\\))
-import Data.Function ((&))
 import Data.Ord
+import Data.Function ((&))
+import Data.Functor
 import Data.Bifunctor
 import System.IO
 import Text.Parsec hiding (space, spaces)
@@ -46,7 +47,7 @@ tryGetGroup "" _ = Nothing
 tryGetGroup ('.':_) _ = Nothing
 tryGetGroup (c:s) n = first ('#':) <$> tryGetGroup s (n-1)
 
--- arrangements
+-- Prs
 newtype Prs s v = Prs { runPrs :: s -> String -> [((s, String), v)] }
 
 instance Functor (Prs s) where
@@ -63,10 +64,23 @@ instance Applicative (Prs s) where
         ap ((st', chs'), f) = fmap f <$> px st' chs'
     in concatMap ap fs
 
+updStPrs :: (s -> s) -> Prs s ()
+updStPrs f = Prs $ \st chs -> [((f st, chs), ())]
+
 charPrs :: Char -> Prs s Char
 charPrs ch = Prs p where
   p _ "" = []
   p st (h:chs) = [((st, chs), ch) | h == ch]
+
+anyCharPrs :: Prs s Char
+anyCharPrs = Prs p where
+  p _ "" = []
+  p st (ch:chs) = [((st, chs), ch)]
+
+satisfyPrs :: (Char -> Bool) -> Prs s Char
+satisfyPrs pred = Prs p where
+  p _ "" = []
+  p st (ch:chs) = [((st, chs), ch) | pred ch]
 
 stringPrs :: String -> Prs s String
 stringPrs "" = pure ""
@@ -78,8 +92,8 @@ orPrs (Prs p1) (Prs p2) = Prs p where
                  r2 = p2 st chs
              in if null r1 then r2 else r1
 
-varintPrs :: Prs s v -> Prs s v -> Prs s v
-varintPrs (Prs p1) (Prs p2) = Prs p where
+variantPrs :: Prs s v -> Prs s v -> Prs s v
+variantPrs (Prs p1) (Prs p2) = Prs p where
   p st chs = p1 st chs ++ p2 st chs
 
 manyPrs :: Prs s v -> Prs s [v]
@@ -88,23 +102,51 @@ manyPrs p = ((:) <$> p <*> manyPrs p) `orPrs` pure []
 many1Prs :: Prs s v -> Prs s [v]
 many1Prs p = (:) <$> p <*> (manyPrs p `orPrs` pure [])
 
-manyWorkingPrs :: Prs s String
-manyWorkingPrs = manyPrs $ charPrs '.'
+countPrs :: Int -> Prs s v -> Prs s [v]
+countPrs 0 _ = pure []
+countPrs n p = (:) <$> p <*> countPrs (n-1) p
 
+pairList :: a -> a -> [a]
+pairList x y = [x, y]
 
+-- separated and enclosed by 
+sepEncByPrs :: Prs s v -> Prs s v -> Prs s [v]
+sepEncByPrs p sep = (:) <$> sep <*> (concat <$> manyPrs (pairList <$> p <*> sep))
 
-arrs :: String -> Row -> [String]
-arrs p (Row "" []) = [p]
-arrs p (Row ('.':s) gs) = arrs (p ++ ".") (Row s gs)
-arrs _ (Row _ []) = []
-arrs p (Row s@('#':_) (n:gs)) = case tryGetGroup s n of
-  Just (p', s') -> arrs (p ++ p') (Row s' gs)
-  Nothing -> []
-arrs p (Row ('?':s) (n:gs)) = arrs (p ++ "#") (Row s (n-1:gs))
-  ++ arrs (p ++ ".") (Row s (n:gs))
+-- arrangements
+type ArrPrs v = Prs (Bool, [Int]) v
+
+setSep :: Bool -> ArrPrs ()
+setSep b = updStPrs $ first $ const b
+
+setGroups :: [Int] -> ArrPrs ()
+setGroups gs = updStPrs $ second $ const gs
+
+readWorking :: ArrPrs Char
+readWorking = charPrs '.' <* setSep True
+
+readNotWorking :: ArrPrs Char
+readNotWorking = satisfyPrs (/= '.') $> '#' <* setSep False
+
+readGroup :: ArrPrs String
+readGroup = Prs p where
+  p (True, []) _ = []
+  p st@(True, g:gs) chs@(ch:_) = runPrs (countPrs g readNotWorking <* setGroups gs) st chs
+  p _ _ = []
+
+readMaybeWorking :: ArrPrs String
+readMaybeWorking = charPrs '?' $> "." <* setSep True
+
+readArrs :: Prs (Bool, [Int]) String
+-- readArrs = (++) <$> manyPrs readWorking <*> variantPrs readMaybeWorking readGroup
+readArrs = concat <$> sepEncByPrs (variantPrs readMaybeWorking readGroup) (manyPrs readWorking)
+
+arrs :: Row -> [String]
+arrs (Row chs gs) = map snd . filter parsed . runPrs readArrs (True, gs) $ chs
+  where parsed (((_, gs), chs), str) = null gs && null chs
 
 solve1 :: String -> Integer
-solve1 _ = 0
+solve1 = sum . map (fromIntegral . length . arrs) . parseIn
 
 solution :: (String -> Integer) -> IO ()
 solution solve = do
@@ -118,8 +160,14 @@ solution1 = solution solve1
 
 -- part 2
 
+unfoldRow :: Int -> Row -> Row
+unfoldRow n (Row chs gs) = Row (intercalate "?" $ replicate n chs) (concat $ replicate n gs)
+
+arrs2 :: Row -> [String]
+arrs2 = arrs . unfoldRow 5
+
 solve2 :: String -> Integer
-solve2 _ = 0
+solve2 = sum . map (fromIntegral . length . arrs2) . parseIn
 
 solution2 :: IO ()
 solution2 = solution solve2

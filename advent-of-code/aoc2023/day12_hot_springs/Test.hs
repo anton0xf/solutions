@@ -43,21 +43,31 @@ tryGetGroupTest = "tryGetGroup" ~: test [
 
 arrsTest :: Test
 arrsTest = "arrs" ~: test [
-  arrs "." (Row "" []) ~?= ["."],
-  arrs "" (Row "." []) ~?= ["."],
-  arrs "" (Row "#" [1]) ~?= ["#"],
-  arrs "" (Row "?" [1]) ~?= ["#"],
-  arrs "" (Row "##" [1]) ~?= [],
-  arrs "" (Row "##" [2]) ~?= ["##"],
-  arrs "" (Row "#.#" [2]) ~?= []]
+  arrs (Row "." []) ~?= ["."],
+  arrs (Row "#" [1]) ~?= ["#"],
+  arrs (Row "?" [1]) ~?= ["#"],
+  arrs (Row "##" [1]) ~?= [],
+  arrs (Row "##" [2]) ~?= ["##"],
+  arrs (Row "#.#" [2]) ~?= [],
+  "full ex" ~: map (length . arrs) rowsEx ~?= [1, 4, 1, 1, 4, 10]]
+
+solve1Test :: Test
+solve1Test = "solve1" ~: solve1 inEx ~?= 21
 
 tests1 :: Test
-tests1 = "part 1" ~: test [parseInTest, tryGetGroupTest, arrsTest]
+tests1 = "part 1" ~: test [parseInTest, tryGetGroupTest, arrsTest, solve1Test]
 
 -- part 2
 
+arrs2Test :: Test
+arrs2Test = "arrs2" ~: test [
+  "full ex" ~: map (length . arrs2) rowsEx ~?= [1, 16384, 1, 16, 2500, 506250]]
+
+solve2Test :: Test
+solve2Test = "solve2" ~: solve2 inEx ~?= 525152
+
 tests2 :: Test
-tests2 = "part 2" ~: test [True ~? "stub"]
+tests2 = "part 2" ~: test [arrs2Test, solve2Test]
 
 -- main
 
