@@ -65,5 +65,18 @@ unCmpsTest = (pure 42 :: ([] |.| [] |.| []) Int) == Cmps [Cmps [[42]]]
   && unCmps3 (pure 42 :: ([] |.| Maybe |.| []) Int) == [Just [42]]
   && unCmps4 (pure 42 :: ([] |.| [] |.| [] |.| []) Int) == [[[[42]]]]
 
+{- https://stepik.org/lesson/30427/step/16?unit=11044
+2.1.16. Класс типов Foldable
+Сделайте тип Cmps представителем класса типов Foldable при условии,
+что аргументы композиции являются представителями Foldable. -}
+
+instance (Foldable f, Foldable g) => Foldable (f |.| g) where
+  foldMap :: Monoid m => (a -> m) -> (f |.| g) a -> m
+  foldMap h (Cmps fgx) = foldMap (foldMap h) fgx
+
+cmpsFoldableTest :: Bool
+cmpsFoldableTest = maximum (Cmps [Nothing, Just 2, Just 3]) == 3
+  && length (Cmps [[1, 2], [], [3, 4, 5, 6, 7]]) == 7
+
 test :: Bool
-test = apTest && unCmpsTest
+test = apTest && unCmpsTest && cmpsFoldableTest
