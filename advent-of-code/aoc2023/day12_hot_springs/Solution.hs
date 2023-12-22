@@ -145,8 +145,52 @@ arrs :: Row -> [String]
 arrs (Row chs gs) = map snd . filter parsed . runPrs readArrs (True, gs) $ chs
   where parsed (((_, gs), chs), str) = null gs && null chs
 
+-- compress row
+type NChars = (Char, Int)
+
+compressChs :: String -> [NChars]
+compressChs "" = []
+compressChs chs@(ch:_) = let (nch, chs') = span (== ch) chs
+                         in (ch, length nch) : compressChs chs'
+
+data CRow = CRow [NChars] [Int] deriving (Show, Eq)
+
+compressRow :: Row -> CRow
+compressRow (Row chs gs) = CRow (compressChs chs) gs
+
+-- CRow arrangements
+-- sep -> row -> compressed strings
+arrsc :: Bool -> CRow -> [[NChars]]
+arrsc _ (CRow [] []) = [[]]
+arrsc _ (CRow (ch@('.', _):chs) gs) = (++) <$> [[ch]] <*> arrsc True (CRow chs gs)
+arrsc False (CRow (('#', _) : _) _) = []
+arrsc True (CRow chs@(('#', _) : _) (g : gs)) = case readNW g chs of
+      Nothing -> []
+      Just chs' -> (++) <$> [[('#', g)]] <*> arrsc False (CRow chs' gs)
+arrsc sep (CRow (ch@('?', n) : chs) (g : gs)) = do
+  n' <- [(if sep then 0 else 1) .. n]
+  chs' <- maybeToList $ readNW g (('?', n - n') : chs)
+  rest <- arrsc False (CRow chs' gs)
+  return $ [('.', n') | n' /= 0] ++ ('#', g) : rest
+
+-- try to read g not-working chars ('#' or '?') and return rest of chs
+readNW :: Int -> [NChars] -> Maybe [NChars]
+readNW 0 chs = Just chs
+readNW _ [] = Nothing
+readNW _ (('.', _) : _) = Nothing
+readNW g (('#', n) : chs)
+  | g <  n = Nothing
+  | g == n = Just chs
+  | g >  n = readNW (g - n) chs
+readNW g (('?', n) : chs)
+  | g <  n = Just $ ('?', n - g) : chs
+  | g == n = Just chs
+  | g >  n = readNW (g - n) chs
+
+-- solution 1
+
 solve1 :: String -> Integer
-solve1 = sum . map (fromIntegral . length . arrs) . parseIn
+solve1 = sum . map (fromIntegral . length . arrsc True . compressRow) . parseIn
 
 solution :: (String -> Integer) -> IO ()
 solution solve = do
@@ -163,8 +207,8 @@ solution1 = solution solve1
 unfoldRow :: Int -> Row -> Row
 unfoldRow n (Row chs gs) = Row (intercalate "?" $ replicate n chs) (concat $ replicate n gs)
 
-arrs2 :: Row -> [String]
-arrs2 = arrs . unfoldRow 5
+arrs2 :: Row -> [[NChars]]
+arrs2 = arrsc True . compressRow . unfoldRow 5
 
 solve2 :: String -> Integer
 solve2 = sum . map (fromIntegral . length . arrs2) . parseIn
