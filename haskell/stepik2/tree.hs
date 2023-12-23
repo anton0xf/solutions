@@ -66,5 +66,23 @@ foldTest = let
      && foldr (:) [] (PostO tree) == [2, 1, 4, 3]
      && foldr (:) [] (LevelO tree) == [3, 1, 4, 2]
 
+{- https://stepik.org/lesson/30428/step/7?unit=11045
+2.2.7. Класс типов Traversable
+Реализуйте функцию -}
+
+traverse2list :: (Foldable t, Applicative f) => (a -> f b) -> t a -> f [b]
+traverse2list h = foldr (\x acc -> (:) <$> h x <*> acc) (pure [])
+
+{- работающую с эффектами как traverse_, , но параллельно с накоплением
+эффектов «восстанавливающую» сворачиваемую структуру в виде списка: -}
+
+traverse2listTest :: Bool
+traverse2listTest = traverse2list (\x -> [x+10,x+20]) [1,2,3]
+       == [[11, 12, 13], [11, 12, 23], [11, 22, 13], [11, 22, 23],
+           [21, 12, 13], [21, 12, 23], [21, 22, 13], [21, 22, 23]]
+  && traverse2list (\x -> [x+10,x+20]) (PreO $ Branch (Branch Nil 1 Nil) 2 (Branch Nil 3 Nil))
+       == [[12, 11, 13], [12, 11, 23], [12, 21, 13], [12, 21, 23],
+           [22, 11, 13], [22, 11, 23], [22, 21, 13], [22, 21, 23]]
+
 test :: Bool
-test = foldTest
+test = foldTest && traverse2listTest
