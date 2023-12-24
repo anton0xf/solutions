@@ -49,13 +49,41 @@ arrsTest = "arrs" ~: test [
   arrs (Row "##" [1]) ~?= [],
   arrs (Row "##" [2]) ~?= ["##"],
   arrs (Row "#.#" [2]) ~?= [],
-  "full ex" ~: map (length . arrs) rowsEx ~?= [1, 4, 1, 1, 4, 10]]
+  "all ex" ~: map (length . arrs) rowsEx ~?= [1, 4, 1, 1, 4, 10]]
+
+arrscTest :: Test
+arrscTest = "arrsc" ~: test [
+  arrsc False (CRow [] [1]) ~?= [],
+  arrsc True (CRow [('.', 1)] []) ~?= [[('.', 1)]],
+  arrsc False (CRow [('.', 1)] []) ~?= [[('.', 1)]],
+  arrsc True (CRow [('#', 1)] [1]) ~?= [[('#', 1)]],
+  arrsc False (CRow [('#', 1)] [1]) ~?= [],
+  arrsc True (CRow [('#', 2)] [1]) ~?= [],
+  arrsc True (CRow [('#', 1)] [2]) ~?= [],
+  arrsc True (CRow [('#', 2)] [2]) ~?= [[('#', 2)]],
+  arrsc True (CRow [('#', 1), ('.', 1), ('#', 1)] [1, 1]) ~?= [[('#', 1), ('.', 1), ('#', 1)]],
+  arrsc False (CRow [('#', 1), ('.', 1), ('#', 1)] [1, 1]) ~?= [],
+  arrsc True (CRow [('#', 1), ('.', 1), ('#', 1)] [1]) ~?= [],
+  arrsc True (CRow [('#', 1), ('.', 1), ('#', 1)] [2]) ~?= [],
+  arrsc True (CRow [('?', 1)] [1]) ~?= [[('#', 1)]],
+  arrsc False (CRow [('?', 1)] [1]) ~?= [],
+  arrsc False (CRow [('?',1)] []) ~?= [[('.', 1)]],
+  arrsc True (CRow [('?', 1)] [2]) ~?= [],
+  arrsc True (CRow [('?', 2)] [1]) ~?= [[('#', 1), ('.', 1)], [('.', 1), ('#', 1)]],
+  arrsc False (CRow [('?', 2)] [1]) ~?= [[('.', 1), ('#', 1)]],
+  arrsc True (CRow [('?', 3)] [1, 1]) ~?= [[('#',1),('.',1),('#',1)]],
+  arrsc False (CRow [('?', 3)] [1, 1]) ~?= [],
+  arrsc False (CRow [('?', 1), ('.', 1), ('#', 1)] [1]) ~?= [[('.', 1), ('.', 1), ('#', 1)]],
+  un (arrsc True (comp $ Row "??.#" [1, 1])) ~?= ["#..#", ".#.#"],
+  "all ex" ~: map (length . arrsc True . compressRow) rowsEx ~?= [1, 4, 1, 1, 4, 10]]
+  where comp = compressRow
+        un = map uncompressNChs
 
 solve1Test :: Test
 solve1Test = "solve1" ~: solve1 inEx ~?= 21
 
 tests1 :: Test
-tests1 = "part 1" ~: test [parseInTest, tryGetGroupTest, arrsTest, solve1Test]
+tests1 = "part 1" ~: test [parseInTest, tryGetGroupTest, arrsTest, arrscTest, solve1Test]
 
 -- part 2
 
@@ -77,8 +105,14 @@ main = do
   if errors counts + failures counts == 0
     then exitSuccess else exitFailure
 
-{- unoptimized time:
+{-
+-- unoptimized time:
 $ time runghc Test.hs
 > Cases: 12  Tried: 12  Errors: 0  Failures: 0
 > runghc Test.hs  54,40s user 0,11s system 100% cpu 54,391 total
+
+-- using arrsc
+$ time runghc Test.hs
+> Cases: 35  Tried: 35  Errors: 0  Failures: 0
+> runghc Test.hs  8,37s user 0,23s system 100% cpu 8,582 total
 -}

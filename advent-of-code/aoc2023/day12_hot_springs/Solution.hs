@@ -153,25 +153,72 @@ compressChs "" = []
 compressChs chs@(ch:_) = let (nch, chs') = span (== ch) chs
                          in (ch, length nch) : compressChs chs'
 
+uncompressNChs :: [NChars] -> String
+uncompressNChs [] = ""
+uncompressNChs ((c, n) : chs) = replicate n c ++ uncompressNChs chs
+
 data CRow = CRow [NChars] [Int] deriving (Show, Eq)
 
 compressRow :: Row -> CRow
 compressRow (Row chs gs) = CRow (compressChs chs) gs
 
+uncompressRow :: CRow -> Row
+uncompressRow (CRow nchs gs) = Row (uncompressNChs nchs) gs
+
 -- CRow arrangements
 -- sep -> row -> compressed strings
 arrsc :: Bool -> CRow -> [[NChars]]
+-- empty tail
 arrsc _ (CRow [] []) = [[]]
-arrsc _ (CRow (ch@('.', _):chs) gs) = (++) <$> [[ch]] <*> arrsc True (CRow chs gs)
+-- empty string
+arrsc _ (CRow [] _) = []
+-- if there are no groups left then the tail can contain only dots (working springs)
+arrsc _ (CRow (('.', n) : chs) gs) = (:) <$> [('.', n)] <*> arrsc True (CRow chs gs)
+arrsc _ (CRow (('#', _) : _) []) = []
+arrsc _ (CRow (('?', n) : chs) []) = (:) <$> [('.', n)] <*> arrsc True (CRow chs [])
+-- '#' can't be sep
 arrsc False (CRow (('#', _) : _) _) = []
+-- '#' starts group
 arrsc True (CRow chs@(('#', _) : _) (g : gs)) = case readNW g chs of
       Nothing -> []
       Just chs' -> (++) <$> [[('#', g)]] <*> arrsc False (CRow chs' gs)
-arrsc sep (CRow (ch@('?', n) : chs) (g : gs)) = do
-  n' <- [(if sep then 0 else 1) .. n]
-  chs' <- maybeToList $ readNW g (('?', n - n') : chs)
-  rest <- arrsc False (CRow chs' gs)
-  return $ [('.', n') | n' /= 0] ++ ('#', g) : rest
+-- read some starting '?' as '.' then starts group
+-- or treat all '?' as '.'
+arrsc sep (CRow (ch@('?', n) : chs) (g : gs)) = readG ++ skipW
+   where readG = do
+           n' <- [(if sep then 0 else 1) .. (n - 1)]
+           chs' <- maybeToList $ readNW g (('?', n - n') : chs)
+           rest <- arrsc False (CRow chs' gs)
+           return $ [('.', n') | n' /= 0] ++ ('#', g) : rest
+         skipW = (:) <$> [('.', n)] <*> arrsc True (CRow chs (g : gs))
+
+-- arrsc True (compressRow $ Row "??.#" [1, 1]) & map uncompressNChs
+-- => [".#.#"] but should be ["#..#", ".#.#"]
+tt = let sep = True
+         ch = ('?', 2)
+         n = 2
+         chs = [('.', 1), ('#', 1)]
+         g = 1
+         gs = [1]
+  in do
+     n' <- [0 .. n]
+     chs' <- maybeToList $ readNW g (('?', n - n') : chs)
+     rest <- arrsc False (CRow chs' gs)
+     return $ [('.', n') | n' /= 0] ++ ('#', g) : rest
+
+-- arrsc False (CRow [('?',1),('.',1),('#',1)] [1])
+-- => [] but should be [('.',1),('.',1),('#',1)]
+tt2 = let sep = False
+          ch = ('?', 1)
+          n = 1
+          chs = [('.', 1), ('#', 1)]
+          g = 1
+          gs = []
+  in do
+     n' <- [1 .. n]
+     chs' <- maybeToList $ readNW g (('?', n - n') : chs)
+     rest <- arrsc False (CRow chs' gs)
+     return $ [('.', n') | n' /= 0] ++ ('#', g) : rest
 
 -- try to read g not-working chars ('#' or '?') and return rest of chs
 readNW :: Int -> [NChars] -> Maybe [NChars]
@@ -186,6 +233,14 @@ readNW g (('?', n) : chs)
   | g <  n = Just $ ('?', n - g) : chs
   | g == n = Just chs
   | g >  n = readNW (g - n) chs
+
+-- try to read only working chars ('.' or '?') to the end of string
+readRestW :: [NChars] -> Maybe Int
+readRestW [] = Just 0
+readRestW (('#',_) : _) = Nothing
+readRestW ((_, n) : chs) = do
+  n' <- readRestW chs
+  return (n + n')
 
 -- solution 1
 
