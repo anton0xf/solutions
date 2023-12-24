@@ -37,20 +37,6 @@ rowsEx = [Row "???.###" [1, 1, 3],
 parseInTest :: Test
 parseInTest = "parseIn" ~: parseIn inEx ~?= rowsEx
 
-tryGetGroupTest :: Test
-tryGetGroupTest = "tryGetGroup" ~: test [
-  tryGetGroup "#?#.." 3 ~?= Just ("###", "..") ]
-
-arrsTest :: Test
-arrsTest = "arrs" ~: test [
-  arrs (Row "." []) ~?= ["."],
-  arrs (Row "#" [1]) ~?= ["#"],
-  arrs (Row "?" [1]) ~?= ["#"],
-  arrs (Row "##" [1]) ~?= [],
-  arrs (Row "##" [2]) ~?= ["##"],
-  arrs (Row "#.#" [2]) ~?= [],
-  "all ex" ~: map (length . arrs) rowsEx ~?= [1, 4, 1, 1, 4, 10]]
-
 arrscTest :: Test
 arrscTest = "arrsc" ~: test [
   arrsc False (CRow [] [1]) ~?= [],
@@ -83,7 +69,7 @@ solve1Test :: Test
 solve1Test = "solve1" ~: solve1 inEx ~?= 21
 
 tests1 :: Test
-tests1 = "part 1" ~: test [parseInTest, tryGetGroupTest, arrsTest, arrscTest, solve1Test]
+tests1 = "part 1" ~: test [parseInTest, arrscTest, solve1Test]
 
 -- part 2
 

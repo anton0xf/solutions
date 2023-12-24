@@ -40,112 +40,6 @@ parseIn :: String -> [Row]
 parseIn = tryParse (endBy rowP newline)
 
 -- part 1
-
-tryGetGroup :: String -> Int -> Maybe (String, String)
-tryGetGroup s 0 = Just ("", s)
-tryGetGroup "" _ = Nothing
-tryGetGroup ('.':_) _ = Nothing
-tryGetGroup (c:s) n = first ('#':) <$> tryGetGroup s (n-1)
-
--- Prs
-newtype Prs s v = Prs { runPrs :: s -> String -> [((s, String), v)] }
-
-instance Functor (Prs s) where
-  fmap :: (a -> b) -> Prs s a -> Prs s b
-  fmap f = Prs . (fmap . fmap . fmap . fmap) f . runPrs
-
-instance Applicative (Prs s) where
-  pure :: a -> Prs s a
-  pure x = Prs $ \st chs -> [((st, chs), x)]
-  
-  (<*>) :: Prs s (a -> b) -> Prs s a -> Prs s b
-  (Prs pf) <*> (Prs px) = Prs $ \st chs -> let
-        fs = pf st chs
-        ap ((st', chs'), f) = fmap f <$> px st' chs'
-    in concatMap ap fs
-
-updStPrs :: (s -> s) -> Prs s ()
-updStPrs f = Prs $ \st chs -> [((f st, chs), ())]
-
-charPrs :: Char -> Prs s Char
-charPrs ch = Prs p where
-  p _ "" = []
-  p st (h:chs) = [((st, chs), ch) | h == ch]
-
-anyCharPrs :: Prs s Char
-anyCharPrs = Prs p where
-  p _ "" = []
-  p st (ch:chs) = [((st, chs), ch)]
-
-satisfyPrs :: (Char -> Bool) -> Prs s Char
-satisfyPrs pred = Prs p where
-  p _ "" = []
-  p st (ch:chs) = [((st, chs), ch) | pred ch]
-
-stringPrs :: String -> Prs s String
-stringPrs "" = pure ""
-stringPrs (ch:chs) = (:) <$> charPrs ch <*> stringPrs chs
-
-orPrs :: Prs s v -> Prs s v -> Prs s v
-orPrs (Prs p1) (Prs p2) = Prs p where
-  p st chs = let r1 = p1 st chs
-                 r2 = p2 st chs
-             in if null r1 then r2 else r1
-
-variantPrs :: Prs s v -> Prs s v -> Prs s v
-variantPrs (Prs p1) (Prs p2) = Prs p where
-  p st chs = p1 st chs ++ p2 st chs
-
-manyPrs :: Prs s v -> Prs s [v]
-manyPrs p = ((:) <$> p <*> manyPrs p) `orPrs` pure []
-
-many1Prs :: Prs s v -> Prs s [v]
-many1Prs p = (:) <$> p <*> (manyPrs p `orPrs` pure [])
-
-countPrs :: Int -> Prs s v -> Prs s [v]
-countPrs 0 _ = pure []
-countPrs n p = (:) <$> p <*> countPrs (n-1) p
-
-pairList :: a -> a -> [a]
-pairList x y = [x, y]
-
--- separated and enclosed by 
-sepEncByPrs :: Prs s v -> Prs s v -> Prs s [v]
-sepEncByPrs p sep = (:) <$> sep <*> (concat <$> manyPrs (pairList <$> p <*> sep))
-
--- arrangements
-type ArrPrs v = Prs (Bool, [Int]) v
-
-setSep :: Bool -> ArrPrs ()
-setSep b = updStPrs $ first $ const b
-
-setGroups :: [Int] -> ArrPrs ()
-setGroups gs = updStPrs $ second $ const gs
-
-readWorking :: ArrPrs Char
-readWorking = charPrs '.' <* setSep True
-
-readNotWorking :: ArrPrs Char
-readNotWorking = satisfyPrs (/= '.') $> '#' <* setSep False
-
-readGroup :: ArrPrs String
-readGroup = Prs p where
-  p (True, []) _ = []
-  p st@(True, g:gs) chs@(ch:_) = runPrs (countPrs g readNotWorking <* setGroups gs) st chs
-  p _ _ = []
-
-readMaybeWorking :: ArrPrs String
-readMaybeWorking = charPrs '?' $> "." <* setSep True
-
-readArrs :: Prs (Bool, [Int]) String
--- readArrs = (++) <$> manyPrs readWorking <*> variantPrs readMaybeWorking readGroup
-readArrs = concat <$> sepEncByPrs (variantPrs readMaybeWorking readGroup) (manyPrs readWorking)
-
-arrs :: Row -> [String]
-arrs (Row chs gs) = map snd . filter parsed . runPrs readArrs (True, gs) $ chs
-  where parsed (((_, gs), chs), str) = null gs && null chs
-
--- compress row
 type NChars = (Char, Int)
 
 compressChs :: String -> [NChars]
@@ -192,34 +86,6 @@ arrsc sep (CRow (ch@('?', n) : chs) (g : gs)) = readG ++ skipW
            return $ [('.', n') | n' /= 0] ++ ('#', g) : rest
          skipW = (:) <$> [('.', n)] <*> arrsc True (CRow chs (g : gs))
 
--- arrsc True (compressRow $ Row "??.#" [1, 1]) & map uncompressNChs
--- => [".#.#"] but should be ["#..#", ".#.#"]
-tt = let sep = True
-         ch = ('?', 2)
-         n = 2
-         chs = [('.', 1), ('#', 1)]
-         g = 1
-         gs = [1]
-  in do
-     n' <- [0 .. n]
-     chs' <- maybeToList $ readNW g (('?', n - n') : chs)
-     rest <- arrsc False (CRow chs' gs)
-     return $ [('.', n') | n' /= 0] ++ ('#', g) : rest
-
--- arrsc False (CRow [('?',1),('.',1),('#',1)] [1])
--- => [] but should be [('.',1),('.',1),('#',1)]
-tt2 = let sep = False
-          ch = ('?', 1)
-          n = 1
-          chs = [('.', 1), ('#', 1)]
-          g = 1
-          gs = []
-  in do
-     n' <- [1 .. n]
-     chs' <- maybeToList $ readNW g (('?', n - n') : chs)
-     rest <- arrsc False (CRow chs' gs)
-     return $ [('.', n') | n' /= 0] ++ ('#', g) : rest
-
 -- try to read g not-working chars ('#' or '?') and return rest of chs
 readNW :: Int -> [NChars] -> Maybe [NChars]
 readNW 0 chs = Just chs
@@ -244,9 +110,6 @@ readRestW ((_, n) : chs) = do
 
 -- solution 1
 
-solve1' :: String -> Integer
-solve1' = sum . map (fromIntegral . length . arrs) . parseIn
-
 solve1 :: String -> Integer
 solve1 = sum . map (fromIntegral . length . arrsc True . compressRow) . parseIn
 
@@ -264,9 +127,6 @@ solution1 = solution solve1
 
 unfoldRow :: Int -> Row -> Row
 unfoldRow n (Row chs gs) = Row (intercalate "?" $ replicate n chs) (concat $ replicate n gs)
-
-arrs2' :: Row -> [String]
-arrs2' = arrs . unfoldRow 5
 
 arrs2 :: Row -> [[NChars]]
 arrs2 = arrsc True . compressRow . unfoldRow 5
