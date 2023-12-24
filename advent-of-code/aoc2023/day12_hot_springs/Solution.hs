@@ -190,7 +190,8 @@ readNW g (('?', n) : chs)
 -- solution 1
 
 solve1 :: String -> Integer
-solve1 = sum . map (fromIntegral . length . arrsc True . compressRow) . parseIn
+solve1 = sum . map (fromIntegral . length . arrs) . parseIn
+-- solve1 = sum . map (fromIntegral . length . arrsc True . compressRow) . parseIn
 
 solution :: (String -> Integer) -> IO ()
 solution solve = do
@@ -207,8 +208,11 @@ solution1 = solution solve1
 unfoldRow :: Int -> Row -> Row
 unfoldRow n (Row chs gs) = Row (intercalate "?" $ replicate n chs) (concat $ replicate n gs)
 
-arrs2 :: Row -> [[NChars]]
-arrs2 = arrsc True . compressRow . unfoldRow 5
+arrs2 :: Row -> [String]
+arrs2 = arrs . unfoldRow 5
+
+-- arrs2 :: Row -> [[NChars]]
+-- arrs2 = arrsc True . compressRow . unfoldRow 5
 
 solve2 :: String -> Integer
 solve2 = sum . map (fromIntegral . length . arrs2) . parseIn

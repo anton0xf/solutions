@@ -76,3 +76,9 @@ main = do
   counts <- runTestTT $ test [tests1, tests2]
   if errors counts + failures counts == 0
     then exitSuccess else exitFailure
+
+{- unoptimized time:
+$ time runghc Test.hs
+> Cases: 12  Tried: 12  Errors: 0  Failures: 0
+> runghc Test.hs  54,40s user 0,11s system 100% cpu 54,391 total
+-}
