@@ -5,8 +5,8 @@ import Criterion.Main
 
 import Data.Map (Map)
 import qualified Data.Map as Map
-import qualified Data.Map.Strict as SMap
 
+import Data.Function
 import Control.Monad.State
 
 fib0 :: Int -> Integer
@@ -35,20 +35,24 @@ fib2 n = let m = Map.fromList [(0, 0), (1, 1)]
                  Just fn -> return fn
          in evalState (fib n) m
 
+fibM :: Monad m => (Int -> m Integer) -> Int -> m Integer
+fibM _ 0 = return 0
+fibM _ 1 = return 1
+fibM fib n = do
+  fa <- fib (n - 2)
+  fb <- fib (n - 1)
+  return $ fa + fb
+                 
 fib3 :: Int -> Integer
-fib3 n = let m = SMap.fromList [(0, 0), (1, 1)]
-             fib :: Int -> State (SMap.Map Int Integer) Integer
-             fib n = do
+fib3 n = let fibM' fib n = do
                m <- get
-               case SMap.lookup n m of
-                 Nothing -> do
-                   fa <- fib (n - 2)
-                   fb <- fib (n - 1)
-                   let fn = fa + fb
-                   modify (SMap.insert n fn)
-                   return fn
+               case Map.lookup n m of
                  Just fn -> return fn
-         in evalState (fib n) m
+                 Nothing -> do
+                   fn <- fib n
+                   modify (Map.insert n fn)
+                   return fn
+         in evalState (fix (fibM' . fibM) n) Map.empty
 
 -- run it by:
 -- $ runghc FibMemo.hs --time-limit 0.5 --output fib-memo-benchmark.html
