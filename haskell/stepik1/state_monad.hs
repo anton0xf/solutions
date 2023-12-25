@@ -138,9 +138,25 @@ testModify :: Bool
 testModify = runState (modify (*2)) 3 == ((), 6)
   && runState (tick >> modify (*2)) 100 == ((), 202)
 
+-- get nth Fibonacci number and count number of recursive calls
+fibCount :: Int -> State Int Integer
+fibCount n = do
+  modify (+1)
+  if n == 0 then return 0
+    else if n == 1 then return 1
+    else do
+      fa <- fibCount (n - 2)
+      fb <- fibCount (n - 1)
+      return $ fa + fb
+
+fibCountTest :: Bool
+fibCountTest = map (\n -> runState (fibCount n) 0) [0..5]
+  == [(0, 1), (1, 1), (1, 3), (2, 5), (3, 9), (5, 15)]
+
 test :: Bool
 test = testFmapId && testFmapComp
   && testAppId && testAppComp && testAppHom && testAppInt
   && testBindLId && testBindRId && testBindAssoc
   && testExecState && testEvalState
   && testGet && testPut && testTick && testModify
+  && fibCountTest
