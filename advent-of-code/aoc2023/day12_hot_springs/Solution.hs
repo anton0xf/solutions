@@ -4,12 +4,14 @@ module Solution where
 import Data.Maybe
 import Data.List hiding ((\\))
 import Data.Ord
-import Data.Function ((&))
+import Data.Function
 import Data.Functor
 import Data.Bifunctor
 import System.IO
-import Text.Parsec hiding (space, spaces)
+import Text.Parsec hiding (space, spaces, State)
 import Control.Applicative
+import Control.Monad.List
+import Control.Monad.State
 
 import Data.Map (Map, (!))
 import qualified Data.Map as Map
@@ -60,31 +62,61 @@ uncompressRow :: CRow -> Row
 uncompressRow (CRow nchs gs) = Row (uncompressNChs nchs) gs
 
 -- CRow arrangements
+
+type ArrSt = State (Map (Bool, CRow) [[NChars]])
+
 -- sep -> row -> compressed strings
-arrsc :: Bool -> CRow -> [[NChars]]
+arrsc :: (Bool -> CRow -> ArrSt [[NChars]]) -> Bool -> CRow -> ArrSt [[NChars]]
 -- empty tail
-arrsc _ (CRow [] []) = [[]]
+arrsc _ _ (CRow [] []) = return [[]]
 -- empty string
-arrsc _ (CRow [] _) = []
+arrsc _ _ (CRow [] _) = return []
 -- if there are no groups left then the tail can contain only dots (working springs)
-arrsc _ (CRow (('.', n) : chs) gs) = (:) <$> [('.', n)] <*> arrsc True (CRow chs gs)
-arrsc _ (CRow (('#', _) : _) []) = []
-arrsc _ (CRow (('?', n) : chs) []) = (:) <$> [('.', n)] <*> arrsc True (CRow chs [])
+arrsc arrs _ (CRow (('.', n) : chs) gs) = do
+  rst <- arrs True (CRow chs gs)
+  return $ (:) <$> [('.', n)] <*> rst
+arrsc _ _ (CRow (('#', _) : _) []) = return []
+arrsc arrs _ (CRow (('?', n) : chs) []) = do
+  rst <- arrs True (CRow chs [])
+  return $ (:) <$> [('.', n)] <*> rst
 -- '#' can't be sep
-arrsc False (CRow (('#', _) : _) _) = []
+arrsc _ False (CRow (('#', _) : _) _) = return []
 -- '#' starts group
-arrsc True (CRow chs@(('#', _) : _) (g : gs)) = case readNW g chs of
-      Nothing -> []
-      Just chs' -> (++) <$> [[('#', g)]] <*> arrsc False (CRow chs' gs)
+arrsc arrs True (CRow chs@(('#', _) : _) (g : gs)) = case readNW g chs of
+      Nothing -> return []
+      Just chs' -> do
+        rst <- arrs False (CRow chs' gs)
+        return $ (++) <$> [[('#', g)]] <*> rst
 -- read some starting '?' as '.' then starts group
 -- or treat all '?' as '.'
-arrsc sep (CRow (ch@('?', n) : chs) (g : gs)) = readG ++ skipW
-   where readG = do
-           n' <- [(if sep then 0 else 1) .. (n - 1)]
-           chs' <- maybeToList $ readNW g (('?', n - n') : chs)
-           rest <- arrsc False (CRow chs' gs)
-           return $ [('.', n') | n' /= 0] ++ ('#', g) : rest
-         skipW = (:) <$> [('.', n)] <*> arrsc True (CRow chs (g : gs))
+arrsc arrs sep (CRow (ch@('?', n) : chs) (g : gs)) = do
+      rg <- readG
+      rw <- skipW
+      return $ rw ++ rg
+  where
+        readG :: ArrSt [[NChars]]
+        readG = do
+            let wnw = readG'
+            rstss <- traverse (uncurry readRest) wnw
+            return $ [[('.', nw) | nw /= 0] ++ ('#', g) : rst | (nw, rsts) <- rstss, rst <- rsts]
+
+        readG' :: [(Int, [NChars])]
+        readG' = do
+          -- length of prefix with working springs
+          wn <- [(if sep then 0 else 1) .. (n - 1)]
+          -- chars of following not-working group
+          nwg <- maybeToList $ readNW g (('?', n - wn) : chs)
+          return (wn, nwg)
+
+        readRest :: Int -> [NChars] -> ArrSt (Int, [[NChars]])
+        readRest nw chs = do
+          rsts <- arrs False (CRow chs gs)
+          return (nw, rsts)
+
+        skipW :: ArrSt [[NChars]]
+        skipW = do
+            rsts <- arrs True (CRow chs (g : gs))
+            return $ map (('.', n) :) rsts
 
 -- try to read g not-working chars ('#' or '?') and return rest of chs
 readNW :: Int -> [NChars] -> Maybe [NChars]
@@ -108,10 +140,21 @@ readRestW ((_, n) : chs) = do
   n' <- readRestW chs
   return (n + n')
 
+arrsc' :: Bool -> CRow -> [[NChars]]
+arrsc' sep = flip evalState Map.empty . fix arrsc sep
+
+arrscMemo :: (Bool -> CRow -> ArrSt [[NChars]]) -> Bool -> CRow -> ArrSt [[NChars]]
+arrscMemo = undefined
+
+arrsc'' :: Bool -> CRow -> [[NChars]]
+arrsc'' sep row = evalState (fix (arrscMemo . arrsc) sep row) Map.empty
+
 -- solution 1
 
 solve1 :: String -> Integer
-solve1 = sum . map (fromIntegral . length . arrsc True . compressRow) . parseIn
+solve1 = sum
+  . map (fromIntegral . length . arrsc' True . compressRow)
+  . parseIn
 
 solution :: (String -> Integer) -> IO ()
 solution solve = do
@@ -129,7 +172,7 @@ unfoldRow :: Int -> Row -> Row
 unfoldRow n (Row chs gs) = Row (intercalate "?" $ replicate n chs) (concat $ replicate n gs)
 
 arrs2 :: Row -> [[NChars]]
-arrs2 = arrsc True . compressRow . unfoldRow 5
+arrs2 = arrsc' True . compressRow . unfoldRow 5
 
 solve2 :: String -> Integer
 solve2 = sum . map (fromIntegral . length . arrs2) . parseIn
