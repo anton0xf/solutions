@@ -84,5 +84,44 @@ traverse2listTest = traverse2list (\x -> [x+10,x+20]) [1,2,3]
        == [[12, 11, 13], [12, 11, 23], [12, 21, 13], [12, 21, 23],
            [22, 11, 13], [22, 11, 23], [22, 21, 13], [22, 21, 23]]
 
+{- https://stepik.org/lesson/30428/step/14?unit=11045
+2.2.14. Класс типов Traversable
+Сделайте двоичное дерево представителем класса типов Traversable
+(а также всех других необходимых классов типов). -}
+
+instance Functor Tree where
+  fmap :: (a -> b) -> Tree a -> Tree b
+  fmap _ Nil = Nil
+  fmap f (Branch tl x tr) = Branch (fmap f tl) (f x) (fmap f tr)
+
+-- like ZipList
+instance Applicative Tree where
+  pure :: a -> Tree a
+  pure x = t
+    where t = Branch t x t
+
+  (<*>) :: Tree (a -> b) -> Tree a -> Tree b
+  Nil <*> _ = Nil
+  _ <*> Nil = Nil
+  (Branch fl f fr) <*> (Branch xl x xr) = Branch (fl <*> xl) (f x) (fr <*> xr)
+
+instance Traversable Tree where
+  sequenceA :: Applicative m => Tree (m a) -> m (Tree a)
+  sequenceA Nil = pure Nil
+  sequenceA (Branch tl x tr) = Branch <$> sequenceA tl <*> x <*> sequenceA tr
+
+traverseTest :: Bool
+traverseTest = traverse (\x -> if odd x then Right x else Left x)
+                        (Branch (Branch Nil 1 Nil) 3 Nil)
+      == Right (Branch (Branch Nil 1 Nil) 3 Nil)
+  && traverse (\x -> if odd x then Right x else Left x)
+              (Branch (Branch Nil 1 Nil) 2 Nil)
+      == Left 2
+
+sequenceATest :: Bool
+sequenceATest = sequenceA (Branch (Branch Nil [1, 2] Nil) [3] Nil)
+  == [Branch (Branch Nil 1 Nil) 3 Nil, Branch (Branch Nil 2 Nil) 3 Nil]
+
+
 test :: Bool
-test = foldTest && traverse2listTest
+test = foldTest && traverse2listTest && traverseTest && sequenceATest
