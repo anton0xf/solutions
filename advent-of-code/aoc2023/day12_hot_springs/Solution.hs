@@ -53,7 +53,7 @@ uncompressNChs :: [NChars] -> String
 uncompressNChs [] = ""
 uncompressNChs ((c, n) : chs) = replicate n c ++ uncompressNChs chs
 
-data CRow = CRow [NChars] [Int] deriving (Show, Eq)
+data CRow = CRow [NChars] [Int] deriving (Show, Eq, Ord)
 
 compressRow :: Row -> CRow
 compressRow (Row chs gs) = CRow (compressChs chs) gs
@@ -144,7 +144,15 @@ arrsc' :: Bool -> CRow -> [[NChars]]
 arrsc' sep = flip evalState Map.empty . fix arrsc sep
 
 arrscMemo :: (Bool -> CRow -> ArrSt [[NChars]]) -> Bool -> CRow -> ArrSt [[NChars]]
-arrscMemo = undefined
+arrscMemo arrs sep row = do
+  m <- get
+  case Map.lookup (sep, row) m of
+    Nothing -> do
+      ress <- arrs sep row
+      modify (Map.insert (sep, row) ress)
+      return ress
+    Just ress -> return ress
+
 
 arrsc'' :: Bool -> CRow -> [[NChars]]
 arrsc'' sep row = evalState (fix (arrscMemo . arrsc) sep row) Map.empty
@@ -153,7 +161,7 @@ arrsc'' sep row = evalState (fix (arrscMemo . arrsc) sep row) Map.empty
 
 solve1 :: String -> Integer
 solve1 = sum
-  . map (fromIntegral . length . arrsc' True . compressRow)
+  . map (fromIntegral . length . arrsc'' True . compressRow)
   . parseIn
 
 solution :: (String -> Integer) -> IO ()
@@ -172,7 +180,7 @@ unfoldRow :: Int -> Row -> Row
 unfoldRow n (Row chs gs) = Row (intercalate "?" $ replicate n chs) (concat $ replicate n gs)
 
 arrs2 :: Row -> [[NChars]]
-arrs2 = arrsc' True . compressRow . unfoldRow 5
+arrs2 = arrsc'' True . compressRow . unfoldRow 5
 
 solve2 :: String -> Integer
 solve2 = sum . map (fromIntegral . length . arrs2) . parseIn
