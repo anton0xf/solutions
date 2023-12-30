@@ -39,31 +39,29 @@ parseInTest = "parseIn" ~: parseIn inEx ~?= rowsEx
 
 arrscTest :: Test
 arrscTest = "arrsc" ~: test [
-  arrsc' False (CRow [] [1]) ~?= [],
-  arrsc' True (CRow [('.', 1)] []) ~?= [[('.', 1)]],
-  arrsc' False (CRow [('.', 1)] []) ~?= [[('.', 1)]],
-  arrsc' True (CRow [('#', 1)] [1]) ~?= [[('#', 1)]],
-  arrsc' False (CRow [('#', 1)] [1]) ~?= [],
-  arrsc' True (CRow [('#', 2)] [1]) ~?= [],
-  arrsc' True (CRow [('#', 1)] [2]) ~?= [],
-  arrsc' True (CRow [('#', 2)] [2]) ~?= [[('#', 2)]],
-  arrsc' True (CRow [('#', 1), ('.', 1), ('#', 1)] [1, 1]) ~?= [[('#', 1), ('.', 1), ('#', 1)]],
-  arrsc' False (CRow [('#', 1), ('.', 1), ('#', 1)] [1, 1]) ~?= [],
-  arrsc' True (CRow [('#', 1), ('.', 1), ('#', 1)] [1]) ~?= [],
-  arrsc' True (CRow [('#', 1), ('.', 1), ('#', 1)] [2]) ~?= [],
-  arrsc' True (CRow [('?', 1)] [1]) ~?= [[('#', 1)]],
-  arrsc' False (CRow [('?', 1)] [1]) ~?= [],
-  arrsc' False (CRow [('?',1)] []) ~?= [[('.', 1)]],
-  arrsc' True (CRow [('?', 1)] [2]) ~?= [],
-  arrsc' True (CRow [('?', 2)] [1]) ~?= [[('#', 1), ('.', 1)], [('.', 1), ('#', 1)]],
-  arrsc' False (CRow [('?', 2)] [1]) ~?= [[('.', 1), ('#', 1)]],
-  arrsc' True (CRow [('?', 3)] [1, 1]) ~?= [[('#',1),('.',1),('#',1)]],
-  arrsc' False (CRow [('?', 3)] [1, 1]) ~?= [],
-  arrsc' False (CRow [('?', 1), ('.', 1), ('#', 1)] [1]) ~?= [[('.', 1), ('.', 1), ('#', 1)]],
-  un (arrsc' True (comp $ Row "??.#" [1, 1])) ~?= ["#..#", ".#.#"],
-  "all ex" ~: map (length . arrsc' True . compressRow) rowsEx ~?= [1, 4, 1, 1, 4, 10]]
-  where comp = compressRow
-        un = map uncompressNChs
+  arrsc' False (CRow [] [1]) ~?= 0,
+  arrsc' True (CRow [('.', 1)] []) ~?= 1,
+  arrsc' False (CRow [('.', 1)] []) ~?= 1,
+  arrsc' True (CRow [('#', 1)] [1]) ~?= 1,
+  arrsc' False (CRow [('#', 1)] [1]) ~?= 0,
+  arrsc' True (CRow [('#', 2)] [1]) ~?= 0,
+  arrsc' True (CRow [('#', 1)] [2]) ~?= 0,
+  arrsc' True (CRow [('#', 2)] [2]) ~?= 1,
+  arrsc' True (CRow [('#', 1), ('.', 1), ('#', 1)] [1, 1]) ~?= 1,
+  arrsc' False (CRow [('#', 1), ('.', 1), ('#', 1)] [1, 1]) ~?= 0,
+  arrsc' True (CRow [('#', 1), ('.', 1), ('#', 1)] [1]) ~?= 0,
+  arrsc' True (CRow [('#', 1), ('.', 1), ('#', 1)] [2]) ~?= 0,
+  arrsc' True (CRow [('?', 1)] [1]) ~?= 1,
+  arrsc' False (CRow [('?', 1)] [1]) ~?= 0,
+  arrsc' False (CRow [('?',1)] []) ~?= 1,
+  arrsc' True (CRow [('?', 1)] [2]) ~?= 0,
+  arrsc' True (CRow [('?', 2)] [1]) ~?= 2,
+  arrsc' False (CRow [('?', 2)] [1]) ~?= 1,
+  arrsc' True (CRow [('?', 3)] [1, 1]) ~?= 1,
+  arrsc' False (CRow [('?', 3)] [1, 1]) ~?= 0,
+  arrsc' False (CRow [('?', 1), ('.', 1), ('#', 1)] [1]) ~?= 1,
+  arrsc' True (compressRow $ Row "??.#" [1, 1]) ~?= 2,
+  "all ex" ~: map (arrsc' True . compressRow) rowsEx ~?= [1, 4, 1, 1, 4, 10]]
 
 solve1Test :: Test
 solve1Test = "solve1" ~: solve1 inEx ~?= 21
@@ -75,7 +73,7 @@ tests1 = "part 1" ~: test [parseInTest, arrscTest, solve1Test]
 
 arrs2Test :: Test
 arrs2Test = "arrs2" ~: test [
-  "full ex" ~: map (length . arrs2) rowsEx ~?= [1, 16384, 1, 16, 2500, 506250]]
+  "full ex" ~: map arrs2 rowsEx ~?= [1, 16384, 1, 16, 2500, 506250]]
 
 solve2Test :: Test
 solve2Test = "solve2" ~: solve2 inEx ~?= 525152
