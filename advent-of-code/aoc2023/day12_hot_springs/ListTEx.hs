@@ -1,5 +1,6 @@
 module ListTEx where
 
+import Data.Maybe
 import Control.Monad.List
 import Control.Monad.State
 
@@ -50,5 +51,29 @@ concCountTest :: Bool
 concCountTest = runState (runListT $ concCount strs2 strs3) 0
   == (["aaDD", "aaEE", "bbDD", "bbEE", "ccDD", "ccEE"], 6)
 
+doubleWithSum :: ListT (State Int) Int -> ListT (State Int) Int
+doubleWithSum mxs = do
+  x <- mxs
+  lift $ modify (+ x)
+  return $ x * 2
+
+doubleWithSumTest :: Bool
+doubleWithSumTest = runState (runListT $ doubleWithSum $ ListT $ return [10..14]) 0
+  == ([20, 22, 24, 26, 28], 60)
+
+arcs :: Eq a => [a] -> [(a, a)]
+arcs xs = catMaybes $ evalState (runListT go) []
+  where go = do
+          x <- ListT $ return xs
+          y <- ListT $ return xs
+          st <- get
+          if (y, x) `elem` st
+            then return Nothing
+            else do modify ((x, y) :)
+                    return $ Just (x, y)
+
+arcsTest :: Bool
+arcsTest = arcs [0..2] == [(0, 0), (0, 1), (0, 2), (1, 1), (1, 2), (2, 2)]
+
 test :: Bool
-test = consTest && concTest && consCountTest
+test = consTest && concTest && consCountTest && doubleWithSumTest && arcsTest
