@@ -2,6 +2,7 @@
 1.5.2. Композиция на уровне типов -}
 {-# LANGUAGE TypeOperators #-}
 
+import Data.Either
 import Data.Function ((&))
 import Control.Applicative
 
@@ -78,5 +79,21 @@ cmpsFoldableTest :: Bool
 cmpsFoldableTest = maximum (Cmps [Nothing, Just 2, Just 3]) == 3
   && length (Cmps [[1, 2], [], [3, 4, 5, 6, 7]]) == 7
 
+{- https://stepik.org/lesson/30428/step/15?unit=11045
+2.2.15 Класс типов Traversable
+Сделайте тип Cmps представителем класса типов Traversable при условии,
+что аргументы композиции являются представителями Traversable. -}
+
+instance (Traversable f, Traversable g) => Traversable (f |.| g) where
+  sequenceA :: Applicative h => (f |.| g) (h a) -> h ((f |.| g) a)
+  sequenceA (Cmps fghx) = Cmps <$> traverse sequenceA fghx
+  -- fghx :: f (g (h a))
+  -- traverse :: (g (h a) -> h (g a)) -> f (g (h a)) -> h (f (g a))
+
+sequenceATest :: Bool
+sequenceATest = fromRight undefined (sequenceA (Cmps [Just (Right 2), Nothing]))
+      == Cmps [Just 2, Nothing]
+  && fromLeft undefined (sequenceA $ Cmps [Just (Left 2), Nothing]) == 2
+
 test :: Bool
-test = apTest && unCmpsTest && cmpsFoldableTest
+test = apTest && unCmpsTest && cmpsFoldableTest && sequenceATest
