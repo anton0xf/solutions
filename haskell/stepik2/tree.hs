@@ -106,9 +106,13 @@ instance Applicative Tree where
   (Branch fl f fr) <*> (Branch xl x xr) = Branch (fl <*> xl) (f x) (fr <*> xr)
 
 instance Traversable Tree where
-  sequenceA :: Applicative m => Tree (m a) -> m (Tree a)
-  sequenceA Nil = pure Nil
-  sequenceA (Branch tl x tr) = Branch <$> sequenceA tl <*> x <*> sequenceA tr
+  -- sequenceA :: Applicative m => Tree (m a) -> m (Tree a)
+  -- sequenceA Nil = pure Nil
+  -- sequenceA (Branch tl x tr) = Branch <$> sequenceA tl <*> x <*> sequenceA tr
+
+  traverse :: Applicative m => (a -> m b) -> Tree a -> m (Tree b)
+  traverse _ Nil = pure Nil
+  traverse f (Branch tl x tr) = Branch <$> traverse f tl <*> f x <*> traverse f tr
 
 traverseTest :: Bool
 traverseTest = traverse (\x -> if odd x then Right x else Left x)
