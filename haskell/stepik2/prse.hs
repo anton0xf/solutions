@@ -44,5 +44,23 @@ testApp = let anyE = satisfyE (const True)
              && runPrsE ((,) <$> anyE <* charE 'C' <*> anyE) "ABCDE" == Left "unexpected B"
              && runPrsE ((,) <$> anyE <* charE 'B' <*> anyE) "AB" == Left "unexpected end of input"
 
+{- https://stepik.org/lesson/28881/step/7?unit=9913
+2.4.7. Связь классов Monad и Applicative
+Сделайте парсер PrsE из первого модуля курса представителем класса типов Monad -}
+
+instance Monad PrsE where
+  (>>=) :: PrsE a -> (a -> PrsE b) -> PrsE b
+  (PrsE px) >>= k = PrsE p where
+    p s = do
+      (x, s1) <- px s
+      let (PrsE py) = k x
+      py s1
+
+monadTest :: Bool
+monadTest = runPrsE (do {a <- charE 'A'; b <- charE 'B'; return (a,b)}) "ABC"
+      == Right (('A','B'),"C")
+  && runPrsE (do {a <- charE 'A'; b <- charE 'B'; return (a,b)}) "ACD" == Left "unexpected C"
+  && runPrsE (do {a <- charE 'A'; b <- charE 'B'; return (a,b)}) "BCD" == Left "unexpected B"
+
 test :: Bool
-test = charETest && testApp
+test = charETest && testApp && monadTest
