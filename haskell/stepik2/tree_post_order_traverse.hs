@@ -1,8 +1,10 @@
 {- https://stepik.org/lesson/31555/step/12?unit=11808
 2.3.12. Законы и свойства класса Traversable -}
 
+import Data.List
 import Data.Functor.Identity
 import Data.Functor.Const
+import Data.Functor.Sum
 
 {- Сделайте двоичное дерево -}
 
@@ -23,6 +25,9 @@ fmapDefault f = runIdentity . traverse (Identity . f)
 
 foldMapDefault :: (Traversable t, Monoid m) => (a -> m) -> t a -> m
 foldMapDefault f = getConst . traverse (Const . f)
+
+foldMapUsingPairEx :: Bool
+foldMapUsingPairEx = (fst . traverse ((, ()) . singleton)) testTree == [1,3,2,5,4]
 
 instance Traversable Tree where
   traverse :: Applicative m => (a -> m b) -> Tree a -> m (Tree b)
@@ -45,4 +50,4 @@ instance Foldable Tree where
   foldMap = foldMapDefault
 
 test :: Bool
-test = foldMapDefaultTest
+test = foldMapDefaultTest && foldMapUsingPairEx
