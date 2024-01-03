@@ -24,7 +24,8 @@ instance Applicative (Env e) where
   pure x = Env $ const x
 
   (<*>) :: Env e (a -> b) -> Env e a -> Env e b
-  (Env f) <*> (Env x) = Env (\e -> f e (x e))
+  -- (Env f) <*> (Env x) = Env (\e -> f e (x e))
+  mf <*> mx = mf >>= (<$> mx)
 
 {- Identity: pure id <*> v = v
 (Env $ const id) <*> v
