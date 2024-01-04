@@ -54,5 +54,28 @@ sumTest = sum cnt5 == 52
 traverseTest :: Bool
 traverseTest = traverse (\x->[x+2,x-2]) cnt1 == [Un 44,Un 40]
 
+{- https://stepik.org/lesson/28881/step/10?unit=9913
+2.4.10. Связь классов Monad и Applicative
+Для типа данных OddC реализуйте функцию конкатенирующую три таких контейнера в один.
+Обратите внимание, что соображения четности запрещают конкатенацию двух контейнеров OddC -}
+
+concat3OC :: OddC a -> OddC a -> OddC a -> OddC a
+concat3OC (Bi x1 x2 xs) ys zs = Bi x1 x2 $ concat3OC xs ys zs
+concat3OC (Un x) (Bi y1 y2 ys) zs = Bi x y1 $ concat3OC (Un y2) ys zs
+concat3OC (Un x) (Un y) zs = Bi x y zs
+
+tst1 :: OddC Char
+tst1 = Bi 'a' 'b' (Un 'c')
+
+tst2 :: OddC Char
+tst2 = Bi 'd' 'e' (Bi 'f' 'g' (Un 'h'))
+
+tst3 :: OddC Char
+tst3 = Bi 'i' 'j' (Un 'k')
+
+concat3OCTest :: Bool
+concat3OCTest = concat3OC tst1 tst2 tst3
+  == Bi 'a' 'b' (Bi 'c' 'd' (Bi 'e' 'f' (Bi 'g' 'h' (Bi 'i' 'j' (Un 'k')))))
+
 test :: Bool
-test = cnt5Test && fmapTest && toListTest && sumTest && traverseTest
+test = cnt5Test && fmapTest && toListTest && sumTest && traverseTest && concat3OCTest
