@@ -77,5 +77,24 @@ concat3OCTest :: Bool
 concat3OCTest = concat3OC tst1 tst2 tst3
   == Bi 'a' 'b' (Bi 'c' 'd' (Bi 'e' 'f' (Bi 'g' 'h' (Bi 'i' 'j' (Un 'k')))))
 
+{- https://stepik.org/lesson/28881/step/11?unit=9913
+2.4.11. Связь классов Monad и Applicative
+Для типа данных OddC реализуйте функцию concatOC.
+Она должна обеспечивать для типа OddC поведение,
+аналогичное поведению функции concat для списков -}
+
+concatOC :: OddC (OddC a) -> OddC a
+concatOC (Un xs) = xs
+concatOC (Bi (Bi x1 x2 xs) ys zss) = Bi x1 x2 $ concatOC (Bi xs ys zss)
+concatOC (Bi (Un x) (Bi y1 y2 ys) zss) = Bi x y1 $ concatOC (Bi (Un y2) ys zss)
+concatOC (Bi (Un x) (Un y) (Un zs)) = Bi x y zs
+concatOC (Bi (Un x) (Un y) zss) = Bi x y $ concatOC zss
+
+concatOCTest :: Bool
+concatOCTest = concatOC (Un (Un 42)) == Un 42
+  && concatOC (Bi tst1 tst2 (Un tst3))
+      == Bi 'a' 'b' (Bi 'c' 'd' (Bi 'e' 'f' (Bi 'g' 'h' (Bi 'i' 'j' (Un 'k')))))
+
 test :: Bool
-test = cnt5Test && fmapTest && toListTest && sumTest && traverseTest && concat3OCTest
+test = cnt5Test && fmapTest && toListTest && sumTest && traverseTest
+  && concat3OCTest && concatOCTest
