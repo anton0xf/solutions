@@ -95,6 +95,38 @@ concatOCTest = concatOC (Un (Un 42)) == Un 42
   && concatOC (Bi tst1 tst2 (Un tst3))
       == Bi 'a' 'b' (Bi 'c' 'd' (Bi 'e' 'f' (Bi 'g' 'h' (Bi 'i' 'j' (Un 'k')))))
 
+{- https://stepik.org/lesson/28881/step/12?unit=9913
+2.4.12. Связь классов Monad и Applicative
+Сделайте тип данных OddC представителем классов типов Functor, Applicative и Monad.
+Семантика должна быть подобной семантике представителей этих классов типов для списков:
+монада OddC должна иметь эффект вычисления с произвольным нечетным числом результатов.
+Функцию fail можно не реализовывать, полагаясь на реализацию по умолчанию. -}
+
+instance Applicative OddC where
+  pure :: a -> OddC a
+  pure = Un
+
+  (<*>) :: OddC (a -> b) -> OddC a -> OddC b
+  (Un f) <*> cx = f <$> cx
+  (Bi f1 f2 fs) <*> cx = concat3OC (f1 <$> cx) (f2 <$> cx) (fs <*> cx)
+
+instance Monad OddC where
+  (>>=) :: OddC a -> (a -> OddC b) -> OddC b
+  (Un x) >>= k = k x
+  (Bi x1 x2 xs) >>= k = concat3OC (k x1) (k x2) (xs >>= k)
+
+tst4 :: OddC Integer
+tst4 = Bi 10 20 (Un 30)
+
+tst5 :: OddC Integer
+tst5 = Bi 1 2 (Bi 3 4 (Un 5))
+
+monadTest :: Bool
+monadTest = do { x <- tst4; y <- tst5; return (x + y) }
+      == Bi 11 12 (Bi 13 14 (Bi 15 21 (Bi 22 23 (Bi 24 25 (Bi 31 32 (Bi 33 34 (Un 35)))))))
+  && do { x <- tst5; y <- tst4; return (x + y) }
+      == Bi 11 21 (Bi 31 12 (Bi 22 32 (Bi 13 23 (Bi 33 14 (Bi 24 34 (Bi 15 25 (Un 35)))))))
+
 test :: Bool
 test = cnt5Test && fmapTest && toListTest && sumTest && traverseTest
-  && concat3OCTest && concatOCTest
+  && concat3OCTest && concatOCTest && monadTest
