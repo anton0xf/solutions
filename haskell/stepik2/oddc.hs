@@ -1,6 +1,8 @@
 {- https://stepik.org/lesson/31555/step/6?unit=11808 -}
 
 import Data.Foldable
+import Data.Traversable
+import Control.Monad
 
 {- 2.3.6. Законы и свойства класса Traversable
 Рассмотрим следующий тип данных -}
@@ -33,9 +35,8 @@ instance Functor OddC where
   fmap f (Bi x1 x2 xs) = Bi (f x1) (f x2) (fmap f xs)
 
 instance Foldable OddC where
-  foldr :: (a -> b -> b) -> b -> OddC a -> b
-  foldr f ini (Un x) = f x ini
-  foldr f ini (Bi x1 x2 xs) = f x1 $ f x2 $ foldr f ini xs
+  foldMap :: Monoid m => (a -> m) -> OddC a -> m
+  foldMap = foldMapDefault
 
 instance Traversable OddC where
   sequenceA :: (Applicative f) => OddC (f a) -> f (OddC a)
@@ -107,13 +108,11 @@ instance Applicative OddC where
   pure = Un
 
   (<*>) :: OddC (a -> b) -> OddC a -> OddC b
-  (Un f) <*> cx = f <$> cx
-  (Bi f1 f2 fs) <*> cx = concat3OC (f1 <$> cx) (f2 <$> cx) (fs <*> cx)
+  (<*>) = ap
 
 instance Monad OddC where
   (>>=) :: OddC a -> (a -> OddC b) -> OddC b
-  (Un x) >>= k = k x
-  (Bi x1 x2 xs) >>= k = concat3OC (k x1) (k x2) (xs >>= k)
+  mx >>= k = concatOC $ k <$> mx
 
 tst4 :: OddC Integer
 tst4 = Bi 10 20 (Un 30)
