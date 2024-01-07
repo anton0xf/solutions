@@ -2,6 +2,7 @@
 
 import Data.Foldable
 import Data.Traversable
+import Control.Applicative
 import Control.Monad
 
 {- 2.3.6. Законы и свойства класса Traversable
