@@ -1,6 +1,8 @@
 {- https://stepik.org/lesson/30721/step/7?unit=11244
 2.5.7. Классы типов Alternative и MonadPlus -}
 
+import Data.Bifunctor
+
 {- Реализуем улучшенную версию парсера PrsE -}
 
 newtype PrsEP a = PrsEP { runPrsEP :: Int -> String -> (Int, Either String (a, String)) }
@@ -61,23 +63,30 @@ testP = (,) <$> anyEP <* charEP 'B' <*> anyEP
 
 instance Functor PrsEP where
   fmap :: (a -> b) -> PrsEP a -> PrsEP b
-  fmap f (PrsEP px) = PrsEP p
-    where p pos str = case px pos str of
-            (pos1, Right (x, str1)) -> (pos1, Right (f x, str1))
-            (pos1, Left err) -> (pos1, Left err)
+  -- fmap f (PrsEP px) = PrsEP p
+  --   where p pos str = case px pos str of
+  --           (pos1, Right (x, str1)) -> (pos1, Right (f x, str1))
+  --           (pos1, Left err) -> (pos1, Left err)
+  fmap f (PrsEP px) = PrsEP $ \pos str -> (fmap . first) f <$> px pos str
+  -- fmap f (PrsEP px) = PrsEP $ ((fmap . fmap . first) f .) . px
+
 
 instance Applicative PrsEP where
   pure :: a -> PrsEP a
-  pure x = PrsEP p
-    where p pos str = (pos, Right (x, str))
+  pure x = PrsEP $ \pos str -> (pos, Right (x, str))
+  -- pure x = PrsEP $ (second (Right . (x,)) .) . (,)
 
   (<*>) :: PrsEP (a -> b) -> PrsEP a -> PrsEP b
+  -- (PrsEP pf) <*> (PrsEP px) = PrsEP p
+  --   where p pos str = case pf pos str of
+  --           (pos1, Left err) -> (pos1, Left err)
+  --           (pos1, Right (f, str1)) -> case px pos1 str1 of
+  --             (pos2, Left err) -> (pos2, Left err)
+  --             (pos2, Right (x, str2)) -> (pos2, Right (f x, str2))
   (PrsEP pf) <*> (PrsEP px) = PrsEP p
     where p pos str = case pf pos str of
             (pos1, Left err) -> (pos1, Left err)
-            (pos1, Right (f, str1)) -> case px pos1 str1 of
-              (pos2, Left err) -> (pos2, Left err)
-              (pos2, Right (x, str2)) -> (pos2, Right (f x, str2))
+            (pos1, Right (f, str1)) -> fmap (first f) <$> px pos1 str1
 
 test :: Bool
 test = charEPTest && parseEPTest && functorTest
