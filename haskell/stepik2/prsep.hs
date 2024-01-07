@@ -41,5 +41,43 @@ satisfyEP pred = PrsEP p
               then Right (ch, str)
               else Left $ "pos " ++ show pos' ++ ": unexpected " ++ [ch])
 
+{- https://stepik.org/lesson/30721/step/8?unit=11244
+2.5.8. Классы типов Alternative и MonadPlus
+Сделайте парсер PrsEP представителем классов типов Functor и Applicative,
+обеспечив следующее поведение -}
+
+functorTest :: Bool
+functorTest = runPrsEP (pure 42) 0 "ABCDEFG" == (0, Right (42, "ABCDEFG"))
+  && runPrsEP testP 0 "ABCDE" == (3, Right (('A', 'C'), "DE"))
+  && parseEP testP "BCDE" == Left "pos 2: unexpected C"
+  && parseEP testP "" == Left "pos 1: unexpected end of input"
+  && parseEP testP "B" == Left "pos 2: unexpected end of input"
+
+anyEP :: PrsEP Char
+anyEP = satisfyEP (const True)
+
+testP :: PrsEP (Char, Char)
+testP = (,) <$> anyEP <* charEP 'B' <*> anyEP
+
+instance Functor PrsEP where
+  fmap :: (a -> b) -> PrsEP a -> PrsEP b
+  fmap f (PrsEP px) = PrsEP p
+    where p pos str = case px pos str of
+            (pos1, Right (x, str1)) -> (pos1, Right (f x, str1))
+            (pos1, Left err) -> (pos1, Left err)
+
+instance Applicative PrsEP where
+  pure :: a -> PrsEP a
+  pure x = PrsEP p
+    where p pos str = (pos, Right (x, str))
+
+  (<*>) :: PrsEP (a -> b) -> PrsEP a -> PrsEP b
+  (PrsEP pf) <*> (PrsEP px) = PrsEP p
+    where p pos str = case pf pos str of
+            (pos1, Left err) -> (pos1, Left err)
+            (pos1, Right (f, str1)) -> case px pos1 str1 of
+              (pos2, Left err) -> (pos2, Left err)
+              (pos2, Right (x, str2)) -> (pos2, Right (f x, str2))
+
 test :: Bool
-test = charEPTest && parseEPTest
+test = charEPTest && parseEPTest && functorTest
