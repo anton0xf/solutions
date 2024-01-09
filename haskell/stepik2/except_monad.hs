@@ -10,11 +10,6 @@ newtype Except e a = Except { runExcept :: Either e a }
 except :: Either e a -> Except e a
 except = Except
 
-throw :: e -> Except e a
-throw e = Except $ Left e
-
--- catch :: a -> 
-
 instance Functor (Except e) where
   fmap :: (a -> b) -> Except e a -> Except e b
   fmap = liftM
@@ -44,3 +39,15 @@ instance Monad (Except e) where
 withExcept :: (e -> e') -> Except e a -> Except e' a
 withExcept f (Except (Right x)) = Except $ Right x
 withExcept f (Except (Left err)) = Except $ Left $ f err
+
+{- https://stepik.org/lesson/30722/step/5?unit=11809 -}
+throwE :: e -> Except e a
+throwE = Except . Left
+
+-- Law: catchE (throwE e) h = h e
+catchE :: Except e0 a -> (e0 -> Except e1 a) -> Except e1 a
+catchE (Except (Left err)) h = h err
+catchE (Except (Right x)) _ = Except $ Right x
+{- usage:
+do { action1; ..; actionN } `catchE` \err -> handle -}
+
