@@ -2,6 +2,7 @@
 2.5.7. Классы типов Alternative и MonadPlus -}
 
 import Data.Bifunctor
+import Control.Applicative
 
 {- Реализуем улучшенную версию парсера PrsE -}
 
@@ -88,5 +89,33 @@ instance Applicative PrsEP where
             (pos1, Left err) -> (pos1, Left err)
             (pos1, Right (f, str1)) -> fmap (first f) <$> px pos1 str1
 
+{- https://stepik.org/lesson/30721/step/9?unit=11244
+2.5.9. Классы типов Alternative и MonadPlus
+Сделайте парсер PrsEP представителем класса типов Alternative, обеспечив следующее поведение
+для пары неудачных альтернатив: сообщение об ошибке возвращается из той альтернативы,
+которой удалось распарсить входную строку глубже. -}
+
+alternativeTest :: Bool
+alternativeTest = runPrsEP (empty :: PrsEP ()) 0 "ABCDEFG" == (0, Left "pos 0: empty alternative")
+  && parseEP (tripleP "ABC" <|> tripleP "ADC") "ABE" == Left "pos 3: unexpected E"
+  && parseEP (tripleP "ABC" <|> tripleP "ADC") "ADE" == Left "pos 3: unexpected E"
+  && parseEP (tripleP "ABC" <|> tripleP "ADC") "AEF" == Left "pos 2: unexpected E"
+
+tripleP :: [Char] -> PrsEP [Char]
+tripleP [a, b, c] = (\x y z -> [x,y,z]) <$> charEP a <*> charEP b <*>  charEP c
+
+instance Alternative PrsEP where
+  empty :: PrsEP a
+  empty = PrsEP $ \pos str -> (pos, Left $ "pos " ++ show pos ++ ": empty alternative")
+
+  (<|>) :: PrsEP a -> PrsEP a -> PrsEP a
+  (PrsEP p1) <|> (PrsEP p2) = PrsEP $ \pos str -> case p1 pos str of
+    (pos1, Left err1) -> case p2 pos str of
+      (pos2, Left err2) -> if pos1 > pos2
+                           then (pos1, Left err1)
+                           else (pos2, Left err2)
+      res -> res
+    res -> res
+
 test :: Bool
-test = charEPTest && parseEPTest && functorTest
+test = charEPTest && parseEPTest && functorTest && alternativeTest
