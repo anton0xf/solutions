@@ -107,8 +107,19 @@ solution1 = solution solve1
 
 -- part 2
 
+countSmudges :: (Row, Row) -> Int
+countSmudges = sum . map fromEnum . uncurry (zipWith (/=))
+
+-- find reflexion columns
+refl2 :: Pattern -> [Int]
+refl2 = map (fst . head) . filter ((== 1) . sum . map (countSmudges . snd))
+  . transpose . map splits
+
+getRefls2 :: Pattern -> ([Int], [Int])
+getRefls2 = bimap refl2 (refl2 . transpose) . dup
+
 solve2 :: String -> Integer
-solve2 = undefined
+solve2 = sum . map (fromIntegral . uncurry sumPat . getRefls2) . parseIn
 
 solution2 :: IO ()
 solution2 = solution solve2

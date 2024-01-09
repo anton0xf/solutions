@@ -82,7 +82,7 @@ tests1 = "part 1" ~: test [parseInTest, splitsTest, isReflTest, refl1Test, getSi
 -- part 2
 
 tests2 :: Test
-tests2 = "part 2" ~: test [True ~? "stub 2"]
+tests2 = "part 2" ~: solve2 inEx ~?= 400
 
 -- main
 
