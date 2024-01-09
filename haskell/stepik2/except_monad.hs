@@ -36,4 +36,11 @@ instance Monad (Except e) where
 
 --   (Except m1) <|> (Except m2) = Except $ m1 <|> m2
 
+{- https://stepik.org/lesson/30722/step/3?unit=11809
+3.1.3. Монада Except
+Реализуйте функцию withExcept, позволящую, если произошла ошибка,
+применить к ней заданное преобразование. -}
 
+withExcept :: (e -> e') -> Except e a -> Except e' a
+withExcept f (Except (Right x)) = Except $ Right x
+withExcept f (Except (Left err)) = Except $ Left $ f err
