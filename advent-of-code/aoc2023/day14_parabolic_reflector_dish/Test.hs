@@ -77,8 +77,58 @@ tests1 = "part 1" ~: test [parseInTest, moveLeftTest, moveAllTopTest, loadTest, 
 
 -- part 2
 
+rotateTest :: Test
+rotateTest = "rotate" ~: test [
+  rotate [[1, 2], [3, 4]] ~?= [[2, 4], [1, 3]],
+  rotate [[1, 2]] ~?= [[2], [1]],
+  rotate [[2],[1]] ~?= [[2, 1]]]
+
+rotateClockTest :: Test
+rotateClockTest = "rotateClock" ~: test [
+  rotateClock [[1, 2]] ~?= [[1], [2]],
+  rotateClock [[2, 4], [1, 3]] ~?= [[1, 2], [3, 4]]]
+
+spinCycleTest :: Test
+spinCycleTest = "spinCycle" ~: test [
+  spinCycle platformEx
+    ~?= [".....#....",
+         "....#...O#",
+         "...OO##...",
+         ".OO#......",
+         ".....OOO#.",
+         ".O#...O#.#",
+         "....O#....",
+         "......OOOO",
+         "#...O###..",
+         "#..OO#...."],
+  spinCycle (spinCycle platformEx)
+    ~?= [".....#....",
+         "....#...O#",
+         ".....##...",
+         "..O#......",
+         ".....OOO#.",
+         ".O#...O#.#",
+         "....O#...O",
+         ".......OOO",
+         "#..OO###..",
+         "#.OOO#...O"],
+  spinCycle (spinCycle $ spinCycle platformEx)
+    ~?= [".....#....",
+         "....#...O#",
+         ".....##...",
+         "..O#......",
+         ".....OOO#.",
+         ".O#...O#.#",
+         "....O#...O",
+         ".......OOO",
+         "#...O###.O",
+         "#.OOO#...O"]]
+
+solve2Test :: Test
+solve2Test = "solve2" ~: solve2 inEx ~?= 64
+
 tests2 :: Test
-tests2 = "part 2" ~: True ~? "stub" -- solve2 inEx ~?= ?
+tests2 = "part 2" ~: test [rotateTest, rotateClockTest, spinCycleTest, solve2Test]
 
 -- main
 
