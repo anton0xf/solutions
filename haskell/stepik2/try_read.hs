@@ -40,7 +40,7 @@ data SumError = SumError Int ReadError
   deriving (Show, Eq)
 
 trySum :: [String] -> Except SumError Integer
-trySum = fmap sum . zipWithM (\i s -> withExcept (SumError i) (tryRead s)) [1..]
+trySum = fmap sum . zipWithM (withExcept . SumError) [1..] . map tryRead
 
 trySumTest :: Bool
 trySumTest = runExcept (trySum ["10", "20", "30"]) == Right 60
