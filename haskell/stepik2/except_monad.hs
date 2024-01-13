@@ -25,12 +25,6 @@ instance Monad (Except e) where
   (>>=) :: Except e a -> (a -> Except e b) -> Except e b
   (Except m) >>= k = Except $ m >>= (runExcept . k)
 
--- instance Monoid e => Alternative (Except e) where
---   empty :: Monoid e => Except e a
---   empty = Except $ Left mempty
-
---   (Except m1) <|> (Except m2) = Except $ m1 <|> m2
-
 {- https://stepik.org/lesson/30722/step/3?unit=11809
 3.1.3. Монада Except
 Реализуйте функцию withExcept, позволящую, если произошла ошибка,
@@ -51,3 +45,17 @@ catchE (Except (Right x)) _ = Except $ Right x
 {- usage:
 do { action1; ..; actionN } `catchE` \err -> handle -}
 
+{- https://stepik.org/lesson/30722/step/10?unit=11809
+3.1.10. Монада Except -}
+
+instance Monoid e => Alternative (Except e) where
+  empty :: Monoid e => Except e a
+  empty = Except $ Left mempty
+
+  (<|>) :: Monoid e => Except e a -> Except e a -> Except e a
+  (Except m1) <|> (Except m2) = Except $ s m1 m2
+    where s (Right x) _ = Right x
+          s _ (Right x) = Right x
+          s (Left e1) (Left e2) = Left $ e1 <> e2
+
+instance Monoid e => MonadPlus (Except e)
