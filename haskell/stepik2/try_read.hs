@@ -45,7 +45,7 @@ trySum = fmap sum . zipWithM (withExcept . SumError) [1..] . map tryRead
 trySumTest :: Bool
 trySumTest = runExcept (trySum ["10", "20", "30"]) == Right 60
   && runExcept (trySum ["10", "20", ""]) == Left (SumError 3 EmptyInput)
-  &&  runExcept (trySum ["10", "two", "30"]) == Left (SumError 2 (NoParse "two"))
+  && runExcept (trySum ["10", "two", "30"]) == Left (SumError 2 (NoParse "two"))
 
 test :: Bool
 test = tryReadTest && trySumTest
