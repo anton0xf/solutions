@@ -19,34 +19,25 @@ noop :: Int -> (Int -> r) -> r
 noop x c = c x
 
 as :: Int -> (Int -> r) -> r
-as = noop
-
 a :: Int -> (Int -> r) -> r
-a = noop
+(as : a : _) = repeat noop
 
 number :: r -> r
 number = id
 
-num :: Int -> Int -> (Int -> r) -> r
-num x y c = c $ x + y
+add :: Int -> Int -> (Int -> r) -> r
+add x y c = c $ x + y
 
 one :: Int -> (Int -> r) -> r
-one = num 1
-
 two :: Int -> (Int -> r) -> r
-two = num 2
-
 three :: Int -> (Int -> r) -> r
-three = num 3
-
 seventeen :: Int -> (Int -> r) -> r
-seventeen = num 17
-
 twenty :: Int -> (Int -> r) -> r
-twenty = num 20
+[one, two, three, seventeen, twenty] = map add [1, 2, 3, 17, 20]
+
+mult :: Int -> Int -> (Int -> r) -> r
+mult x y c = c $ x * y
 
 hundred :: Int -> (Int -> r) -> r
-hundred x c = c $ x * 100
-
 thousand :: Int -> (Int -> r) -> r
-thousand x c = c $ x * 1000
+[hundred, thousand] = map mult [100, 1000]
