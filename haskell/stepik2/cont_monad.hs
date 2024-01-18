@@ -1,6 +1,8 @@
 {- https://stepik.org/lesson/30723/step/5?unit=11811
 3.2.5. Монада Cont -}
 
+import Control.Monad
+
 newtype Cont r a = Cont { runCont :: (a -> r) -> r }
 
 evalCont :: Cont r r -> r
@@ -92,6 +94,23 @@ runCheckpointed pred cp = evalCont (cp checkpoint)
   where checkpoint x = Cont $ \c -> let v = c x
                                     in if pred v then v else x
 
+{- https://stepik.org/lesson/30723/step/11?unit=11811
+3.2.11. Монада Cont -}
+addIfSmall :: Int -> Cont r Int
+addIfSmall x = callCC $ \k -> do
+  a <- square 3
+  when (x > 100) (k 42)
+  return $ a + x
+
+addIfSmallTest :: Bool
+addIfSmallTest = evalCont (addIfSmall 200) == 42
+  && evalCont (addIfSmall 1) == 10
+
+{- https://stepik.org/lesson/30723/step/12?unit=11811
+3.2.12. Монада Cont -}
+
+callCC :: ((a -> Cont r b) -> Cont r a) -> Cont r a
+callCC f = Cont $ \c -> runCont (f $ \x -> Cont $ \_ -> c x) c
 
 test :: Bool
-test = combTest && sumSquaresTest && addTensTest
+test = combTest && sumSquaresTest && addTensTest && addIfSmallTest
