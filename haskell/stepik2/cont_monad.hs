@@ -47,5 +47,51 @@ sumSquares x y = do
 sumSquaresTest :: Bool
 sumSquaresTest = evalCont (sumSquares 3 4) == 25
 
+{- https://stepik.org/lesson/30723/step/9?unit=11811
+3.2.9. Монада Cont
+Возможность явно работать с продолжением обеспечивает доступ к очень гибкому управлению
+исполнением. В этом задании вам предстоит реализовать вычисление, которое анализирует и
+модифицирует значение, возвращаемое кодом, написанным после него.
+
+В качестве примера рассмотрим следующую функцию: -}
+
+addTens :: Int -> Checkpointed Int
+addTens x1 checkpoint = do
+  checkpoint x1
+  let x2 = x1 + 10
+  checkpoint x2     {- x2 = x1 + 10 -}
+  let x3 = x2 + 10
+  checkpoint x3     {- x3 = x1 + 20 -}
+  let x4 = x3 + 10
+  return x4         {- x4 = x1 + 30 -}
+
+{- Эта функция принимает значение x1, совершает с ним последовательность операций
+(несколько раз прибавляет 10) и после каждой операции «сохраняет» промежуточный результат.
+При запуске такой функции используется дополнительный предикат, который является критерием
+«корректности» результата, и в случае, если возвращенное функцией значение этому критерию
+не удовлетворяет, вернется последнее удовлетворяющее ему значение из «сохраненных»: -}
+
+addTensTest :: Bool
+addTensTest = runCheckpointed (< 100) (addTens 1) == 31
+  && runCheckpointed  (< 30) (addTens 1) == 21
+  && runCheckpointed  (< 20) (addTens 1) == 11
+  && runCheckpointed  (< 10) (addTens 1) == 1
+
+{- (Если ни возвращенное, ни сохраненные значения не подходят, результатом должно быть первое
+из сохраненных значений; если не было сохранено ни одного значения, то результатом должно быть
+возвращенное значение.)
+
+Обратите внимание на то, что функция checkpoint передается в Checkpointed вычисление как параметр,
+поскольку её поведение зависит от предиката,
+который будет известен только непосредственно при запуске. -}
+
+type Checkpointed a = (a -> Cont a a) -> Cont a a
+
+runCheckpointed :: (a -> Bool) -> Checkpointed a -> a
+runCheckpointed pred cp = evalCont (cp checkpoint)
+  where checkpoint x = Cont $ \c -> let v = c x
+                                    in if pred v then v else x
+
+
 test :: Bool
-test = combTest && sumSquaresTest
+test = combTest && sumSquaresTest && addTensTest
