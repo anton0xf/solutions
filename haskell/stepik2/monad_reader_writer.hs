@@ -99,16 +99,15 @@ plusAndMult2Test = (runWriter . mapM writer . runWriterT . plusAndMult2) 3
 
 separate :: (a -> Bool) -> (a -> Bool) -> [a] -> WriterT [a] (Writer [a]) [a]
 separate _ _ [] = return []
-separate p1 p2 (x : xs)
-  | p1 x = do tell [x]
-              separate p1 p2 xs
-  | p2 x = do lift $ tell [x]
-              separate p1 p2 xs
-  | otherwise = (x :) <$> separate p1 p2 xs
+separate p1 p2 (x : xs) = do
+  when (p1 x) $ tell [x]
+  when (p2 x) $ lift $ tell [x]
+  rest <- separate p1 p2 xs
+  return $ if p1 x || p2 x then rest else x : rest
 
 separateTest :: Bool
-separateTest = (runWriter . runWriterT) (separate (<3) (>7) [0..10])
-  == (([3, 4, 5, 6, 7], [0, 1, 2]), [8, 9, 10])
+separateTest = (runWriter . runWriterT) (separate (<3) (>7) [0..10]) == (([3..7], [0..2]), [8..10])
+  && (runWriter . runWriterT) (separate (<3) (<7) [1..10]) == (([7..10], [1, 2]), [1..6])
 
 -- example of two writers with different log types
 twoWriters :: WriterT (Sum Int) (Writer [Bool]) String
@@ -119,6 +118,7 @@ twoWriters = do
   lift $ tell [False]
   return "OK"
 
+twoWritersTest :: Bool
 twoWritersTest = (runWriter. runWriterT) twoWriters == (("OK", Sum 3), [True, False])
 
 -- all tests
