@@ -63,6 +63,13 @@ instance Monad (FailCont r e) where
   (>>=) :: FailCont r e a -> (a -> FailCont r e b) -> FailCont r e b
   (FailCont cx) >>= k = FailCont $ \vc ec -> cx (\x -> runFailCont (k x) vc ec) ec
 
+{- https://stepik.org/lesson/30723/step/13?unit=11811
+3.2.13. Монада Cont
+Реализуйте функцию callCFC для монады FailCont по аналогии с callCC. -}
+
+callCFC :: ((a -> FailCont r e b) -> FailCont r e a) -> FailCont r e a
+callCFC f = FailCont $ \ok err -> runFailCont (f $ \x -> FailCont $ \_ _ -> ok x) ok err
+
 -- all tests
 test :: Bool
 test = addIntsTest
