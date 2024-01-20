@@ -121,9 +121,28 @@ twoWriters = do
 twoWritersTest :: Bool
 twoWritersTest = (runWriter. runWriterT) twoWriters == (("OK", Sum 3), [True, False])
 
+{- https://stepik.org/lesson/31556/step/6?unit=11810
+3.3.6. Трансформеры монад -}
+
+type MyRW = ReaderT [String] (Writer String)
+
+runMyRW :: MyRW a -> [String] -> (a, String)
+runMyRW m env = runWriter $ runReaderT m env
+
+logFirstAndRetSecond3 :: MyRW String
+logFirstAndRetSecond3 = do
+  e1 <- asks head
+  e2 <- asks (map toUpper . head . tail)
+  lift $ tell e1
+  return e2
+
+logFirstAndRetSecond3Test :: Bool
+logFirstAndRetSecond3Test = runMyRW logFirstAndRetSecond3 strs == ("DEFG","abc")
+
 -- all tests
 test :: Bool
 test = secondElemTest && logFirstTest
   && logFirstAndRetSecond1Test && logFirstAndRetSecond2Test
   && plusAndMult0Test && plusAndMult1Test && plusAndMult2Test
   && separateTest && twoWritersTest
+  && logFirstAndRetSecond3Test
