@@ -2,6 +2,8 @@
 3.3.2. Трансформеры монад -}
 
 import Data.Char
+import Data.Monoid
+import Control.Monad
 import Control.Monad.Trans
 import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Writer
@@ -88,8 +90,40 @@ plusAndMult2Test = (runWriter . mapM writer . runWriterT . plusAndMult2) 3
   == ([      3,        4,        5,        6,        0,        3,        6,        9],
       ["0 -> 3", "1 -> 4", "2 -> 5", "3 -> 6", "0 -> 0", "1 -> 3", "2 -> 6", "3 -> 9"])
 
+{- https://stepik.org/lesson/31556/step/5?unit=11810
+3.3.5. Трансформеры монад
+
+Реализуйте функцию separate. Эта функция принимает два предиката и список и записывает
+в один лог элементы списка, удовлетворяющие первому предикату, в другой лог — второму предикату,
+а возвращающает список элементов, ни одному из них не удовлетворяющих. -}
+
+separate :: (a -> Bool) -> (a -> Bool) -> [a] -> WriterT [a] (Writer [a]) [a]
+separate _ _ [] = return []
+separate p1 p2 (x : xs)
+  | p1 x = do tell [x]
+              separate p1 p2 xs
+  | p2 x = do lift $ tell [x]
+              separate p1 p2 xs
+  | otherwise = (x :) <$> separate p1 p2 xs
+
+separateTest :: Bool
+separateTest = (runWriter . runWriterT) (separate (<3) (>7) [0..10])
+  == (([3, 4, 5, 6, 7], [0, 1, 2]), [8, 9, 10])
+
+-- example of two writers with different log types
+twoWriters :: WriterT (Sum Int) (Writer [Bool]) String
+twoWriters = do
+  tell $ Sum 1
+  lift $ tell [True]
+  tell $ Sum 2
+  lift $ tell [False]
+  return "OK"
+
+twoWritersTest = (runWriter. runWriterT) twoWriters == (("OK", Sum 3), [True, False])
+
 -- all tests
 test :: Bool
 test = secondElemTest && logFirstTest
   && logFirstAndRetSecond1Test && logFirstAndRetSecond2Test
   && plusAndMult0Test && plusAndMult1Test && plusAndMult2Test
+  && separateTest && twoWritersTest
