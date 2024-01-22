@@ -139,10 +139,37 @@ logFirstAndRetSecond3 = do
 logFirstAndRetSecond3Test :: Bool
 logFirstAndRetSecond3Test = runMyRW logFirstAndRetSecond3 strs == ("DEFG","abc")
 
+{- https://stepik.org/lesson/31556/step/7?unit=11810
+3.3.7. Трансформеры монад
+
+Наша абстракция пока что недостаточно хороша, поскольку пользователь всё ещё должен помнить такие
+детали, как, например, то, что asks нужно вызывать напрямую, а tell — только с помощью lift.
+
+Нам хотелось бы скрыть такие детали реализации, обеспечив унифицированный интерфейс доступа к
+возможностям нашей монады, связанным с чтением окружения, и к возможностям, связанным с записью в
+лог. Для этого реализуйте функции myAsks и myTell, позволяющие записать logFirstAndRetSecond
+следующим образом: -}
+
+logFirstAndRetSecond4 :: MyRW String
+logFirstAndRetSecond4 = do
+  el1 <- myAsks head
+  el2 <- myAsks (map toUpper . head . tail)
+  myTell el1
+  return el2
+
+logFirstAndRetSecond4Test :: Bool
+logFirstAndRetSecond4Test = runMyRW logFirstAndRetSecond4 strs == ("DEFG","abc")
+
+myAsks :: ([String] -> a) -> MyRW a
+myAsks = asks
+
+myTell :: String -> MyRW ()
+myTell = lift . tell
+
 -- all tests
 test :: Bool
 test = secondElemTest && logFirstTest
   && logFirstAndRetSecond1Test && logFirstAndRetSecond2Test
   && plusAndMult0Test && plusAndMult1Test && plusAndMult2Test
   && separateTest && twoWritersTest
-  && logFirstAndRetSecond3Test
+  && logFirstAndRetSecond3Test && logFirstAndRetSecond4Test
