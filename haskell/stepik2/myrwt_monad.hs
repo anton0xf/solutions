@@ -82,16 +82,17 @@ veryComplexComputationTest = isNothing (runMyRWT veryComplexComputation ["abc","
 myAsk :: MyRWT Maybe [String]
 myAsk = myAsks id
 
+myWithReader :: ([String] -> [String]) -> MyRWT m a -> MyRWT m a
+myWithReader f = ReaderT . (. f) . runReaderT
+-- myWithReader = withReaderT
+-- withReaderT f m = ReaderT $ runReaderT m . f
+
 veryComplexComputation :: MyRWT Maybe (String, String)
 veryComplexComputation = do
-  strs <- myAsk
-  e2 <- case filter (even . length) strs of
-    (e1 : e2 : _) -> myTell (e1 ++ ",") >> return e2
-    _ -> myLift Nothing
-  o2 <- case filter (odd . length) strs of
-    (o1 : o2 : _) -> myTell o1 >> return o2
-    _ -> myLift Nothing
-  return (map toUpper e2, map toUpper o2)
+  e2 <- myWithReader (filter $ even . length) logFirstAndRetSecondSafe
+  myTell ","
+  o2 <- myWithReader (filter $ odd . length) logFirstAndRetSecondSafe
+  return (e2, o2)
 
 -- all tests
 test :: Bool
