@@ -2,6 +2,7 @@
 3.4.3. Трансформер ReaderT -}
 
 import Data.Functor.Identity
+import Control.Applicative
 
 {- В задачах из предыдущих модулей мы сталкивались с типами данных -}
 
@@ -40,7 +41,8 @@ arr3Test = ((getArr3T $ arr3 foldr) (*) 1 [1..5] :: Either String Integer) == Ri
 
 instance Functor m => Functor (Arr2T e1 e2 m) where
   fmap :: (a -> b) -> Arr2T e1 e2 m a -> Arr2T e1 e2 m b
-  fmap f = Arr2T . (\g e1 e2 -> f <$> g e1 e2) . getArr2T
+  -- fmap f = Arr2T . (\g e1 e2 -> f <$> g e1 e2) . getArr2T
+  fmap f = Arr2T . (fmap . fmap . fmap $ f) . getArr2T
 
 arr2FmapTest :: Bool
 arr2FmapTest = (getArr2T $ succ <$> a2l) 10 100 == [11, 101, 111]
@@ -48,7 +50,8 @@ arr2FmapTest = (getArr2T $ succ <$> a2l) 10 100 == [11, 101, 111]
 
 instance Functor m => Functor (Arr3T e1 e2 e3 m) where
   fmap :: (a -> b) -> Arr3T e1 e2 e3 m a -> Arr3T e1 e2 e3 m b
-  fmap f = Arr3T . (\g e1 e2 e3 -> f <$> g e1 e2 e3) . getArr3T
+  -- fmap f = Arr3T . (\g e1 e2 e3 -> f <$> g e1 e2 e3) . getArr3T
+  fmap f = Arr3T . (fmap . fmap . fmap . fmap $ f) . getArr3T
 
 arr3FmapTest :: Bool
 arr3FmapTest = (getArr3T $ sqrt <$> a3e) 2 3 4 == Right 3.0
@@ -61,17 +64,21 @@ arr3FmapTest = (getArr3T $ sqrt <$> a3e) 2 3 4 == Right 3.0
 
 instance Applicative m => Applicative (Arr2T e1 e2 m) where
   pure :: a -> Arr2T e1 e2 m a
-  pure x = Arr2T (\e1 e2 -> pure x)
+  -- pure x = Arr2T (\e1 e2 -> pure x)
+  pure = Arr2T . const . const . pure
 
   (<*>) :: Arr2T e1 e2 m (a -> b) -> Arr2T e1 e2 m a -> Arr2T e1 e2 m b
-  (Arr2T rf) <*> (Arr2T rx) = Arr2T (\e1 e2 -> rf e1 e2 <*> rx e1 e2)
+  -- (Arr2T rf) <*> (Arr2T rx) = Arr2T (\e1 e2 -> rf e1 e2 <*> rx e1 e2)
+  (Arr2T rf) <*> (Arr2T rx) = Arr2T $ (liftA2 . liftA2) (<*>) rf rx
 
 instance Applicative m => Applicative (Arr3T e1 e2 e3 m) where
   pure :: a -> Arr3T e1 e2 e3 m a
-  pure x = Arr3T (\e1 e2 e3 -> pure x)
+  -- pure x = Arr3T (\e1 e2 e3 -> pure x)
+  pure = Arr3T . const . const . const . pure
 
   (<*>) :: Arr3T e1 e2 e3 m (a -> b) -> Arr3T e1 e2 e3 m a -> Arr3T e1 e2 e3 m b
-  (Arr3T rf) <*> (Arr3T rx) = Arr3T (\e1 e2 e3 -> rf e1 e2 e3 <*> rx e1 e2 e3)
+  -- (Arr3T rf) <*> (Arr3T rx) = Arr3T (\e1 e2 e3 -> rf e1 e2 e3 <*> rx e1 e2 e3)
+  (Arr3T rf) <*> (Arr3T rx) = Arr3T $ (liftA2 . liftA2 . liftA2) (<*>) rf rx
 
 apArr2Test :: Bool
 apArr2Test = getArr2T (a2fl <*> a2l) 2 10 == [22, 30, 7, 7]
@@ -83,8 +90,36 @@ apArr3Test = getArr3T (a3fl <*> a3l) 3 5 7 == [8, 10, 10, 12]
   where a3fl = Arr3T $ \e1 e2 e3 -> [(e2+),(e3+)]
         a3l = Arr3T $ \e1 e2 e3 -> [e1,e2]
 
+{- https://stepik.org/lesson/38577/step/12?unit=17396
+3.4.12. Трансформер ReaderT
+Сделайте трансформеры Arr2T и Arr3T представителями класса типов Monad в предположении,
+что m является монадой -}
+
+instance Monad m => Monad (Arr2T e1 e2 m) where
+  (>>=) :: Arr2T e1 e2 m a -> (a -> Arr2T e1 e2 m b) -> Arr2T e1 e2 m b
+  -- (Arr2T rx) >>= k = Arr2T $ \e1 e2 -> rx e1 e2 >>= (\m -> getArr2T m e1 e2) . k
+  (Arr2T rx) >>= k = Arr2T $ \e1 e2 -> do
+    x <- rx e1 e2
+    getArr2T (k x) e1 e2
+
+instance Monad m => Monad (Arr3T e1 e2 e3 m) where
+  (>>=) :: Arr3T e1 e2 e3 m a -> (a -> Arr3T e1 e2 e3 m b) -> Arr3T e1 e2 e3 m b
+  -- (Arr3T rx) >>= k = Arr3T $ \e1 e2 e3 -> rx e1 e2 e3 >>= (\m -> getArr3T m e1 e2 e3) . k
+  (Arr3T rx) >>= k = Arr3T $ \e1 e2 e3 -> do
+    x <- rx e1 e2 e3
+    getArr3T (k x) e1 e2 e3
+
+monadArr2Test :: Bool
+monadArr2Test = getArr2T (do {x <- a2l; y <- a2l; return (x + y)}) 3 5 == [6, 8, 8, 10]
+  where a2l = Arr2T $ \e1 e2 -> [e1,e2]
+
+monadArr3Test :: Bool
+monadArr3Test = getArr3T (do {x <- a3m; y <- a3m; return (x * y)}) 2 3 4 == Just 81
+  where a3m = Arr3T $ \e1 e2 e3 -> Just (e1 + e2 + e3)
+
 -- all tests
 test :: Bool
 test = arr2Test && arr3Test
   && arr2FmapTest && arr3FmapTest
   && apArr2Test && apArr3Test
+  && monadArr2Test && monadArr3Test
