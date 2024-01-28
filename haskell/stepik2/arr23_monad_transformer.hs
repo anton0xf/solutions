@@ -3,6 +3,8 @@
 
 import Data.Functor.Identity
 import Control.Applicative
+import Control.Monad.Fail
+import Control.Monad.Trans
 
 {- В задачах из предыдущих модулей мы сталкивались с типами данных -}
 
@@ -117,9 +119,42 @@ monadArr3Test :: Bool
 monadArr3Test = getArr3T (do {x <- a3m; y <- a3m; return (x * y)}) 2 3 4 == Just 81
   where a3m = Arr3T $ \e1 e2 e3 -> Just (e1 + e2 + e3)
 
+{- https://stepik.org/lesson/38577/step/13?unit=17396
+3.4.13. Трансформер ReaderT
+Разработанная нами реализация интерфейса монады для трансформера Arr3T (как и для Arr2T и ReaderT)
+имеет не очень хорошую особенность. При неудачном сопоставлении с образцом вычисления в этой
+монаде завершаются аварийно, с выводом сообщения об ошибке в диагностический поток:
+
+GHCi> a3m = Arr3T $ \e1 e2 e3 -> Just (e1 + e2 + e3)
+GHCi> getArr3T (do {9 <- a3m; y <- a3m; return y}) 2 3 4
+Just 9
+GHCi> getArr3T (do {10 <- a3m; y <- a3m; return y}) 2 3 4
+*** Exception: Pattern match failure in do expression at :12:15-16
+
+Для обычного ридера такое поведение нормально, однако у трансформера внутренняя монада может
+уметь обрабатывать ошибки более щадащим образом. Переопределите функцию fail класса типов Monad
+для Arr3T так, чтобы обработка неудачного сопоставления с образцом осуществлялась
+бы во внутренней монаде -}
+
+instance MonadFail m => MonadFail (Arr2T e1 e2 m) where
+  fail :: String -> Arr2T e1 e2 m a
+  -- fail msg = Arr2T $ \e1 e2 -> fail msg
+  fail = Arr2T . const . const . fail
+
+instance MonadFail m => MonadFail (Arr3T e1 e2 e3 m) where
+  fail :: String -> Arr3T e1 e2 e3 m a
+  -- fail msg = Arr3T $ \e1 e2 e3 -> fail msg
+  fail = Arr3T . const . const . const . fail
+
+failArr3Test :: Bool
+failArr3Test = getArr3T (do { 10 <- a3m; a3m }) 2 3 4 == (Nothing :: Maybe Int)
+               && getArr3T (do { 9 <- a3m; a3m }) 2 3 4 == Just 9
+  where a3m = Arr3T $ \e1 e2 e3 -> Just (e1 + e2 + e3)
+
 -- all tests
 test :: Bool
 test = arr2Test && arr3Test
   && arr2FmapTest && arr3FmapTest
   && apArr2Test && apArr3Test
   && monadArr2Test && monadArr3Test
+  && failArr3Test
