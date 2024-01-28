@@ -119,6 +119,15 @@ monadArr3Test :: Bool
 monadArr3Test = getArr3T (do {x <- a3m; y <- a3m; return (x * y)}) 2 3 4 == Just 81
   where a3m = Arr3T $ \e1 e2 e3 -> Just (e1 + e2 + e3)
 
+-- MonadTrans
+instance MonadTrans (Arr2T e1 e2) where
+  lift :: Monad m => m a -> Arr2T e1 e2 m a
+  lift = Arr2T . const . const
+
+instance MonadTrans (Arr3T e1 e2 e3) where
+  lift :: Monad m => m a -> Arr3T e1 e2 e3 m a
+  lift = Arr3T . const . const . const
+
 {- https://stepik.org/lesson/38577/step/13?unit=17396
 3.4.13. Трансформер ReaderT
 Разработанная нами реализация интерфейса монады для трансформера Arr3T (как и для Arr2T и ReaderT)
@@ -139,12 +148,14 @@ GHCi> getArr3T (do {10 <- a3m; y <- a3m; return y}) 2 3 4
 instance MonadFail m => MonadFail (Arr2T e1 e2 m) where
   fail :: String -> Arr2T e1 e2 m a
   -- fail msg = Arr2T $ \e1 e2 -> fail msg
-  fail = Arr2T . const . const . fail
+  -- fail = Arr2T . const . const . fail
+  fail = lift . fail
 
 instance MonadFail m => MonadFail (Arr3T e1 e2 e3 m) where
   fail :: String -> Arr3T e1 e2 e3 m a
   -- fail msg = Arr3T $ \e1 e2 e3 -> fail msg
-  fail = Arr3T . const . const . const . fail
+  -- fail = Arr3T . const . const . const . fail
+  fail = lift . fail
 
 failArr3Test :: Bool
 failArr3Test = getArr3T (do { 10 <- a3m; a3m }) 2 3 4 == (Nothing :: Maybe Int)
