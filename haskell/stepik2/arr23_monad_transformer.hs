@@ -6,6 +6,15 @@ import Control.Applicative
 import Control.Monad.Fail
 import Control.Monad.Trans
 
+-- from composition:Data.Composition
+infixr 8 .:
+(.:) :: (c -> d) -> (a -> b -> c) -> a -> b -> d
+(f .: g) x y = f (g x y)
+
+infixr 8 .:.
+(.:.) :: (d -> e) -> (a -> b -> c -> d) -> a -> b -> c -> e
+(f .:. g) x y z = f (g x y z)
+
 {- В задачах из предыдущих модулей мы сталкивались с типами данных -}
 
 newtype Arr2 e1 e2 a = Arr2 { getArr2 :: e1 -> e2 -> a }
@@ -162,6 +171,39 @@ failArr3Test = getArr3T (do { 10 <- a3m; a3m }) 2 3 4 == (Nothing :: Maybe Int)
                && getArr3T (do { 9 <- a3m; a3m }) 2 3 4 == Just 9
   where a3m = Arr3T $ \e1 e2 e3 -> Just (e1 + e2 + e3)
 
+{- https://stepik.org/lesson/38577/step/16?unit=17396
+3.4.16. Трансформер ReaderT
+Сделайте трансформер Arr2T класса типов MonadTrans: -}
+
+liftArr2Test :: Bool
+liftArr2Test = getArr2T (do {x <- a2l; y <- lift [10, 20, 30]; return (x + y)}) 3 4
+      == [13, 23, 33, 14, 24, 34]
+  where a2l = Arr2T $ \e1 e2 -> [e1, e2]
+
+{- Реализуйте также «стандартный интерфейс» для этой монады — функцию -}
+
+asks2 :: Monad m => (e1 -> e2 -> a) -> Arr2T e1 e2 m a
+-- asks2 f = Arr2T $ \e1 e2 -> return $ f e1 e2
+-- asks2 f = Arr2T (return .: f)
+asks2 = Arr2T . (return .:)
+
+{- работающую как asks для ReaderT, но принимающую при этом функцию от обоих наличных окружений: -}
+
+asks2Test :: Bool
+asks2Test = runIdentity
+      (getArr2T
+        (do x <- asks2 const
+            y <- asks2 (\_ x -> x)
+            z <- asks2 (,)
+            return (x, y, z))
+        'A' 'B')
+  == ('A', 'B', ('A', 'B'))
+
+asks3 :: Monad m => (e1 -> e2 -> e3 -> a) -> Arr3T e1 e2 e3 m a
+-- asks3 f = Arr3T $ \e1 e2 e3 -> return $ f e1 e2 e3
+-- asks3 f = Arr3T (return .:. f)
+asks3 = Arr3T . (return .:.)
+
 -- all tests
 test :: Bool
 test = arr2Test && arr3Test
@@ -169,3 +211,4 @@ test = arr2Test && arr3Test
   && apArr2Test && apArr3Test
   && monadArr2Test && monadArr3Test
   && failArr3Test
+  && liftArr2Test && asks2Test
