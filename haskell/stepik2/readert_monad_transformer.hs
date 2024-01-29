@@ -1,6 +1,8 @@
 {- https://stepik.org/lesson/38577/step/2?unit=17396
 3.4.2. Трансформер ReaderT -}
 
+import Control.Monad.Trans
+
 newtype ReaderT r m a = ReaderT { runReaderT :: r -> m a }
 
 reader :: Applicative m => (r -> a) -> ReaderT r m a
@@ -28,3 +30,12 @@ instance Monad m => Monad (ReaderT r m) where
             x <- rx r
             runReaderT (k x) r
 
+{- https://stepik.org/lesson/38577/step/13?unit=17396
+3.4.14. Трансформер ReaderT -}
+instance MonadTrans (ReaderT r) where
+  lift :: Monad m => m a -> ReaderT r m a
+  lift = ReaderT . const
+
+instance MonadFail m => MonadFail (ReaderT r m) where
+  fail :: String -> ReaderT r m a
+  fail = lift . fail
