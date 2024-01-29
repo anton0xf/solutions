@@ -39,3 +39,39 @@ instance MonadTrans (ReaderT r) where
 instance MonadFail m => MonadFail (ReaderT r m) where
   fail :: String -> ReaderT r m a
   fail = lift . fail
+
+{- https://stepik.org/lesson/38577/step/15?unit=17396
+3.4.15. Трансформер ReaderT -}
+
+ask :: Monad m => ReaderT r m r
+-- ask = ReaderT $ \r -> return r
+ask = ReaderT return
+
+asks :: Monad m => (r -> a) -> ReaderT r m a
+-- asks f = ReaderT $ \r -> return (f r)
+-- asks f = ReaderT (return . f)
+asks = ReaderT . (return .)
+
+local :: Monad m => (r -> r') -> ReaderT r' m a -> ReaderT r m a
+-- local f (ReaderT rx) = do
+--   r <- ask
+--   lift $ rx $ f r
+local f (ReaderT rx) = ReaderT (rx . f)
+
+askTest :: Bool
+askTest = runReaderT (do {e <- rl3; f <- lift [pred, succ]; return $ f e}) 7
+      == [41, 43, 6, 8, 13, 15]
+  where rl3 = ReaderT $ \env -> [42, env, env * 2]
+
+asksTest :: Bool
+asksTest = runReaderT (do {e <- asks (^2); f <- lift [pred, succ]; return $ f e}) 7 == [48, 50]
+
+localTest :: Bool
+localTest = runReaderT (do {e' <- local (^2) rl3; e <- ask; return $ e + e'}) 3 == [8, 12, 21]
+  where rl3 = ReaderT $ \env -> [5, env, env * 2]
+
+
+-- all tests
+test :: Bool
+test = -- TODO examples for first parts
+  askTest && asksTest && localTest
