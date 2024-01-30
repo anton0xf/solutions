@@ -1,5 +1,6 @@
 import Data.Bifunctor
 import Data.Tuple
+import Control.Applicative
 
 {- https://stepik.org/lesson/38578/step/2?unit=20503
 4.1.2. Трансформер WriterT -}
@@ -27,12 +28,10 @@ instance (Monoid w, Applicative m) => Applicative (WriterT w m) where
   pure x = WriterT $ pure (x, mempty)
 
   (<*>) :: WriterT w m (a -> b) -> WriterT w m a -> WriterT w m b
-  -- (WriterT wf) <*> (WriterT wx) = WriterT $ swap <$> (fmap ((<*>) . swap) wf <*> (swap <$> wx))
-  (WriterT wf) <*> (WriterT wx) = WriterT $ wfap wf <*> wx
+  -- (WriterT wf) <*> (WriterT wx) = WriterT $ swap <$> liftA2 (<*>) (swap <$> wf) (swap <$> wx)
+  (WriterT wf) <*> (WriterT wx) = WriterT $ liftA2 wap wf wx
     where
-      wfap :: m (a -> b, w) -> m ((a, w) -> (b, w))
-      wfap = fmap wap
-
+      -- wap wf wx = runWriter $ (Writer wf) <*> (Writer wx)
       wap :: (a -> b, w) -> (a, w) -> (b, w)
       wap ~(f, w1) ~(x, w2) = (f x, w1 <> w2)
 
