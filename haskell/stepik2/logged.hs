@@ -13,6 +13,7 @@ data Logged a = Logged String a
   deriving (Eq, Show)
 
 instance Functor Logged where
+  fmap :: (a -> b) -> Logged a -> Logged b
   fmap f (Logged log x) = Logged log (f x)
 
 instance Applicative Logged where
