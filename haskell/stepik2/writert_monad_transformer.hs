@@ -1,3 +1,4 @@
+import Data.Char
 import Data.Bifunctor
 import Data.Tuple
 import Control.Applicative
@@ -12,8 +13,8 @@ newtype WriterT w m a = WriterT { runWriterT :: m (a, w) }
 runWriterTTest :: Bool
 runWriterTTest = runWriterT (WriterT $ Just (1, "a")) == Just (1, "a")
 
-writer :: Monad m => m (a, w) -> WriterT w m a
-writer = WriterT
+writer :: Applicative m => (a, w) -> WriterT w m a
+writer = WriterT . pure
 
 {- https://stepik.org/lesson/38578/step/3?unit=20503
 4.1.3. Трансформер WriterT -}
@@ -57,8 +58,8 @@ bindTest = runWriterT (WriterT [(3, "A"), (4, "B")] >>= k)
   where k x = WriterT [(x+1, show x ++ "+1"), (x*2, show x ++ "*2")]
 
 doTest :: Bool
-doTest = runWriterT (do {x <- writer [(3, "3"), (4, "4")];
-                         writer [(x+1, "+1"), (x*2, "*2")]})
+doTest = runWriterT (do {x <- WriterT [(3, "3"), (4, "4")];
+                         WriterT [(x+1, "+1"), (x*2, "*2")]})
   == [(4, "3+1"), (6, "3*2"), (5, "4+1"), (8, "4*2")]
 
 instance Monoid w => MonadTrans (WriterT w) where
@@ -72,11 +73,36 @@ instance (Monoid w, MonadFail m) => MonadFail (WriterT w m) where
   fail = WriterT . fail
 
 failTest :: Bool
-failTest = runWriterT (do {x <- writer [(3, "3"), (4, "4")];
+failTest = runWriterT (do {x <- WriterT [(3, "3"), (4, "4")];
                            when (x /= 3) $ fail "msg";
-                           writer [(x+1, "+1"), (x*2, "*2")]})
+                           WriterT [(x+1, "+1"), (x*2, "*2")]})
   == [(4, "3+1"), (6, "3*2")]
+
+{- https://stepik.org/lesson/38578/step/9?unit=20503
+4.1.9. Трансформер WriterT -}
+tell :: Applicative m => w -> WriterT w m ()
+tell = writer . ((),)
+
+tellTest :: Bool
+tellTest = runWriterT (do {x <- WriterT [(1, "A"), (2, "B")]; tell " hi"; return (x + 1)})
+  == [(2, "A hi"), (3, "B hi")]
+
+listen :: Functor m => WriterT w m a -> WriterT w m (a, w)
+listen (WriterT wx) = WriterT $ (\(x, log) -> ((x, log), log)) <$> wx
+
+listenTest :: Bool
+listenTest = runWriterT (do {(x, w) <- listen $ WriterT [(3, "3"), (4, "4")];
+                             return w}) == [("3", "3"), ("4", "4")]
+
+censor :: Functor m => (w -> w) -> WriterT w m a -> WriterT w m a
+censor f (WriterT wx) = WriterT $ second f <$> wx
+
+censorTest :: Bool
+censorTest = runWriterT (censor (filter isUpper)
+                         $ do {x <- WriterT [(1, "A"), (2, "b")]; return (x + 1)})
+  == [(2, "A"), (3, "")]
 
 -- run all test
 test :: Bool
 test = runWriterTTest && fmapTest && apTest && bindTest && doTest && failTest
+  && tellTest && listenTest && censorTest
