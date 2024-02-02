@@ -6,6 +6,9 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.Identity
 import Control.Monad.Fail
+import Control.Monad.Trans
+import Control.Monad.Trans.State
+import Control.Monad.Trans.Class
 
 {- Сделайте на основе типа данных -}
 
@@ -70,8 +73,62 @@ failTst xs = do
 
 {- которые при правильной реализации монады должны вести себя так: -}
 
-test = runIdentity (runLoggT logTst) == Logged "AAABBB" 42
+loggTTest = runIdentity (runLoggT logTst) == Logged "AAABBB" 42
   && runLoggT (failTst [5,5]) == [Logged "A" 42,Logged "A" 42]
   && runLoggT (failTst [5,6]) == [Logged "A" 42]
   && null (runLoggT $ failTst [7,6])
 
+{- https://stepik.org/lesson/38578/step/10?unit=20503
+4.1.10. Трансформер WriterT
+
+Напишите функцию write2log обеспечивающую трансформер LoggT стандартным логгирующим интерфейсом: -}
+
+write2log :: Monad m => String -> LoggT m ()
+write2log msg = LoggT $ return $ Logged msg ()
+
+{- Эта функция позволяет пользователю осуществлять запись в лог в процессе вычисления в монаде
+LoggT m для любой монады m. Введите для удобства упаковку для LoggT Identity и напишите функцию
+запускающую вычисления в этой монаде -}
+
+type Logg = LoggT Identity
+
+runLogg :: Logg a -> Logged a
+runLogg = runIdentity . runLoggT
+
+{- Тест -}
+
+logTst' :: Logg Integer
+logTst' = do
+  write2log "AAA"
+  write2log "BBB"
+  return 42
+
+{- должен дать такой результат: -}
+
+loggTest :: Bool
+loggTest = runLogg logTst' == Logged "AAABBB" 42
+
+{- А тест (подразумевающий импорт Control.Monad.Trans.State и Control.Monad.Trans.Class) -}
+
+stLog :: StateT Integer Logg Integer
+stLog = do
+  modify (+1)
+  a <- get
+  lift $ write2log $ show $ a * 10
+  put 42
+  return $ a * 100
+
+{- такой: -}
+
+stLogTest :: Bool
+stLogTest = runLogg (runStateT stLog 2) == Logged "30" (300, 42)
+
+
+{- https://stepik.org/lesson/38578/step/12?unit=20503 -}
+instance MonadTrans LoggT where
+  lift :: Monad m => m a -> LoggT m a
+  lift = LoggT . (Logged mempty <$>)
+
+-- all tests
+test :: Bool
+test = loggTTest && loggTest && stLogTest
