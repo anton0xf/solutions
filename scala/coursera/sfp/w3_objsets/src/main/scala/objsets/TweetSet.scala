@@ -122,6 +122,8 @@ class Empty extends TweetSet:
 
   def descendingByRetweet: TweetList = Nil
 
+  override def toString: String = "E"
+
   /**
    * The following methods are already implemented
    */
@@ -145,7 +147,9 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet:
       left.filterAcc(p,
         if p(elem) then acc.incl(elem) else acc))
 
-  def union(that: TweetSet): TweetSet = left.union(right).union(that).incl(elem)
+  def union(that: TweetSet): TweetSet =
+    println("union(" + this + ", " + that + ")")
+    left.union(right).union(that).incl(elem)
 
   def mostRetweeted: Tweet =
     val m1 = elem
@@ -154,6 +158,8 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet:
     m3
 
   def descendingByRetweet: TweetList = Cons(mostRetweeted, remove(mostRetweeted).descendingByRetweet)
+
+  override def toString: String = "T(" + left + ", " + elem.text + ", " + right + ")"
 
   /**
    * The following methods are already implemented
@@ -221,3 +227,18 @@ object GoogleVsApple:
 object Main extends App:
   // Print the trending tweets
   GoogleVsApple.trending foreach println
+
+@main def printTweets: Unit =
+  println("Start")
+  val gizmodoTweets: List[Tweet] = tweetMap("gizmodo")
+  val engadgetTweets: List[Tweet] = tweetMap("engadget")
+  println("gizmodo tweets: " + gizmodoTweets.size)
+  println("engadget tweets: " + engadgetTweets.size)
+
+  val gizmodoTweetSet = toTweetSet(gizmodoTweets)
+  val engadgetTweetSet = toTweetSet(engadgetTweets)
+  println("gizmodo tweetset: " + gizmodoTweetSet.size)
+  println("engadget tweetset: " + engadgetTweetSet.size)
+
+  println("gizmodo + engadget tweetset: " + gizmodoTweetSet.union(engadgetTweetSet).size)
+  println("all tweets: " + allTweets.size)

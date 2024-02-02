@@ -38,6 +38,34 @@ class TweetSetSuite extends munit.FunSuite:
       assertEquals(size(set4c.union(set4d)), 4)
   }
 
+  test("union: 3 + 3 = 5") {
+    def t(s: String): Tweet = Tweet("u", s, 0)
+    def leaf(t: Tweet): TweetSet = NonEmpty(t, Empty(), Empty())
+    val s1 = NonEmpty(t("b"), leaf(t("a")), leaf(t("c")))
+    val s2 = NonEmpty(t("d"), leaf(t("c")), leaf(t("e")))
+    assertEquals(size(s1.union(s2)), 5)
+  }
+
+  test("union: 4 + 4 = 6") {
+    def t(s: String): Tweet = Tweet("u", s, 0)
+    def list2set(xs: List[String]): TweetSet =
+      if xs.isEmpty then Empty()
+      else list2set(xs.tail).incl(t(xs.head))
+    val s1 = list2set("abcd".toList.map(c => c.toString))
+    val s2 = list2set("cdef".toList.map(c => c.toString))
+    assertEquals(size(s1.union(s2)), 6)
+  }
+
+  test("union: 9 + 9 = 15") {
+    def t(s: String): Tweet = Tweet("u", s, 0)
+    def list2set(xs: List[String]): TweetSet =
+      if xs.isEmpty then Empty()
+      else list2set(xs.tail).incl(t(xs.head))
+    val s1 = list2set("abcdefghi".toList.map(c => c.toString))
+    val s2 = list2set("ghijklmno".toList.map(c => c.toString))
+    assertEquals(size(s1.union(s2)), 15)
+  }
+
   test("union: with empty set1") {
     new TestSets:
       assertEquals(size(set5.union(set1)), 4)
