@@ -30,14 +30,14 @@ instance Monad m => Applicative (StateT s m) where
 
   (<*>) :: StateT s m (a -> b) -> StateT s m a -> StateT s m b
   (StateT sf) <*> (StateT sx) = StateT $ \st -> do
-    (f, st1) <- sf st
-    (x, st2) <- sx st1
+    ~(f, st1) <- sf st
+    ~(x, st2) <- sx st1
     return (f x, st2)
 
 instance Monad m => Monad (StateT s m) where
   (>>=) :: StateT s m a -> (a -> StateT s m b) -> StateT s m b
   (StateT sx) >>= k = StateT $ \st -> do
-    (x, st1) <- sx st
+    ~(x, st1) <- sx st
     runStateT (k x) st1
 
 instance MonadTrans (StateT s) where
