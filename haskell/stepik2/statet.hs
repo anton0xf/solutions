@@ -19,6 +19,8 @@ evalStateT m st = fst <$> runStateT m st
 execStateT :: Functor m => StateT s m a -> s -> m s
 execStateT m st = snd <$> runStateT m st
 
+{- https://stepik.org/lesson/38579/step/6?unit=20504
+4.2.6. Трансформер StateT -}
 instance Functor m => Functor (StateT s m) where
   fmap :: (a -> b) -> StateT s m a -> StateT s m b
   -- fmap f (StateT sx) = StateT $ \st -> first f <$> sx st
