@@ -6,7 +6,7 @@ import Control.Monad.Trans
 
 newtype StateT s m a = StateT { runStateT :: s -> m (a, s) }
 
-state :: Monad m => (s -> (a, s)) -> StateT s m a
+state :: Applicative m => (s -> (a, s)) -> StateT s m a
 -- state f = StateT $ pure . f
 state = StateT . (pure .)
 
@@ -42,10 +42,26 @@ instance Monad m => Monad (StateT s m) where
     ~(x, st1) <- sx st
     runStateT (k x) st1
 
+{- https://stepik.org/lesson/38579/step/12?unit=20504
+4.2.12. Трансформер StateT -}
 instance MonadTrans (StateT s) where
   lift :: Monad m => m a -> StateT s m a
   lift m = StateT $ \st -> (, st) <$> m
 
+{- https://stepik.org/lesson/38579/step/11?unit=20504
+4.2.11. Трансформер StateT -}
 instance MonadFail m => MonadFail (StateT s m) where
   fail :: String -> StateT s m a
   fail = lift . fail
+
+{- https://stepik.org/lesson/38579/step/13?unit=20504
+4.2.13. Трансформер StateT -}
+
+get :: Applicative m => StateT s m s
+get = state $ \st -> (st, st)
+
+put :: Applicative m => s -> StateT s m ()
+put st = state $ const ((), st)
+
+modify :: Applicative m => (s -> s) -> StateT s m ()
+modify f = state $ \st -> ((), f st)
