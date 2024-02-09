@@ -2,6 +2,7 @@
 4.2.14. Трансформер StateT -}
 
 import Data.Monoid
+import Control.Monad
 import Control.Monad.Trans
 import Control.Monad.Trans.Writer
 import Control.Monad.Trans.State
@@ -34,21 +35,18 @@ numberAndCountTest = numberAndCount (Leaf ()) == (Leaf 1, 1)
 numberAndCount :: Tree () -> (Tree Integer, Integer)
 numberAndCount t = getSum <$> runWriter (evalStateT (go t) 1)
   where go :: Tree () -> StateT Integer (Writer (Sum Integer)) (Tree Integer)
-        go (Leaf _) = do
-            n <- getAndModyfy (+1)
-            lift $ tell 1
-            return $ Leaf n
-        go (Fork t1 _ t2) = do
-            t1' <- go t1
-            n <- getAndModyfy (+1)
-            t2' <- go t2
-            return $ Fork t1' n t2'
+        go (Leaf _) = Leaf <$> pick <* lift (tell 1)
+        go (Fork t1 _ t2) = Fork <$> go t1 <*> pick <*> go t2
 
 getAndModyfy :: Monad m => (s -> s) -> StateT s m s
 getAndModyfy f = do
   st <- get
   modify f
   return st
+
+pick :: StateT Integer (Writer (Sum Integer)) Integer
+-- pick = state $ (,) <*> (+1)
+pick = state $ \x -> (x, x + 1)
 
 test :: Bool
 test = numberAndCountTest
