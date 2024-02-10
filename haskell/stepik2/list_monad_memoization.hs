@@ -34,18 +34,6 @@ dropsTest = drops 0 [1, 2, 3] == [[1, 2, 3]]
   && drops 3 [1, 2, 3] == [[1, 2, 3], [2, 3], [3], []]
   && drops 4 [1, 2, 3] == [[1, 2, 3], [2, 3], [3], []]
 
-ndrops :: Int -> Int -> [Int] -> [(Int, [Int])]
-ndrops _ pos [] = [(pos, [])]
-ndrops 0 pos xs = [(pos, xs)]
-ndrops n pos xs@(_ : xs') = (pos, xs) : ndrops (n-1) (pos+1) xs'
-
-ndropsTest :: Bool
-ndropsTest = ndrops 0 3 [1, 2, 3] == [(3, [1, 2, 3])]
-  && ndrops 1 0 [1, 2, 3] == [(0, [1, 2, 3]), (1, [2, 3])]
-  && ndrops 2 0 [1, 2, 3] == [(0, [1, 2, 3]), (1, [2, 3]), (2, [3])]
-  && ndrops 3 0 [1, 2, 3] == [(0, [1, 2, 3]), (1, [2, 3]), (2, [3]), (3, [])]
-  && ndrops 4 5 [1, 2, 3] == [(5, [1, 2, 3]), (6, [2, 3]), (7, [3]), (8, [])]
-
 type SumsMap = Map Int Int -- sum -> count
 
 jumps :: [Int] -> SumsMap
@@ -58,7 +46,8 @@ jumps (x : xs) = Map.fromListWith (+) $ do
 jumpsM :: Monad m => (Int -> [Int] -> m SumsMap) -> Int -> [Int] -> m SumsMap
 jumpsM _ _ [] = return $ Map.singleton 0 1
 jumpsM rec pos (x : xs) = do
-    sums <- traverse (fmap Map.toList . uncurry rec) (ndrops (x-1) (pos+1) xs)
+    sums <- traverse (fmap Map.toList . uncurry rec)
+        $ zip [(pos+1) ..] (drops (x-1) xs)
     return $ Map.fromListWith (+)
         [(sum + x, count) | (sum, count) <- concat sums]
 
@@ -89,6 +78,6 @@ jumpsTest jumps = jumps [1, 1] == Map.fromList [(2, 1)]
   && jumps [3, 2, 2] == Map.fromList [(3, 1), (5, 2), (7, 1)]
 
 test :: Bool
-test = dropsTest && ndropsTest && jumpsTest jumps
+test = dropsTest && jumpsTest jumps
   && jumpsTest (runIdentity . fix jumpsM 0)
   && jumpsTest (fst . jumpsMem)
