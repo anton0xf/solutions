@@ -43,6 +43,8 @@ jumps (x : xs) = Map.fromListWith (+) $ do
      (sum, count) <- Map.toList $ jumps xs'
      return (sum + x, count)
 
+-- TODO: use list memoization
+-- TODO: use some ListT
 jumpsM :: Monad m => (Int -> [Int] -> m SumsMap) -> Int -> [Int] -> m SumsMap
 jumpsM _ _ [] = return $ Map.singleton 0 1
 jumpsM rec pos (x : xs) = do
