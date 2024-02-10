@@ -34,6 +34,18 @@ dropsTest = drops 0 [1, 2, 3] == [[1, 2, 3]]
   && drops 3 [1, 2, 3] == [[1, 2, 3], [2, 3], [3], []]
   && drops 4 [1, 2, 3] == [[1, 2, 3], [2, 3], [3], []]
 
+ndrops :: Int -> Int -> [Int] -> [(Int, [Int])]
+ndrops _ pos [] = [(pos, [])]
+ndrops 0 pos xs = [(pos, xs)]
+ndrops n pos xs@(_ : xs') = (pos, xs) : ndrops (n-1) (pos+1) xs'
+
+ndropsTest :: Bool
+ndropsTest = ndrops 0 3 [1, 2, 3] == [(3, [1, 2, 3])]
+  && ndrops 1 0 [1, 2, 3] == [(0, [1, 2, 3]), (1, [2, 3])]
+  && ndrops 2 0 [1, 2, 3] == [(0, [1, 2, 3]), (1, [2, 3]), (2, [3])]
+  && ndrops 3 0 [1, 2, 3] == [(0, [1, 2, 3]), (1, [2, 3]), (2, [3]), (3, [])]
+  && ndrops 4 5 [1, 2, 3] == [(5, [1, 2, 3]), (6, [2, 3]), (7, [3]), (8, [])]
+
 type SumsMap = Map Int Int -- sum -> count
 
 jumps :: [Int] -> SumsMap
@@ -45,17 +57,10 @@ jumps (x : xs) = Map.fromListWith (+) $ do
 
 jumpsM :: Monad m => (Int -> [Int] -> m SumsMap) -> Int -> [Int] -> m SumsMap
 jumpsM _ _ [] = return $ Map.singleton 0 1
-jumpsM rec n (x : xs) =
-  let callStr = ("jumpsM(pos=" ++ show n
-                 ++ ", xs=(" ++ show x ++ " : " ++ show xs ++ "))")
-  in trace callStr $ do
-    -- TODO: all rec calls have the same pos and different drops
-    sums <- traverse (fmap Map.toList . rec (n+1))
-        $ traceWith (\ds -> "drops(pos=" ++ show n ++ "): " ++ show ds) (drops (x-1) xs)
-    let res = Map.fromListWith (+)
-                [(sum + x, count) | (sum, count) <- concat
-                    (trace ("sums (pos=" ++ show n ++ ") = " ++ show sums) sums)]
-    return $ trace (callStr ++ " = " ++ show res) res
+jumpsM rec pos (x : xs) = do
+    sums <- traverse (fmap Map.toList . uncurry rec) (ndrops (x-1) (pos+1) xs)
+    return $ Map.fromListWith (+)
+        [(sum + x, count) | (sum, count) <- concat sums]
 
 type MemMap = Map Int SumsMap -- pos -> sums map
 type MemState = State MemMap SumsMap
@@ -65,7 +70,7 @@ jumpsMem xs = runState (fix (mem . jumpsM) 0 xs) Map.empty
   where mem :: (Int -> [Int] -> MemState) -> Int -> [Int] -> MemState
         mem rec pos xs = do
                   m :: MemMap <- get
-                  case trace ("lookup " ++ show pos ++ " in " ++ show m) (Map.lookup pos m) of
+                  case Map.lookup pos m of
                   -- case Map.lookup pos m of
                     Just sums -> return sums
                     Nothing -> do
@@ -84,6 +89,6 @@ jumpsTest jumps = jumps [1, 1] == Map.fromList [(2, 1)]
   && jumps [3, 2, 2] == Map.fromList [(3, 1), (5, 2), (7, 1)]
 
 test :: Bool
-test = dropsTest && jumpsTest jumps
+test = dropsTest && ndropsTest && jumpsTest jumps
   && jumpsTest (runIdentity . fix jumpsM 0)
   && jumpsTest (fst . jumpsMem)
