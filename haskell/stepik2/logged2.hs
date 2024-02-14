@@ -4,6 +4,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 import Data.Functor.Identity
+import Control.Monad.Reader
 import Control.Monad.State
 
 {- 4.4.10. Неявный лифтинг
@@ -73,15 +74,15 @@ instance MonadState s m => MonadState s (LoggT m) where
   put :: MonadState s m => s -> LoggT m ()
   -- put st = do { put st; return () }
   put = lift . put
-  
+
   state :: MonadState s m => (s -> (a, s)) -> LoggT m a
   state = lift . state
   -- state f = LoggT $ state $ \st ->
   --   let (x, st') = f st
   --   in (pure x, st')
 
-logSt' :: LoggT (State Integer) Integer      
-logSt' = do 
+logSt' :: LoggT (State Integer) Integer
+logSt' = do
   modify (+1)                   -- no lift!
   a <- get                      -- no lift!
   write2log $ show $ a * 10
@@ -91,7 +92,46 @@ logSt' = do
 logSt'Test :: Bool
 logSt'Test = runState (runLoggT logSt') 2 == (Logged "30" 300, 42)
 
+{- https://stepik.org/lesson/38581/step/11?unit=20506
+4.4.11. Неявный лифтинг
+Избавьтесь от необходимости ручного подъема операций вложенной монады Reader,
+сделав трансформер LoggT, примененный к монаде с интерфейсом MonadReader,
+представителем этого (MonadReader) класса типов: -}
+
+instance MonadReader r m => MonadReader r (LoggT m) where
+  ask :: MonadReader r m => LoggT m r
+  ask = lift ask
+
+  local :: MonadReader r m => (r -> r) -> LoggT m a -> LoggT m a
+  -- local f = mapLoggT $ local f
+  local = mapLoggT . local
+
+  reader :: MonadReader r m => (r -> a) -> LoggT m a
+  -- reader f = LoggT $ reader $ pure . f
+  reader = lift . reader
+
+{- Для упрощения реализации функции local имеет смысл использовать вспомогательную функцию,
+поднимающую стрелку между двумя «внутренними представлениями» трансформера LoggT
+в стрелку между двумя LoggT: -}
+
+mapLoggT :: (m (Logged a) -> n (Logged b)) -> LoggT m a -> LoggT n b
+mapLoggT f = LoggT . f . runLoggT
+
+logRdr :: LoggT (Reader [(Int, String)]) ()
+logRdr = do
+  Just x <- asks $ lookup 2                      -- no lift!
+  write2log x
+  Just y <- local ((3, "Jim"):) $ asks $ lookup 3 -- no lift!
+  write2log y
+
+instance MonadFail Identity where
+  fail :: String -> Identity a
+  fail = error
+
+logRdrTest :: Bool
+logRdrTest = runReader (runLoggT logRdr) [(1, "John"), (2, "Jane")] == Logged "JaneJim" ()
+
 -- tests
 test :: Bool
-test = logSt'Test
+test = logSt'Test && logRdrTest
 
