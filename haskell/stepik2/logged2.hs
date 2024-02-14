@@ -68,14 +68,14 @@ runLogg = runIdentity . runLoggT
 представителем этого (MonadState) класса типов: -}
 
 instance MonadState s m => MonadState s (LoggT m) where
-  get :: MonadState s m => LoggT m s
+  get :: LoggT m s
   get = lift get
 
-  put :: MonadState s m => s -> LoggT m ()
+  put :: s -> LoggT m ()
   -- put st = do { put st; return () }
   put = lift . put
 
-  state :: MonadState s m => (s -> (a, s)) -> LoggT m a
+  state :: (s -> (a, s)) -> LoggT m a
   state = lift . state
   -- state f = LoggT $ state $ \st ->
   --   let (x, st') = f st
@@ -99,14 +99,14 @@ logSt'Test = runState (runLoggT logSt') 2 == (Logged "30" 300, 42)
 представителем этого (MonadReader) класса типов: -}
 
 instance MonadReader r m => MonadReader r (LoggT m) where
-  ask :: MonadReader r m => LoggT m r
+  ask :: LoggT m r
   ask = lift ask
 
-  local :: MonadReader r m => (r -> r) -> LoggT m a -> LoggT m a
+  local :: (r -> r) -> LoggT m a -> LoggT m a
   -- local f = mapLoggT $ local f
   local = mapLoggT . local
 
-  reader :: MonadReader r m => (r -> a) -> LoggT m a
+  reader :: (r -> a) -> LoggT m a
   -- reader f = LoggT $ reader $ pure . f
   reader = lift . reader
 
@@ -131,7 +131,82 @@ instance MonadFail Identity where
 logRdrTest :: Bool
 logRdrTest = runReader (runLoggT logRdr) [(1, "John"), (2, "Jane")] == Logged "JaneJim" ()
 
+{- https://stepik.org/lesson/38581/step/12?unit=20506
+4.4.12. Неявный лифтинг
+Чтобы избавится от необходимости ручного подъема операции write2log, обеспечивающей стандартный
+интерфейс вложенного трансформера LoggT, можно поступить по аналогии с другими трансформерами
+библиотеки mtl. А именно, разработать класс типов MonadLogg,
+выставляющий этот стандартный интерфейс -}
+
+class Monad m => MonadLogg m where
+  w2log :: String -> m ()
+  logg :: Logged a -> m a
+
+{- (Замечание: Мы переименовываем функцию write2log в w2log, поскольку хотим держать всю
+реализацию в одном файле исходного кода. При следовании принятой в библиотеках transformers/mtl
+идеологии они имели бы одно и то же имя, но были бы определены в разных модулях.
+При работе с transformers мы импортировали бы свободную функцию c квалифицированным именем
+Control.Monad.Trans.Logg.write2log, а при использовании mtl работали бы с методом класса
+типов MonadLogg с полным именем Control.Monad.Logg.write2log. )
+
+Этот интерфейс, во-первых, должен выставлять сам трансформер LoggT, обернутый вокруг
+произвольной монады: -}
+
+instance Monad m => MonadLogg (LoggT m) where
+  w2log :: String -> LoggT m ()
+  w2log = write2log
+
+  logg :: Logged a -> LoggT m a
+  logg = LoggT . return
+
+{- Реализуйте этого представителя, для проверки используйте: -}
+
+logSt'' :: LoggT (State Integer) Integer      
+logSt'' = do 
+  x <- logg $ Logged "BEGIN " 1
+  modify (+x)
+  a <- get
+  w2log $ show $ a * 10
+  put 42
+  w2log " END"
+  return $ a * 100
+
+logSt''Test :: Bool
+logSt''Test = runState (runLoggT logSt'') 2 == (Logged "BEGIN 30 END" 300, 42)
+
+{- Во-вторых, интерфейс MonadLogg должен выставлять любой стандартный трансформер,
+обернутый вокруг монады, выставляющей этот интерфейс: -}
+
+instance MonadLogg m => MonadLogg (StateT s m) where
+  w2log :: String -> StateT s m ()
+  w2log = lift . w2log
+
+  logg :: Logged a -> StateT s m a
+  logg = lift . logg
+
+instance MonadLogg m => MonadLogg (ReaderT r m) where
+  w2log :: String -> ReaderT r m ()
+  w2log = lift . w2log
+
+  logg :: Logged a -> ReaderT r m a
+  logg  = lift . logg
+  
+{- Реализуйте двух этих представителей, для проверки используйте: -}
+
+rdrStLog :: ReaderT Integer (StateT Integer Logg) Integer      
+rdrStLog = do 
+  x <- logg $ Logged "BEGIN " 1
+  y <- ask
+  modify (+ (x+y))
+  a <- get
+  w2log $ show $ a * 10
+  put 42
+  w2log " END"
+  return $ a * 100
+
+rdrStLogTest :: Bool
+rdrStLogTest = runLogg (runStateT (runReaderT rdrStLog 4) 2) == Logged "BEGIN 70 END" (700, 42)
+
 -- tests
 test :: Bool
-test = logSt'Test && logRdrTest
-
+test = logSt'Test && logRdrTest && logSt''Test && rdrStLogTest
