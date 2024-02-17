@@ -53,10 +53,7 @@ treeSumTest = treeSum (Fork (Fork (Leaf "1") "2" (Leaf "oops")) "15" (Leaf "16")
   && treeSum (Fork (Fork (Leaf "1") "2" (Leaf "0")) "15" (Leaf "16")) == Right 34
 
 treeSum :: Tree String -> Either ReadError Integer
-treeSum t = toEither . runWriter . runExceptT $ traverse_ go t
-  where toEither :: (Either ReadError (), Sum Integer) -> Either ReadError Integer
-        toEither (Left e, _) = Left e
-        toEither (_, n) = Right $ getSum n
+treeSum t = sum <$> traverse tryRead t
 
 instance Foldable Tree where
   foldMap :: Monoid b => (a -> b) -> Tree a -> b
@@ -72,9 +69,6 @@ instance Traversable Tree where
   sequenceA :: Applicative m => Tree (m a) -> m (Tree a)
   sequenceA (Leaf x) = Leaf <$> x
   sequenceA (Fork tl x tr) = Fork <$> sequenceA tl <*> x <*> sequenceA tr
-
-go :: String -> ExceptT ReadError (Writer (Sum Integer)) ()
-go = tryRead >=> tell . Sum
 
 test :: Bool
 test = tryReadTest && treeSumTest
