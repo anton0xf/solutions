@@ -2,6 +2,7 @@
 4.5.2. Задачи на трансформеры -}
 
 import Data.Monoid
+import Data.Foldable
 import Text.Read
 import Control.Monad.Writer
 import Control.Monad.Except
@@ -52,22 +53,28 @@ treeSumTest = treeSum (Fork (Fork (Leaf "1") "2" (Leaf "oops")) "15" (Leaf "16")
   && treeSum (Fork (Fork (Leaf "1") "2" (Leaf "0")) "15" (Leaf "16")) == Right 34
 
 treeSum :: Tree String -> Either ReadError Integer
-treeSum = toEither . runWriter . runExceptT . iter
-  where
-    readAndTell :: String -> ExceptT ReadError (Writer (Sum Integer)) ()
-    readAndTell s = tryRead s >>= tell . Sum
+treeSum t = toEither . runWriter . runExceptT $ traverse_ go t
+  where toEither :: (Either ReadError (), Sum Integer) -> Either ReadError Integer
+        toEither (Left e, _) = Left e
+        toEither (_, n) = Right $ getSum n
 
-    iter :: Tree String -> ExceptT ReadError (Writer (Sum Integer)) ()
-    iter (Leaf s) = readAndTell s
-    iter (Fork t1 s t2) = do
-      iter t1
-      n <- tryRead s
-      tell $ Sum n
-      iter t2
+instance Foldable Tree where
+  foldMap :: Monoid b => (a -> b) -> Tree a -> b
+  foldMap f (Leaf x) = f x
+  foldMap f (Fork t1 x t2) = foldMap f t1 <> f x <> foldMap f t2
 
-    toEither :: (Either ReadError (), Sum Integer) -> Either ReadError Integer
-    toEither (Left e, _) = Left e
-    toEither (_, n) = Right $ getSum n
+instance Functor Tree where
+  fmap :: (a -> b) -> Tree a -> Tree b
+  fmap f (Leaf x) = Leaf $ f x
+  fmap f (Fork tl x tr) = Fork (fmap f tl) (f x) (fmap f tr)
+
+instance Traversable Tree where
+  sequenceA :: Applicative m => Tree (m a) -> m (Tree a)
+  sequenceA (Leaf x) = Leaf <$> x
+  sequenceA (Fork tl x tr) = Fork <$> sequenceA tl <*> x <*> sequenceA tr
+
+go :: String -> ExceptT ReadError (Writer (Sum Integer)) ()
+go = tryRead >=> tell . Sum
 
 test :: Bool
 test = tryReadTest && treeSumTest
