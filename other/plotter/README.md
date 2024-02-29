@@ -94,3 +94,11 @@ R6P-RP'RP'RP-RP-RP.L11DR7P_RP`RP>R4P`RP\RP.RP-RP'RP<L18DR4P_RP.RP'R6P_R6P'RP.RP_
 
 После декодирования должен получиться Эйнштейн. Ваш код не обязательно должен быть точно
 таким же, главное, чтобы давал правильный результат.
+
+# Examples
+```console
+$ ./encoder.bb <test-field1.txt
+4
+6
+DR3P*RP*RP*DL2P*R2P*DL2P*RP*RP*
+```
