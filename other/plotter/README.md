@@ -101,4 +101,10 @@ $ ./encoder.bb <test-field1.txt
 4
 6
 DR3P*RP*RP*DL2P*R2P*DL2P*RP*RP*
+
+$ <test-field1.txt ./encoder.bb | ./decoder.bb
+      
+   ***
+   * *
+   ***
 ```
