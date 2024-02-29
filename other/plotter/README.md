@@ -86,11 +86,12 @@ DR4P*RP*RP*DP*DP*LP*LP*UP*
 jgs     /__/ \__\ 
           '---'     E=mc^2
 ```
+
 ```
 9
 26
 R6P-RP'RP'RP-RP-RP.L11DR7P_RP`RP>R4P`RP\RP.RP-RP'RP<L18DR4P_RP.RP'R6P_R6P'RP.RP_L20DR2P.RP'R4P_RP.RP=RP'R4P'RP=RP.RP_R4P'RP.L22DR2P>RP_R4P/R2P/RP_RP\R2P/RP_RP\R2P\R4P_RP<L22DR4P/R2P(R3P\RPoRP/RP\RP\RPoRP/R3P)R2P\L20DR4P>RP.RP_RP\R2P.RP-RP,RP_RP)RP-RP.R2P/RP_RP.RP<L20DR0PjRPgRPsR6P/RP_RP_RP/R2P\RP_RP_RP\L17DR10P'RP-RP-RP-RP'R6PERP=RPmRPcRP^RP2
-``
+```
 
 После декодирования должен получиться Эйнштейн. Ваш код не обязательно должен быть точно
 таким же, главное, чтобы давал правильный результат.
