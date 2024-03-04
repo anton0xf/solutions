@@ -105,7 +105,7 @@ object CourseraStudent extends AutoPlugin {
           |}""".stripMargin
 
     def postSubmission[T](data: String): Try[HttpResponse[String]] = {
-      val http = Http("https://www.coursera.org/api/onDemandProgrammingScriptSubmissions.v1")
+      val http = Http("https://www-cloudfront-alias.coursera.org/api/onDemandProgrammingScriptSubmissions.v1")
       val hs = List(
         ("Cache-Control", "no-cache"),
         ("Content-Type", "application/json")
