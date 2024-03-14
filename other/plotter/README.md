@@ -109,3 +109,11 @@ $ <test-field1.txt ./encoder.bb | ./decoder.bb
    * *
    ***
 ```
+
+## Python version from AI
+```console
+$ python3 encoder.py | python decoder.py
+   ***
+   * *
+   ***
+```
