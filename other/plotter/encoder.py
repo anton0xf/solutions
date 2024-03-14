@@ -1,47 +1,46 @@
 # coding=utf-8
 def encode_ascii_image(image):
-    # Определение размеров экрана
-    height = len(image)
-    width = max(len(row) for row in image)
-
     # Инициализация начальных значений
     x_pos, y_pos = 0, 0
     commands = []
 
     for row in image:
         for col, symbol in enumerate(row):
-            # Если текущий символ не пробел, переместимся к нему и напечатаем
+            # Если текущий символ не пробел, то добавляем команды для движения и печати
             if symbol != " ":
+                # Добавление команды перемещения пера вправо, если нужно
                 move_right = col - x_pos
                 if move_right > 0:
-                    # Добавление команды перемещения вправо
-                    commands.append(f"R{move_right}")
-                # Добавление команды печати
-                commands.append(f"P{symbol}")
+                    commands.append("R{}".format(move_right))
+                # Добавление команды печати символа
+                commands.append("P{}".format(symbol))
                 x_pos = col
-        # Переход к новой строке, если это не последняя строка
-        if y_pos < height - 1:
+        # Переход на новую строку, если не последняя строка
+        if y_pos < len(image) - 1:
             move_down = 1
             move_left = x_pos
+            # Перемещаем перо вниз на одну позицию
             if move_down > 0:
-                commands.append(f"D{move_down}")
+                commands.append("D{}".format(move_down))
+            # Перемещение пера в начало следующей строки
             if move_left > 0:
-                commands.append(f"L{move_left}")
+                commands.append("L{}".format(move_left))
             x_pos = 0
             y_pos += 1
 
-    # Вывод размеров экрана
+    # Вывод расчитанных размеров экрана и команд
+    height = len(image)
+    width = max(len(row) for row in image)
     print(height)
     print(width)
-    # Вывод списка команд в одну строку
     print("".join(commands))
 
+# Считывание изображения до ввода пустой строки
+image = []
+while True:
+    line = input()
+    if line == "":
+        break
+    image.append(line)
 
-# Пример ввода
-ascii_image_example = [
-    "   ***",
-    "   * *",
-    "   ***"
-]
-
-encode_ascii_image(ascii_image_example)
+encode_ascii_image(image)
