@@ -112,7 +112,8 @@ $ <test-field1.txt ./encoder.bb | ./decoder.bb
 
 ## Python version from AI
 ```console
-$ python3 encoder.py | python decoder.py
+$ <test-field1.txt python3 encoder.py | python3 decoder.py
+
    ***
    * *
    ***
