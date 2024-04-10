@@ -32,3 +32,5 @@ val someSymbol = Symbol("anton0xf")
 
 ('A'.toInt + 10).toChar
 'K' - 'A'
+
+for(i <- 1 to 10) yield { i * 2 }
