@@ -1,4 +1,4 @@
-package unit3.lesson2;
+package unit3.lesson2
 
 class CrispsSpec extends munit.FunSuite {
     test("sample") {
