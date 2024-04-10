@@ -20,3 +20,15 @@ case class MyInt(i: Int) {
 }
 //val w = MyInt(2).pow(MyInt(3))
 val w = MyInt(2) pow MyInt(3)
+
+// step 3: https://stepik.org/lesson/106498/step/3
+val s = (1: Short)
+
+val pileOfPooStr = "\uD83D\uDCA9"
+val pileOfPooSymbol = Symbol(pileOfPooStr)
+val someSymbol = Symbol("anton0xf")
+//val pileOfPooChar = '💩'
+// error: illegal codepoint in Char constant: '\ud83d\udca9'
+
+('A'.toInt + 10).toChar
+'K' - 'A'
