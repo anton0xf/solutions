@@ -29,3 +29,10 @@ val qw = "qw"
   val s2 = "foo"
   println(s1 eq s2)
 }
+
+// step 4: https://stepik.org/lesson/106500/step/4?unit=81026
+List('a', 'z').map(_.toInt)
+List('A', 'Z').map(_.toInt)
+
+"abc".charAt(0)
+"abc".charAt(1)
