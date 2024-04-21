@@ -63,3 +63,8 @@ def mergeSort(xs: List[Int]): List[Int] = {
 val sortedList = mergeSort(randomList)
 
 sortedList == randomList.sorted
+
+// https://stepik.org/lesson/106540/step/6?unit=81066
+val ints = List(0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0)
+val (zeros, ones) = ints.partition(_ == 0)
+zeros.mkString(",")
