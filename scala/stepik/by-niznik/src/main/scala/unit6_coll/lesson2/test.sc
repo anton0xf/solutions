@@ -4,3 +4,8 @@ list.take(1)
 list(1)
 list.apply(1)
 // list.get(1)
+
+// https://stepik.org/lesson/106520/step/4?unit=81046
+def isPrime(n: Int): Boolean = (2 until n).filter(p => p*p <= n).forall(p => n % p != 0)
+
+(1 to 20).filter(isPrime)
