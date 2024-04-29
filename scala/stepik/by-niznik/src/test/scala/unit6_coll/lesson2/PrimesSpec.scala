@@ -6,6 +6,12 @@ import unit6_coll.lesson2.Primes._
 
 class PrimesSpec extends FunSuite {
   test("isPrime") {
-    assertEquals((1 to 20).filter(isPrime).toList, List(1, 2, 3, 5, 7, 11, 13, 17, 19))
+    assertEquals((2 to 20).filter(isPrime).toList, List(2, 3, 5, 7, 11, 13, 17, 19))
+    assertEquals(isPrime(101), true)
+    assertEquals(isPrime(102), false)
+  }
+
+  test("list") {
+    assertEquals(list.take(8).toList, List(2, 3, 5, 7, 11, 13, 17, 19))
   }
 }

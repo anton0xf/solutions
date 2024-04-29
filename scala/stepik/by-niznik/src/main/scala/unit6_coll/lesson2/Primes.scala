@@ -2,5 +2,7 @@ package unit6_coll.lesson2
 // https://stepik.org/lesson/106520/step/4?unit=81046
 
 object Primes {
-  def isPrime(n: Int): Boolean = (2 until n).filter(p => p*p <= n).forall(p => n % p != 0)
+  def isPrime(n: Int): Boolean = LazyList.from(2)
+    .takeWhile(p => p * p <= n).forall(n % _ != 0)
+  lazy val list: LazyList[Int] = LazyList.from(2).filter(isPrime)
 }
