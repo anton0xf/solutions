@@ -17,14 +17,14 @@ object Crossover {
 
   def cross[T](points: List[Int], chr1: List[T], chr2: List[T]): (List[T], List[T]) = {
     case class St(swap: Boolean, points: List[Int], acc: List[(T, T)])
-    def swapIf(pair: (T, T), swap: Boolean): (T, T) = if (swap) pair.swap else pair
     def go(st: St, x: ((T, T), Int)): St = {
       val (pair, id) = x
       if (st.points.isEmpty || id < st.points.head) {
-        St(st.swap, st.points, swapIf(pair, st.swap) :: st.acc)
+        St(st.swap, st.points, (if (st.swap) pair.swap else pair) :: st.acc)
       } else {
         assert(id == st.points.head)
-        St(!st.swap, st.points.tail, swapIf(pair, !st.swap) :: st.acc)
+        val swap = !st.swap
+        St(swap, st.points.tail, (if (swap) pair.swap else pair) :: st.acc)
       }
     }
     (chr1 zip chr2).zipWithIndex.foldLeft(St(swap = false, points, Nil))(go).acc.reverse.unzip
