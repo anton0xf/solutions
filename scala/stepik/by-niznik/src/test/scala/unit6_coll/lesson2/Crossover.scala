@@ -15,37 +15,19 @@ object Crossover {
     println(r2.mkString)
   }
 
-  def cross(
-      points: List[Int],
-      chr1: List[Char],
-      chr2: List[Char]
-  ): (List[Char], List[Char]) = {
-    @tailrec
-    def go(
-        points: List[Int],
-        pairs: Iterable[(Char, Char)],
-        id: Int,
-        swap: Boolean,
-        acc: List[(Char, Char)]
-    ): List[(Char, Char)] = {
-      if (points.isEmpty) {
-        if (swap) acc.reverse ++ pairs.map(_.swap).toList
-        else acc.reverse ++ pairs.toList
-      } else if (pairs.isEmpty) {
-        acc.reverse
-      } else if (id < points.head) {
-        val pair = pairs.head
-        val newPair = if (swap) pair.swap else pair
-        go(points, pairs.tail, id + 1, swap, newPair :: acc)
+  def cross[T](points: List[Int], chr1: List[T], chr2: List[T]): (List[T], List[T]) = {
+    type St = (Boolean, List[Int], List[(T, T)])
+    def swapIf(pair: (T, T), swap: Boolean): (T, T) = if (swap) pair.swap else pair
+    def go(st: St, x: ((T, T), Int)): St = {
+      val (swap, points, acc) = st
+      val (pair, id) = x
+      if (points.isEmpty || id < points.head) {
+        (swap, points, swapIf(pair, swap) :: acc)
       } else {
         assert(id == points.head)
-        val newSwap = !swap
-        val pair = pairs.head
-        val newPair = if (newSwap) pair.swap else pair
-        go(points.tail, pairs.tail, id + 1, newSwap, newPair :: acc)
+        (!swap, points.tail, swapIf(pair, !swap) :: acc)
       }
     }
-    val pairs = chr1 lazyZip chr2
-    go(points, pairs, id = 0, swap = false, acc = Nil).unzip
+    (chr1 zip chr2).zipWithIndex.foldLeft((false, points, Nil): St)(go)._3.reverse.unzip
   }
 }
