@@ -31,7 +31,7 @@ object Crossover {
       if (points.isEmpty) {
         if (swap) acc.reverse ++ pairs.map(_.swap).toList
         else acc.reverse ++ pairs.toList
-      } else if (points.isEmpty) {
+      } else if (pairs.isEmpty) {
         acc.reverse
       } else if (id < points.head) {
         val pair = pairs.head

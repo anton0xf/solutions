@@ -20,5 +20,9 @@ class CrossoverSpec extends FunSuite {
       Crossover.cross(List(2, 4, 5), "aaaaaaa".toList, "ddddddd".toList),
       ("aaddadd".toList, "ddaadaa".toList)
     )
+    assertEquals(
+      Crossover.cross(List(2, 4, 5, 10), "aaaaaaa".toList, "ddddddd".toList),
+      ("aaddadd".toList, "ddaadaa".toList)
+    )
   }
 }
