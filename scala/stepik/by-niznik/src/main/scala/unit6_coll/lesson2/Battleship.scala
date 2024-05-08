@@ -42,9 +42,13 @@ object Battleship {
 
   def tryAddShip(game: Game, name: String, ship: Ship): Game = {
     val (field: Field, fleet: Fleet) = game
-    val newField: Field = ship.foldLeft(field)(putToField)
-    val newFleet: Fleet = fleet.updated(name, ship)
-    (newField, newFleet)
+    if(validatePosition(ship, field)) {
+      val newField: Field = ship.foldLeft(field)(putToField)
+      val newFleet: Fleet = fleet.updated(name, ship)
+      (newField, newFleet)
+    } else {
+      game
+    }
   }
 
   def getFromField(field: Field, point: Point): Boolean =
@@ -64,7 +68,8 @@ object Battleship {
   def validateShip(ship: Ship): Boolean = ???
 
   /** определить, можно ли его поставить */
-  def validatePosition(ship: Ship, field: Field): Boolean = ???
+  def validatePosition(ship: Ship, field: Field): Boolean =
+    ship.forall(point => !getFromField(field, point))
 
   /** добавить корабль во флот */
   def enrichFleet(fleet: Fleet, name: String, ship: Ship): Fleet = ???
