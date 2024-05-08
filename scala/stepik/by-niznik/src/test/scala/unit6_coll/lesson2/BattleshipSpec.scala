@@ -52,10 +52,35 @@ class BattleshipSpec extends FunSuite {
     assertEquals(tryAddShip(game, "test", List((0, 1))), game)
   }
 
-  // TODO tryAddShip two horizontal (x = const) free
-  // TODO tryAddShip two horizontal (x = const) occupied
-  // TODO tryAddShip two vertical (y = const) free
-  // TODO tryAddShip two diagonal
+  test("tryAddShip two horizontal (x = const) free") {
+    assertEquals(
+      tryAddShip(smallGame, "test", List((0, 1), (0, 0))),
+      (
+        Vector(Vector(true, true), Vector(false, false)),
+        Map("test" -> List((0, 1), (0, 0)))
+      )
+    )
+  }
+
+  test("TODO tryAddShip two horizontal (x = const) occupied") {
+    val game: Game = (Vector(Vector(false, true), Vector(false, false)), Map())
+    assertEquals(tryAddShip(game, "test", List((0, 1), (0, 0))), game)
+  }
+
+  test("tryAddShip two vertical (y = const) free") {
+    assertEquals(
+      tryAddShip(smallGame, "test", List((0, 1), (1, 1))),
+      (
+        Vector(Vector(false, true), Vector(false, true)),
+        Map("test" -> List((0, 1), (1, 1)))
+      )
+    )
+  }
+
+  test("tryAddShip two diagonal") {
+    assertEquals(tryAddShip(smallGame, "test", List((0, 0), (1, 1))), smallGame)
+  }
+
   // TODO tryAddShip two horizontal with gap
   // TODO tryAddShip two vertical with gap
 
