@@ -12,6 +12,7 @@ object Naval {
 }
 
 object Battleship {
+
   import Naval._
 
   def main(args: Array[String]): Unit = {
@@ -42,7 +43,7 @@ object Battleship {
 
   def tryAddShip(game: Game, name: String, ship: Ship): Game = {
     val (field: Field, fleet: Fleet) = game
-    if(validateShipPosition(ship, field) && validateShip(ship)) {
+    if (validateShipPosition(ship, field) && validateShip(ship)) {
       val newField: Field = ship.foldLeft(field)(putToField)
       val newFleet: Fleet = fleet.updated(name, ship)
       (newField, newFleet)
@@ -51,8 +52,8 @@ object Battleship {
     }
   }
 
-  def getFromField(field: Field, point: Point): Boolean =
-    field(point._1)(point._2)
+  def getFromField(field: Field, point: Point): Option[Boolean] =
+    field.lift(point._1).flatMap(row => row.lift(point._2))
 
   def putToField(field: Field, point: Point): Field =
     updateInVector(
@@ -81,6 +82,7 @@ object Battleship {
 
   def validateHorizontalShip(ship: Ship): Boolean =
     containsExactlyOneValue(ship.map(_._1)) && isFullRange(ship.map(_._2))
+
   def validateVerticalShip(ship: Ship): Boolean =
     containsExactlyOneValue(ship.map(_._2)) && isFullRange(ship.map(_._1))
 
@@ -89,6 +91,6 @@ object Battleship {
     ship.forall(point => isPointAvailable(point, field))
 
   private def isPointAvailable(point: Point, field: Field) = {
-    !getFromField(field, point)
+    getFromField(field, point).exists(!_)
   }
 }
