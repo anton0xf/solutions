@@ -36,7 +36,7 @@
                       (map encode-tree tree))))
 
 (defn encode-char [tree ch]
-  (->> (encode-tree tree)
+  (->> (encode-tree tree) ;; TODO save it in map and do it once, not for every char
        (filter #(= ch (first %)))
        first second (apply str)))
 
@@ -47,9 +47,7 @@
   (let [n (Integer/parseInt (read-line))
         nodes (doall (for [i (range n)] (read-line)))
         s (read-line)]
-    (println n nodes s)
-    ;; (println (encode lines))
-    ))
+    (println (encode (make-tree nodes) s))))
 
 (when (= *file* (System/getProperty "babashka.file"))
   (apply -main *command-line-args*))
