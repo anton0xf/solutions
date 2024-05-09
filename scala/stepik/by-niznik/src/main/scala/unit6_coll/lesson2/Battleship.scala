@@ -42,7 +42,7 @@ object Battleship {
 
   def tryAddShip(game: Game, name: String, ship: Ship): Game = {
     val (field: Field, fleet: Fleet) = game
-    if(validatePosition(ship, field)) {
+    if(validateShipPosition(ship, field) && validateShip(ship)) {
       val newField: Field = ship.foldLeft(field)(putToField)
       val newFleet: Fleet = fleet.updated(name, ship)
       (newField, newFleet)
@@ -65,15 +65,30 @@ object Battleship {
     vec.updated(idx, f(vec(idx)))
 
   /** определить, подходит ли корабль по своим характеристикам */
-  def validateShip(ship: Ship): Boolean = ???
+  def validateShip(ship: Ship): Boolean = {
+    ship.toSet.size <= 4 && (validateHorizontalShip(ship) || validateVerticalShip(ship))
+  }
+
+  def containsExactlyOneValue[T](xs: List[T]): Boolean = xs match {
+    case Nil => false
+    case x :: rest => rest.forall(_ == x)
+  }
+
+  def isFullRange(xs: List[Int]): Boolean = {
+    val set = xs.toSet
+    (set.min to set.max).forall(set.contains)
+  }
+
+  def validateHorizontalShip(ship: Ship): Boolean =
+    containsExactlyOneValue(ship.map(_._1)) && isFullRange(ship.map(_._2))
+  def validateVerticalShip(ship: Ship): Boolean =
+    containsExactlyOneValue(ship.map(_._2)) && isFullRange(ship.map(_._1))
 
   /** определить, можно ли его поставить */
-  def validatePosition(ship: Ship, field: Field): Boolean =
-    ship.forall(point => !getFromField(field, point))
+  def validateShipPosition(ship: Ship, field: Field): Boolean =
+    ship.forall(point => isPointAvailable(point, field))
 
-  /** добавить корабль во флот */
-  def enrichFleet(fleet: Fleet, name: String, ship: Ship): Fleet = ???
-
-  /** пометить клетки, которые занимает добавляемый корабль */
-  def markUsedCells(field: Field, ship: Ship): Field = ???
+  private def isPointAvailable(point: Point, field: Field) = {
+    !getFromField(field, point)
+  }
 }

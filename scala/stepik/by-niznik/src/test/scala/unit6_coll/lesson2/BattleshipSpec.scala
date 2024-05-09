@@ -3,6 +3,7 @@ package unit6_coll.lesson2
 import munit.FunSuite
 
 class BattleshipSpec extends FunSuite {
+
   import Naval._
   import Battleship._
 
@@ -37,7 +38,7 @@ class BattleshipSpec extends FunSuite {
     )
   }
 
-  test("tryAddShip one free") {
+  test("tryAddShip of one free") {
     assertEquals(
       tryAddShip(smallGame, "test", List((0, 1))),
       (
@@ -47,12 +48,12 @@ class BattleshipSpec extends FunSuite {
     )
   }
 
-  test("tryAddShip one occupied") {
+  test("tryAddShip of one occupied") {
     val game: Game = (Vector(Vector(false, true), Vector(false, false)), Map())
     assertEquals(tryAddShip(game, "test", List((0, 1))), game)
   }
 
-  test("tryAddShip two horizontal (x = const) free") {
+  test("tryAddShip of two horizontal (x = const) free") {
     assertEquals(
       tryAddShip(smallGame, "test", List((0, 1), (0, 0))),
       (
@@ -62,12 +63,12 @@ class BattleshipSpec extends FunSuite {
     )
   }
 
-  test("TODO tryAddShip two horizontal (x = const) occupied") {
+  test("tryAddShip of two horizontal (x = const) occupied") {
     val game: Game = (Vector(Vector(false, true), Vector(false, false)), Map())
     assertEquals(tryAddShip(game, "test", List((0, 1), (0, 0))), game)
   }
 
-  test("tryAddShip two vertical (y = const) free") {
+  test("tryAddShip of two vertical (y = const) free") {
     assertEquals(
       tryAddShip(smallGame, "test", List((0, 1), (1, 1))),
       (
@@ -81,8 +82,60 @@ class BattleshipSpec extends FunSuite {
     assertEquals(tryAddShip(smallGame, "test", List((0, 0), (1, 1))), smallGame)
   }
 
-  // TODO tryAddShip two horizontal with gap
-  // TODO tryAddShip two vertical with gap
+  test("tryAddShip of two horizontal with gap") {
+    val game: Game = (Vector(Vector(false, false, false)), Map())
+    assertEquals(tryAddShip(game, "test", List((0, 0), (0, 2))), game)
+  }
+
+  test("tryAddShip of two vertical with gap") {
+    val game: Game = (Vector(Vector(false), Vector(false), Vector(false)), Map())
+    assertEquals(tryAddShip(game, "test", List((0, 0), (2, 0))), game)
+  }
+
+  test("tryAddShip of 4") {
+    val game: Game = (Vector(Vector.fill(5)(false)), Map())
+    val ship = List((0, 0), (0, 1), (0, 2), (0, 3))
+    val newGame: Game = (Vector(Vector(true, true, true, true, false)), Map("test" -> ship))
+    assertEquals(tryAddShip(game, "test", ship), newGame)
+  }
+
+  test("tryAddShip of more than 4") {
+    val game: Game = (Vector(Vector.fill(5)(false)), Map())
+    assertEquals(tryAddShip(game, "test", List((0, 0), (0, 1), (0, 2), (0, 3), (0, 4))), game)
+  }
+
+  test("tryAddShip out of field") {
+    assertEquals(tryAddShip(smallGame, "test", List((0, 2))), smallGame)
+  }
+
+  // TODO tryAddShip connected to another
+
+  test("validateHorizontalShip") {
+    assertEquals(validateHorizontalShip(List((0, 0), (0, 1))), true)
+    assertEquals(validateHorizontalShip(List((5, 0), (5, 1), (5, 3))), false)
+    assertEquals(validateHorizontalShip(List((5, 0), (5, 1), (5, 2), (5, 3))), true)
+    assertEquals(validateHorizontalShip(List((0, 0), (0, 2))), false)
+    assertEquals(validateHorizontalShip(List((0, 0), (0, 1), (0, 2))), true)
+    assertEquals(validateHorizontalShip(List((0, 0), (1, 1))), false)
+    assertEquals(validateHorizontalShip(List((0, 0), (1, 0))), false)
+    assertEquals(validateHorizontalShip(List((0, 0), (1, 0), (3, 0))), false)
+    assertEquals(validateHorizontalShip(List((0, 0), (1, 0), (2, 0), (3, 0))), false)
+    assertEquals(validateHorizontalShip(List((0, 3), (1, 3), (2, 3), (3, 3))), false)
+  }
+
+  test("validateVerticalShip") {
+    assertEquals(validateVerticalShip(List((0, 0), (0, 1))), false)
+    assertEquals(validateVerticalShip(List((5, 0), (5, 1), (5, 3))), false)
+    assertEquals(validateVerticalShip(List((5, 0), (5, 1), (5, 2), (5, 3))), false)
+    assertEquals(validateVerticalShip(List((0, 0), (0, 2))), false)
+    assertEquals(validateVerticalShip(List((0, 0), (0, 1), (0, 2))), false)
+    assertEquals(validateVerticalShip(List((0, 0), (1, 1))), false)
+    assertEquals(validateVerticalShip(List((0, 0), (1, 0))), true)
+    assertEquals(validateVerticalShip(List((0, 0), (1, 0), (4, 0))), false)
+    assertEquals(validateVerticalShip(List((0, 3), (1, 3), (4, 3))), false)
+    assertEquals(validateVerticalShip(List((0, 0), (1, 0), (2, 0), (3, 0))), true)
+    assertEquals(validateVerticalShip(List((0, 3), (1, 3), (2, 3), (3, 3))), true)
+  }
 
   test("add fleet 1") {
     val fleet: Fleet = Map(
