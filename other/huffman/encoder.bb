@@ -2,17 +2,54 @@
 (ns encoder
   (:require [clojure.java.io :as io]
             [clojure.string :as str]))
-(defn make-tree [stack] )
+
+;; tree = nil | [tree tree] ;; TODO search for idiomatic way to store tuples
+(defn make-tree [nodes]
+  (loop [nodes nodes
+         stack '()]
+    (cond (empty? nodes) (first stack)
+
+          (= "C" (first nodes))
+          (recur (rest nodes)
+                 (conj (drop 2 stack) [(second stack) (first stack)]))
+
+          (= \P (first (first nodes)))
+          (recur (rest nodes)
+                 (conj stack (second (first nodes))))
+
+          :else (throw (ex-info "unexpected node" (first nodes))))))
+
 (comment
-  ("Pa" "Pb" "Pc" "C" "C")
+  (def t-nodes ["Pa" "Pb" "Pc" "C" "C"])
+  (type (map identity t-nodes))
+  (def lseq (lazy-seq (cons 1 (lazy-seq (cons 2 nil)))))
+  (realized? lseq)
+  (= "C" (last t-nodes))
   ababcaca  )
 
-(defn main []
+(defn encode-tree [tree]
+  (cond (nil? tree) nil
+        (char? tree) [[tree nil]]
+        :else (mapcat (fn [code encoded]
+                        (map (fn [[ch s]] [ch (cons code s)]) encoded))
+                      [\0 \1]
+                      (map encode-tree tree))))
+
+(defn encode-char [tree ch]
+  (->> (encode-tree tree)
+       (filter #(= ch (first %)))
+       first second (apply str)))
+
+(defn encode [tree s]
+  (str/join (map (partial encode-char tree) s)))
+
+(defn -main []
   (let [n (Integer/parseInt (read-line))
-        stack (doall (for [i (range n)] (read-line)))
+        nodes (doall (for [i (range n)] (read-line)))
         s (read-line)]
-    (println n stack s)
+    (println n nodes s)
     ;; (println (encode lines))
     ))
 
-(main)
+(when (= *file* (System/getProperty "babashka.file"))
+  (apply -main *command-line-args*))
