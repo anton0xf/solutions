@@ -9,3 +9,7 @@ list.apply(1)
 def isPrime(n: Int): Boolean = (2 until n).filter(p => p*p <= n).forall(p => n % p != 0)
 
 (1 to 20).filter(isPrime)
+
+List(1, 2, 3) zip List('a', 'b', 'c')
+(List(1, 2, 3) lazyZip List('a', 'b', 'c')).toList
+(1, 'a').swap
