@@ -8,7 +8,8 @@ abstract class DiffList[A](calculate: List[A] => List[A]) {
 }
 
 class DiffListImpl[A] (f: List[A] => List[A]) extends DiffList[A](f) {
-  override def prepend(s: List[A]): DiffList[A] = new DiffListImpl[A](xs => s ++ f(xs))
-  override def append(s: List[A]): DiffList[A] = new DiffListImpl[A](xs => f(xs) ++ s)
+  // f prepend this DiffList to its argument
+  override def prepend(s: List[A]): DiffList[A] = new DiffListImpl[A](xs => s ::: f(xs))
+  override def append(s: List[A]): DiffList[A] = new DiffListImpl[A](xs => f(s ::: xs))
   override def result: List[A] = f(Nil)
 }
