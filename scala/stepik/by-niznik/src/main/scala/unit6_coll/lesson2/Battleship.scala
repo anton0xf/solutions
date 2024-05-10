@@ -90,7 +90,13 @@ object Battleship {
   def validateShipPosition(ship: Ship, field: Field): Boolean =
     ship.forall(point => isPointAvailable(point, field))
 
-  private def isPointAvailable(point: Point, field: Field) = {
-    getFromField(field, point).exists(!_)
+  def isPointAvailable(point: Point, field: Field): Boolean = {
+    getFromField(field, point).exists(!_) && pointNeighbours(point).forall(p => getFromField(field, p).forall(!_))
   }
+
+  def pointNeighbours(point: Point): Seq[Point] = for {
+    x <- -1 to 1
+    y <- -1 to 1
+    if !(x == 0 && y == 0)
+  } yield (point._1 + x, point._2 + y)
 }

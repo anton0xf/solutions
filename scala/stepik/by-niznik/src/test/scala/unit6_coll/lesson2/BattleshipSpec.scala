@@ -108,7 +108,74 @@ class BattleshipSpec extends FunSuite {
     assertEquals(tryAddShip(smallGame, "test", List((0, 2))), smallGame)
   }
 
-  // TODO tryAddShip connected to another
+  private val gameWithAnotherShip: Game = (Vector(
+    Vector(true, false, false),
+    Vector(false, false, false)),
+    Map("another" -> List((0, 0))))
+
+  test("tryAddShip of one not connected to another (same row)") {
+    val game: Game = gameWithAnotherShip
+    val newGame: Game = (Vector(
+      Vector(true, false, true),
+      Vector(false, false, false)),
+      Map("another" -> List((0, 0)), "test" -> List((0, 2))))
+    assertEquals(tryAddShip(game, "test", List((0, 2))), newGame)
+  }
+
+  test("tryAddShip of one not connected to another (another row)") {
+    val game: Game = gameWithAnotherShip
+    val newGame: Game = (Vector(
+      Vector(true, false, false),
+      Vector(false, false, true)),
+      Map("another" -> List((0, 0)), "test" -> List((1, 2))))
+    assertEquals(tryAddShip(game, "test", List((1, 2))), newGame)
+  }
+
+  test("tryAddShip of one connected to another") {
+    val game: Game = gameWithAnotherShip
+    assertEquals(tryAddShip(game, "test", List((0, 1))), game)
+    assertEquals(tryAddShip(game, "test", List((1, 0))), game)
+    assertEquals(tryAddShip(game, "test", List((1, 1))), game)
+  }
+
+  test("tryAddShip of two not connected to another") {
+    val game: Game = gameWithAnotherShip
+    val newGame: Game = (Vector(
+      Vector(true, false, true),
+      Vector(false, false, true)),
+      Map("another" -> List((0, 0)), "test" -> List((0, 2), (1, 2))))
+    assertEquals(tryAddShip(game, "test", List((0, 2), (1, 2))), newGame)
+  }
+
+  test("tryAddShip of two connected to another") {
+    val game: Game = gameWithAnotherShip
+    assertEquals(tryAddShip(game, "test", List((0, 1), (0, 2))), game)
+    assertEquals(tryAddShip(game, "test", List((1, 0))), game)
+    assertEquals(tryAddShip(game, "test", List((1, 1))), game)
+  }
+
+  test("pointNeighbours") {
+    assertEquals(pointNeighbours((0, 0)).toSet,
+      Set((-1, -1), (-1, 0), (-1, +1), (0, -1), (0, +1), (+1, -1), (+1, 0), (+1, +1)))
+    assertEquals(pointNeighbours((1, 1)).toSet,
+      Set((0, 0), (0, 1), (0, 2), (1, 0), (1, 2), (2, 0), (2, 1), (2, 2)))
+  }
+
+  test("isPointAvailable") {
+    assertEquals(
+      (-1 to 2)
+        .map(i =>
+          (-1 to 3).map(j =>
+            isPointAvailable((i, j), gameWithAnotherShip._1)).toList)
+        .toList,
+      List(
+        List(false, false, false, false, false),
+        List(false, false, false, true, false),
+        List(false, false, false, true, false),
+        List(false, false, false, false, false)
+      )
+    )
+  }
 
   test("validateHorizontalShip") {
     assertEquals(validateHorizontalShip(List((0, 0), (0, 1))), true)
