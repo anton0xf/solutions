@@ -15,4 +15,10 @@ class DictExSpec extends FunSuite {
     val dict = DictEx(TDictItem(1, "asdf"), TDictItem(2, "qq"))
     assertEquals(dict.map(_ + "_"), DictEx(ADictItem(1, "asdf_"), ADictItem(2, "qq_")))
   }
+  test("prepend") {
+    val dict: DictEx[TDictItem] = DictEx(TDictItem(1, "asdf"), TDictItem(2, "qq"))
+    val actual: DictEx[DictItem] = ADictItem(3, "aa") +: dict
+    val expected: DictEx[DictItem] = DictEx(ADictItem(3, "aa"), TDictItem(1, "asdf"), TDictItem(2, "qq"))
+    assertEquals(actual, expected)
+  }
 }

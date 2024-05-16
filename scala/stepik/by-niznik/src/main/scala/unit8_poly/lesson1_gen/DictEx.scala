@@ -9,6 +9,7 @@ case class DictEx[I <: DictItem](items: List[I]) {
   def head: I = items.head
   def map(f: String => String): DictEx[ADictItem] =
     DictEx(items.map {item => ADictItem(item.key, f(item.value))})
+  def +:[J >: I <: DictItem](item: J): DictEx[J] = DictEx(item :: items)
 }
 
 object DictEx {
