@@ -1,4 +1,5 @@
 package unit8_poly.lesson1_gen
+// https://stepik.org/lesson/106542/step/2
 
 trait DictItem[+K, +V] {
   def key: K

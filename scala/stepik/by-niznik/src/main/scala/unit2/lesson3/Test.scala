@@ -7,5 +7,5 @@ object Test extends App {
     val x = 7
     x + 3
   }
-  println(x + "," + y)
+  println(s"$x,$y")
 }
