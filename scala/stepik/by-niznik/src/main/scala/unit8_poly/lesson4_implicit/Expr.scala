@@ -11,7 +11,7 @@ trait Expr[T] {
 }
 
 object ExprSyntax {
-  def literalInt[T](value: Int)(implicit expr: Expr[T]): T = expr.literalInt(value)
+  // def literalInt[T](value: Int)(implicit expr: Expr[T]): T = expr.literalInt(value)
   def X[T](implicit expr: Expr[T]): T = expr.variable("x")
   def Y[T](implicit expr: Expr[T]): T = expr.variable("y")
   def Z[T](implicit expr: Expr[T]): T = expr.variable("z")
@@ -36,5 +36,15 @@ object Expr {
     override def plus(x: String, y: String): String = s"($x)+($y)"
     override def minus(x: String, y: String): String = s"($x)-($y)"
     override def negate(x: String): String = s"-($x)"
+  }
+
+  type Calc[T] = Map[String, T] => T
+
+  implicit def numericExpr[T](implicit numeric: Numeric[T]): Expr[Calc[T]] = new Expr[Calc[T]] {
+    import Numeric.Implicits._
+    override def literalInt(value: Int): Calc[T] = _ => numeric.fromInt(value)
+    override def variable(name: String): Calc[T] = _(name)
+    override def plus(x: Calc[T], y: Calc[T]): Calc[T] = vals => x(vals) + y(vals)
+    override def times(x: Calc[T], y: Calc[T]): Calc[T] = vals => x(vals) * y(vals)
   }
 }
