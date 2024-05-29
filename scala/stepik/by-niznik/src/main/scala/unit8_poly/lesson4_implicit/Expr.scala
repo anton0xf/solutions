@@ -47,4 +47,19 @@ object Expr {
     override def plus(x: Calc[T], y: Calc[T]): Calc[T] = vals => x(vals) + y(vals)
     override def times(x: Calc[T], y: Calc[T]): Calc[T] = vals => x(vals) * y(vals)
   }
+
+  final case class Print(s: String, priority: Int, isLit: Boolean = false) {
+    def print(outer: Int = 0): String = if (outer <= priority) s else s"($s)"
+  }
+
+  implicit val stringOrderExpr: Expr[Print] = new Expr[Print] {
+    override def literalInt(value: Int): Print = Print(s"$value", 4, isLit = true)
+    override def variable(name: String): Print = Print(s"${name.toUpperCase}", 5)
+    override def times(x: Print, y: Print): Print =
+      if (x.isLit && !y.isLit) Print(s"${x.print(3)}${y.print(3)}", 3)
+      else Print(s"${x.print(3)}*${y.print(3)}", 3)
+    override def plus(x: Print, y: Print): Print = Print(s"${x.print(2)}+${y.print(2)}", 2)
+    override def minus(x: Print, y: Print): Print = Print(s"${x.print(2)}-${y.print(2)}", 2)
+    override def negate(x: Print): Print = Print(s"-${x.print(1)}", 1)
+  }
 }
