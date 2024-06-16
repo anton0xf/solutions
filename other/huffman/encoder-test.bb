@@ -16,9 +16,9 @@
          (encode-tree [\a [\b \c]]))))
 
 (deftest encode-char-test
-  (is (= "0" (encode-char [\a [\b \c]] \a)))
-  (is (= "10" (encode-char [\a [\b \c]] \b)))
-  (is (= "11" (encode-char [\a [\b \c]] \c))))
+  (is (= "0" (encode-char (encode-tree [\a [\b \c]]) \a)))
+  (is (= "10" (encode-char (encode-tree [\a [\b \c]]) \b)))
+  (is (= "11" (encode-char (encode-tree [\a [\b \c]]) \c))))
 
 (deftest encode-test
   (is (= "010010110110" (encode [\a [\b \c]] "ababcaca"))))
