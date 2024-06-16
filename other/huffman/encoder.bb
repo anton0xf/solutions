@@ -3,7 +3,8 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]))
 
-;; tree = nil | [tree tree] ;; TODO search for idiomatic way to store tuples
+;; tree = nil | [tree tree]
+;; TODO search for idiomatic way to store tuples
 (defn make-tree [nodes]
   (loop [nodes nodes
          stack '()]
@@ -36,7 +37,8 @@
                       (map encode-tree tree))))
 
 (defn encode-char [tree ch]
-  (->> (encode-tree tree) ;; TODO save it in map and do it once, not for every char
+  (->> (encode-tree tree)
+       ;; TODO save it in map and do it once, not for every char
        (filter #(= ch (first %)))
        first second (apply str)))
 
