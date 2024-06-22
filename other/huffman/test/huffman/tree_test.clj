@@ -1,6 +1,6 @@
-(ns encoder-test
-  (:require [encoder :refer :all]
-            [clojure.test :refer :all]))
+(ns huffman.tree-test
+  (:require  [clojure.test :refer :all]
+             [huffman.tree :refer :all]))
 
 (deftest make-tree-test
   (is (nil? (make-tree [])))
@@ -15,10 +15,4 @@
   (is (= '([\a (\0)] [\b (\1 \0)] [\c (\1 \1)])
          (encode-tree [\a [\b \c]]))))
 
-(deftest encode-char-test
-  (is (= "0" (encode-char (encode-tree [\a [\b \c]]) \a)))
-  (is (= "10" (encode-char (encode-tree [\a [\b \c]]) \b)))
-  (is (= "11" (encode-char (encode-tree [\a [\b \c]]) \c))))
 
-(deftest encode-test
-  (is (= "010010110110" (encode [\a [\b \c]] "ababcaca"))))
