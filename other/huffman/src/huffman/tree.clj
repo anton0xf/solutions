@@ -1,6 +1,6 @@
 (ns huffman.tree)
 
-;; tree = nil | [tree tree]
+;; tree = nil | char | [tree tree]
 (defn make-tree [nodes]
   (loop [nodes nodes
          stack '()]
