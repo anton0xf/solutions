@@ -1,0 +1,3 @@
+#!/bin/sh
+# source it before use ocaml
+eval $(opam env)
