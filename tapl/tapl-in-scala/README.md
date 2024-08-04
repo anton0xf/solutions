@@ -1,4 +1,4 @@
-## HowTo
+# HowTo
 [scala-cli](https://scala-cli.virtuslab.org/) project. See `./project.scala`
 
 ```shell
@@ -19,4 +19,17 @@ $ scala-cli run . --main-class hello
 $ scala-cli test .
 # or with filtering
 $ scala-cli test . --test-only 'MyTests' -- 'MyTests.test'
+```
+
+# Languages
+## [Arith] Untyped Arithmetic Expression
+```bnf
+t ::=                           terms:
+    true                        constant true
+    false                       constant false
+    if t then t else t          conditional
+    0                           constant zero
+    succ t                      successor
+    pred t                      predecessor
+    iszero t                    zero test
 ```
