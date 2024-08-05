@@ -1,19 +1,20 @@
 package arith
 
 import Token.*
+import arith.Lexer.tokenize
 
 class LexerTest extends munit.FunSuite:
   test("tokenize constants"):
-    assertEquals(Lexer.tokenize("true false\n0"), List(True, False, Zero))
+    assertEquals(tokenize("true false\n0"), List(True, False, Zero))
     assertEquals(
-      Lexer.tokenize(" ( 0 0)   false  "),
+      tokenize(" ( 0 0)   false  "),
       List(OpenBracket, Zero, Zero, CloseBracket, False)
     )
 
   test("tokenize functions"):
-    assertEquals(Lexer.tokenize("succ(0)"), List(Succ, OpenBracket, Zero, CloseBracket))
-    assertEquals(Lexer.tokenize("pred(succ 0)"), List(Pred, OpenBracket, Succ, Zero, CloseBracket))
+    assertEquals(tokenize("succ(0)"), List(Succ, OpenBracket, Zero, CloseBracket))
+    assertEquals(tokenize("pred(succ 0)"), List(Pred, OpenBracket, Succ, Zero, CloseBracket))
 
   test("tokenize if"):
-    assertEquals(Lexer.tokenize("if true then succ(0) else false"),
+    assertEquals(tokenize("if true then succ(0) else false"),
       List(If, True, Then, Succ, OpenBracket, Zero, CloseBracket, Else, False))
