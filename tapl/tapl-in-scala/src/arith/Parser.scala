@@ -9,22 +9,18 @@ enum Term:
   case Pred(x: Term)
   case IsZero(x: Term)
 
-type ParseState = (Option[Term], List[Token])
+type ParseState = (Term, List[Token])
 
 object ParseState {
-  def apply(term: Term, rest: List[Token]): ParseState = (Some(term), rest)
-  def none(rest: List[Token]): ParseState = (None, rest)
+  def apply(term: Term, rest: List[Token]): ParseState = (term, rest)
 }
 
 object Parser {
   def parse(tokens: List[Token]): Term =
-    val (res, rest) = parseExpr(tokens)
+    val (term, rest) = parseExpr(tokens)
     if rest.nonEmpty
     then throw new RuntimeException(s"Unexpected token ${rest.head}. Expected end of input")
-    else
-      res match
-        case None       => throw new RuntimeException(s"Cannot parse $tokens")
-        case Some(term) => term
+    else term
 
   def toTokens(ast: Term): List[Token] = ???
 
@@ -32,10 +28,10 @@ object Parser {
     case (_, Nil) => throw new RuntimeException(s"Unexpected end of input. Expected $token")
     case (x, token :: rest) => (x, rest)
 
-  def thenMap(state: ParseState, f: Term => Term): ParseState = (state._1.map(f), state._2)
+  def thenMap(state: ParseState, f: Term => Term): ParseState = (f(state._1), state._2)
 
   def parseExpr(tokens: List[Token]): ParseState = tokens match
-    case Nil => ParseState.none(tokens) // TODO just throw exception?
+    case Nil => throw new RuntimeException("Unexpected end of input")
     case True :: rest        => ParseState(Term.True, rest)
     case False :: rest       => ParseState(Term.False, rest)
     case Zero :: rest        => ParseState(Term.Zero, rest)
@@ -50,11 +46,8 @@ object Parser {
 
   def parseIf(tokens: List[Token]): ParseState = {
     val (condT, rest1) = thenIgnore(parseExpr(tokens), Then)
-    if(condT.isEmpty) throw new RuntimeException("Unexpected end of input")
     val (thenT, rest2) = thenIgnore(parseExpr(rest1), Else)
-    if(thenT.isEmpty) throw new RuntimeException("Unexpected end of input")
     val (elseT, rest3) = parseExpr(rest2)
-    if(elseT.isEmpty) throw new RuntimeException("Unexpected end of input")
-    (Some(Term.If(condT.get, thenT.get, elseT.get)), rest3)
+    (Term.If(condT, thenT, elseT), rest3)
   }
 }
