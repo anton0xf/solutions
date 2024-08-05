@@ -2,6 +2,8 @@ package arith
 
 import arith.Token.*
 
+import scala.annotation.targetName
+
 enum Term:
   case True, False, Zero
   case If(cond: Term, thenBr: Term, elseBr: Term)
@@ -9,6 +11,7 @@ enum Term:
   case Pred(x: Term)
   case IsZero(x: Term)
 
+// TODO use State from Cats
 case class ParseState[A](runSt: List[Token] => (A, List[Token])) {
   def flatMap[B](f: A => ParseState[B]): ParseState[B] = ParseState { (tokens: List[Token]) =>
     val (x, rest1) = runSt(tokens)
@@ -17,6 +20,7 @@ case class ParseState[A](runSt: List[Token] => (A, List[Token])) {
 
   def map[B](f: A => B): ParseState[B] = flatMap((x: A) => ParseState { (f(x), _) })
 
+  @targetName("productL")
   def <*[B](st: ParseState[B]): ParseState[A] = for {
     x <- this
     _ <- st
@@ -32,25 +36,30 @@ object Parser {
 
   def toTokens(ast: Term): List[Token] = ???
 
+  def parseExpr: ParseState[Term] = ParseState {
+    case Nil => throw new RuntimeException("Unexpected end of input")
+    case term :: rest =>
+      (term match {
+        case True         => pure(Term.True)
+        case False        => pure(Term.False)
+        case Zero         => pure(Term.Zero)
+        case OpenBracket  => (parseExpr <* skip(CloseBracket))
+        case CloseBracket => throw new RuntimeException("Unexpected close bracket")
+        case Succ         => parseExpr.map(Term.Succ(_))
+        case Pred         => parseExpr.map(Term.Pred(_))
+        case IsZero       => parseExpr.map(Term.IsZero(_))
+        case If           => parseIf
+        case Else         => throw new RuntimeException("Unexpected 'else'")
+        case Then         => throw new RuntimeException("Unexpected 'then'")
+      }).runSt(rest)
+  }
+
   def skip(token: Token): ParseState[Unit] = ParseState {
     case Nil           => throw new RuntimeException(s"Unexpected end of input. Expected $token")
     case token :: rest => ((), rest)
   }
 
-  def parseExpr: ParseState[Term] = ParseState {
-    case Nil                 => throw new RuntimeException("Unexpected end of input")
-    case True :: rest        => (Term.True, rest)
-    case False :: rest       => (Term.False, rest)
-    case Zero :: rest        => (Term.Zero, rest)
-    case OpenBracket :: rest => (parseExpr <* skip(CloseBracket)).runSt(rest)
-    case CloseBracket :: _   => throw new RuntimeException("Unexpected close bracket")
-    case Succ :: rest        => parseExpr.map(Term.Succ(_)).runSt(rest)
-    case Pred :: rest        => parseExpr.map(Term.Pred(_)).runSt(rest)
-    case IsZero :: rest      => parseExpr.map(Term.IsZero(_)).runSt(rest)
-    case If :: rest          => parseIf.runSt(rest)
-    case Else :: _           => throw new RuntimeException("Unexpected 'else'")
-    case Then :: _           => throw new RuntimeException("Unexpected 'then'")
-  }
+  def pure[A](x: A): ParseState[A] = ParseState { tokens => (x, tokens) }
 
   def parseIf: ParseState[Term] =
     for {
