@@ -31,18 +31,18 @@ object Parser {
   def thenMap(state: ParseState, f: Term => Term): ParseState = (f(state._1), state._2)
 
   def parseExpr(tokens: List[Token]): ParseState = tokens match
-    case Nil => throw new RuntimeException("Unexpected end of input")
+    case Nil                 => throw new RuntimeException("Unexpected end of input")
     case True :: rest        => ParseState(Term.True, rest)
     case False :: rest       => ParseState(Term.False, rest)
     case Zero :: rest        => ParseState(Term.Zero, rest)
     case OpenBracket :: rest => thenIgnore(parseExpr(rest), CloseBracket)
-    case CloseBracket :: _ => throw new RuntimeException("Unexpected close bracket")
-    case Succ :: rest => thenMap(parseExpr(rest), Term.Succ(_))
-    case Pred :: rest => thenMap(parseExpr(rest), Term.Pred(_))
-    case IsZero :: rest => thenMap(parseExpr(rest), Term.IsZero(_))
-    case If :: rest => parseIf(rest)
-    case Else :: _ => throw new RuntimeException("Unexpected 'else'")
-    case Then :: _ => throw new RuntimeException("Unexpected 'then'")
+    case CloseBracket :: _   => throw new RuntimeException("Unexpected close bracket")
+    case Succ :: rest        => thenMap(parseExpr(rest), Term.Succ(_))
+    case Pred :: rest        => thenMap(parseExpr(rest), Term.Pred(_))
+    case IsZero :: rest      => thenMap(parseExpr(rest), Term.IsZero(_))
+    case If :: rest          => parseIf(rest)
+    case Else :: _           => throw new RuntimeException("Unexpected 'else'")
+    case Then :: _           => throw new RuntimeException("Unexpected 'then'")
 
   def parseIf(tokens: List[Token]): ParseState = {
     val (condT, rest1) = thenIgnore(parseExpr(tokens), Then)
