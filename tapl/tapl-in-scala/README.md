@@ -32,4 +32,5 @@ t ::=                           terms:
     succ t                      successor
     pred t                      predecessor
     iszero t                    zero test
+    (t)                         brackets
 ```

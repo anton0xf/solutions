@@ -21,6 +21,7 @@ class ParserTest extends munit.FunSuite:
     assertEquals(Parser.parse(List(Succ, Zero)), Term.Succ(Term.Zero))
     assertEquals(Parser.parse(List(Pred, OpenBracket, Zero, CloseBracket)), Term.Pred(Term.Zero))
     assertEquals(Parser.parse(List(OpenBracket, IsZero, Zero, CloseBracket)), Term.IsZero(Term.Zero))
+    assertEquals(Parser.parse(List(Pred, Succ, Zero)), Term.Pred(Term.Succ(Term.Zero)))
     intercept[RuntimeException] { Parser.parse(List(Succ)) }
     intercept[RuntimeException] { Parser.parse(List(Succ, CloseBracket)) }
     intercept[RuntimeException] { Parser.parse(List(Succ, OpenBracket, Zero)) }
@@ -28,6 +29,8 @@ class ParserTest extends munit.FunSuite:
   test("parse if"):
     assertEquals(Parser.parse(List(If, True, Then, Zero, Else, Succ, Zero)),
       Term.If(Term.True, Term.Zero, Term.Succ(Term.Zero)))
+    assertEquals(Parser.parse(List(If, If, True, Then, False, Else, True, Then, Zero, Else, Succ, Zero)),
+      Term.If(Term.If(Term.True, Term.False, Term.True), Term.Zero, Term.Succ(Term.Zero)))
     intercept[RuntimeException] { Parser.parse(List(If, True, Then, Zero, Else, Succ)) }
     intercept[RuntimeException] { Parser.parse(List(If, True, Then, Zero, Else)) }
     intercept[RuntimeException] { Parser.parse(List(If, True, Then, Zero)) }
