@@ -29,7 +29,6 @@ Definition lt_pair (p q: nat * nat): Prop := le_pair p q /\ p <> q.
 
 Theorem pair_neq (p q: nat * nat): p <> q <-> fst p <> fst q \/ snd p <> snd q.
 Proof.
-  unfold not at 1.
   rewrite surjective_pairing at 1. rewrite (surjective_pairing q) at 1.
   rewrite pair_equal_spec. split; intros H.
   - destruct (eq_dec (fst p) (fst q)) as [eq1|neq1];
@@ -61,9 +60,7 @@ Proof.
 Qed.
 
 Theorem lt_pair1 (p1 p2 q1 q2: nat): lt_pair (p1, p2) (q1, q2) -> p1 <= q1.
-Proof.
-  unfold lt_pair. intros [lep neq]. apply le_pair1 in lep. exact lep.
-Qed.
+Proof. unfold lt_pair. intros [lep neq]. apply le_pair1 in lep. exact lep. Qed.
 
 Theorem le_pair2 (n m k: nat): le_pair (n, m) (n, k) <-> m <= k.
 Proof.
@@ -74,19 +71,13 @@ Proof.
 Qed.
 
 Theorem lt_pair2 (n m k: nat): lt_pair (n, m) (n, k) <-> m < k.
-Proof.
-  rewrite lt_pair_alt. simpl. split; intro H.
-  - destruct H as [lt1 | [eq1 lt2]]; try assumption.
-    contradict lt1. apply lt_irrefl.
-  - right. split; try assumption. reflexivity.
-Qed.
+Proof. unfold lt_pair. rewrite le_pair2, pair_neq, le_neq. intuition. Qed.
 
 Theorem le_pair_zero1 (n m k: nat): le_pair (n, m) (0, k) <-> n = 0 /\ m <= k.
 Proof.
   unfold le_pair. simpl. split.
-  - intros [n_lt0 | [n_eq0 m_le_k]].
-    + contradict n_lt0. apply nlt_0_r.
-    + split; try assumption.
+  - intros [n_lt0 | [n_eq0 m_le_k]]; try auto.
+    contradict n_lt0. apply nlt_0_r.
   - intros [n_eq0 m_le_k]. right. split; assumption.
 Qed.
 
