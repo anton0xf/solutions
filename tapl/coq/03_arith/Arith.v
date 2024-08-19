@@ -45,7 +45,7 @@ Proof.
   - reflexivity.
   - simpl. remember (Tlen n') as Tl eqn:Tl_def.
     remember (T n') as T' eqn:T'_def.
-    rewrite length_app.
+    rewrite app_length (* length_app *).
     assert (length (flat_map (fun t0 : Term => [TSucc t0; TPred t0; TIsZero t0]) T') = Tl * 3) as eq.
     { rewrite flat_map_constant_length with (c := 3).
       - rewrite IH. reflexivity.
@@ -56,7 +56,7 @@ Proof.
       - rewrite IH. reflexivity.
       - intros t1 H1. rewrite flat_map_constant_length with (c := Tl).
         + rewrite IH. rewrite pow_2_r. reflexivity.
-        + intros t2 H2. rewrite length_map. exact IH.
+        + intros t2 H2. rewrite map_length (* length_map *). exact IH.
     } rewrite eq. simpl. ring.
 Qed.
 
@@ -96,8 +96,53 @@ Proof.
       apply incl_map with (l1 := T n); assumption. 
 Qed.
 
+Theorem T_cumulative_le': forall (n m: nat), incl (T n) (T (m + n)).
+Proof.
+  intro n. induction m as [|m IH].
+  - simpl. apply incl_refl.
+  - rewrite add_succ_l. apply incl_tran with (m := T (m + n)).
+    + exact IH.
+    + apply T_cumulative.
+Qed.
+
+Theorem T_cumulative_le: forall (n m: nat), n <= m -> incl (T n) (T m).
+Proof.
+  intros n m H. apply le_exists_sub in H as [p [H _]].
+  subst m. apply T_cumulative_le'.
+Qed.
+
 (* 3.2.6. lim_{n -> inf} (T n) is list of all Term's *)
-(* TODO *)
+Theorem all_terms_in_T: forall t: Term, exists n: nat, In t (T n).
+Proof.
+  intro t. induction t as [ | | | t IH | t IH | t IH | t1 IH1 t2 IH2 t3 IH3].
+  - exists 1. simpl. auto.
+  - exists 1. simpl. auto.
+  - exists 1. simpl. auto.
+  - destruct IH as [n H]. exists (S n). simpl. rewrite in_app_iff.
+    do 3 right. left. apply in_flat_map. exists t. simpl. auto.
+  - destruct IH as [n H]. exists (S n). simpl. rewrite in_app_iff.
+    do 3 right. left. apply in_flat_map. exists t. simpl. auto.
+  - destruct IH as [n H]. exists (S n). simpl. rewrite in_app_iff.
+    do 3 right. left. apply in_flat_map. exists t. simpl. auto.
+  - destruct IH1 as [n1 H1].
+    destruct IH2 as [n2 H2].
+    destruct IH3 as [n3 H3].
+    pose (n := max n1 (max n2 n3)).
+    assert (n1 <= n) as n1_le_n. { apply le_max_l. }
+    assert (max n2 n3 <= n) as n23_le_n. { apply le_max_r. }
+    assert (n2 <= n) as n2_le_n.
+    { apply le_trans with (m := max n2 n3). apply le_max_l. exact n23_le_n. }
+    assert (n3 <= n) as n3_le_n.
+    { apply le_trans with (m := max n2 n3). apply le_max_r. exact n23_le_n. }
+    clear n23_le_n.
+    exists (S n). simpl. rewrite in_app_iff.
+    do 4 right. apply in_flat_map. exists t1. split.
+    + apply (T_cumulative_le n1 n); assumption.
+    + apply in_flat_map. exists t2. split.
+      * apply (T_cumulative_le n2 n); assumption.
+      * apply in_map.
+        apply (T_cumulative_le n3 n); assumption.
+Qed.
 
 (* TODO The results of evaluation are terms of a particularly simple form: they will
 always be either boolean constants or numbers (nested applications of zero
