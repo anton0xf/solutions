@@ -1,4 +1,4 @@
-Require Import Arith.
+Require Import Arith.Arith.
 Require Import List.
 Import ListNotations.
 Import Nat.
