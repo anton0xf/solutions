@@ -115,33 +115,27 @@ Qed.
 Theorem all_terms_in_T: forall t: Term, exists n: nat, In t (T n).
 Proof.
   intro t. induction t as [ | | | t IH | t IH | t IH | t1 IH1 t2 IH2 t3 IH3].
-  - exists 1. simpl. auto.
-  - exists 1. simpl. auto.
-  - exists 1. simpl. auto.
-  - destruct IH as [n H]. exists (S n). simpl. rewrite in_app_iff.
-    do 3 right. left. apply in_flat_map. exists t. simpl. auto.
-  - destruct IH as [n H]. exists (S n). simpl. rewrite in_app_iff.
-    do 3 right. left. apply in_flat_map. exists t. simpl. auto.
-  - destruct IH as [n H]. exists (S n). simpl. rewrite in_app_iff.
-    do 3 right. left. apply in_flat_map. exists t. simpl. auto.
-  - destruct IH1 as [n1 H1].
-    destruct IH2 as [n2 H2].
-    destruct IH3 as [n3 H3].
-    pose (n := max n1 (max n2 n3)).
-    assert (n1 <= n) as n1_le_n. { apply le_max_l. }
-    assert (max n2 n3 <= n) as n23_le_n. { apply le_max_r. }
-    assert (n2 <= n) as n2_le_n.
-    { apply le_trans with (m := max n2 n3). apply le_max_l. exact n23_le_n. }
-    assert (n3 <= n) as n3_le_n.
-    { apply le_trans with (m := max n2 n3). apply le_max_r. exact n23_le_n. }
-    clear n23_le_n.
-    exists (S n). simpl. rewrite in_app_iff.
-    do 4 right. apply in_flat_map. exists t1. split.
-    + apply (T_cumulative_le n1 n); assumption.
-    + apply in_flat_map. exists t2. split.
-      * apply (T_cumulative_le n2 n); assumption.
-      * apply in_map.
-        apply (T_cumulative_le n3 n); assumption.
+  1,2,3: ( exists 1; simpl; auto ).
+  1,2,3: ( destruct IH as [n H]; exists (S n); simpl; rewrite in_app_iff;
+           do 3 right; left; apply in_flat_map; exists t; simpl; auto ).
+  destruct IH1 as [n1 H1].
+  destruct IH2 as [n2 H2].
+  destruct IH3 as [n3 H3].
+  pose (n := max n1 (max n2 n3)).
+  assert (n1 <= n) as n1_le_n. { apply le_max_l. }
+  assert (max n2 n3 <= n) as n23_le_n. { apply le_max_r. }
+  assert (n2 <= n) as n2_le_n.
+  { apply le_trans with (m := max n2 n3). apply le_max_l. exact n23_le_n. }
+  assert (n3 <= n) as n3_le_n.
+  { apply le_trans with (m := max n2 n3). apply le_max_r. exact n23_le_n. }
+  clear n23_le_n.
+  exists (S n). simpl. rewrite in_app_iff.
+  do 4 right. apply in_flat_map. exists t1. split.
+  - apply (T_cumulative_le n1 n); assumption.
+  - apply in_flat_map. exists t2. split.
+    + apply (T_cumulative_le n2 n); assumption.
+    + apply in_map.
+      apply (T_cumulative_le n3 n); assumption.
 Qed.
 
 (* TODO The results of evaluation are terms of a particularly simple form: they will
