@@ -2,3 +2,4 @@
 # $ coq_makefile -f _CoqProject -o Makefile
 -R . TAPL_03_Arith
 Arith.v
+ArithTUniq.v
