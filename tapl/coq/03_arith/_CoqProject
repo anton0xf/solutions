@@ -1,5 +1,7 @@
 # https://coq.discourse.group/t/how-to-import-a-file-in-coq/858
 # $ coq_makefile -f _CoqProject -o Makefile
--R . TAPL_03_Arith
+-Q . TAPL_03_Arith
 Arith.v
+TSet.v
 ArithTUniq.v
+Consts.v
