@@ -1,5 +1,6 @@
-//> using scala 3.3.3
-//> using jvm 21
+// course uses 2.12.7. but it fails with "Compilation failed"
+//> using scala 2.12.20
+//> using jvm 11
 
 // Main
 
