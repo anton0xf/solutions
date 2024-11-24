@@ -1,57 +1,52 @@
+Require Import TAPL_03_Arith.Term.
+Require Import TAPL_03_Arith.SetUtil.
+Require Import TAPL_03_Arith.TSet.
 Require Import Arith.Arith.
-Require Import List.
-Import ListNotations.
+Require Import MSets.
 Import Nat.
-
-Inductive Term: Set :=
-| TTrue
-| TFalse
-| TZero
-| TSucc (t: Term)
-| TPred (t: Term)
-| TIsZero (t: Term)
-| TIf (cond thenBr elseBr: Term).
-
-Example true_neq_false: TTrue <> TFalse.
-Proof. discriminate. Qed.
+Import TSet TSetFacts TSet1 TSet2 TSetNotations.
 
 (* def 3.2.3. S_n *)
-Fixpoint T (n: nat): list Term :=
+Fixpoint Sn (n: nat): t :=
   match n with
-  | O => []
-  | S n' => let T' := T n'
-           in [TTrue; TFalse; TZero] ++
-                (flat_map (fun t => [TSucc t; TPred t; TIsZero t]) T') ++
-                (flat_map (fun t1 => flat_map (fun t2 => map (fun t3 => TIf t1 t2 t3) T') T') T')
+  | O => {}
+  | S n' =>
+      let Sn' := Sn n' in
+      {TTrue; TFalse; TZero} ++
+        (flat_map (fun t => {TSucc t; TPred t; TIsZero t}) Sn') ++
+        flat_map (fun t1 => flat_map (fun t2 => map (fun t3 => TIf t1 t2 t3) Sn') Sn') Sn'
   end.
 
-Example true_In_Sn: forall n: nat, n > 0 -> In TTrue (T n).
+Example true_In_Sn: forall n: nat, n > 0 -> In TTrue (Sn n).
 Proof.
   destruct n as [| n']; intro npos.
-  - contradict npos. apply nlt_0_r.
-  - simpl. auto.
+  - inversion npos.
+  - simpl. apply union_spec. left.
+    apply add_spec. left. reflexivity.
 Qed.
 
 (* ex 3.2.4. size of (T 3) *)
-Fixpoint Tlen (n: nat): nat :=
+Fixpoint card_S (n: nat): nat :=
   match n with
   | O => 0
-  | S n' => let Tlen' := Tlen n' in 3 + 3 * Tlen' + Tlen'^3 
+  | S n' => let card' := card_S n' in 3 + 3 * card' + card'^3 
   end.
 
-Theorem Tlen_is_len_T: forall n: nat, length (T n) = Tlen n.
+Theorem card_S_is_correct: forall n: nat, cardinal (Sn n) = card_S n.
 Proof.
-  induction n as [|n' IH].
-  - reflexivity.
-  - simpl. remember (Tlen n') as Tl eqn:Tl_def.
-    remember (T n') as T' eqn:T'_def.
-    rewrite app_length (* length_app *).
-    assert (length (flat_map (fun t0 : Term => [TSucc t0; TPred t0; TIsZero t0]) T') = Tl * 3) as eq.
+  induction n as [|n' IH]; try reflexivity.
+  simpl (Sn (S n')). remember (Sn n') as Sn' eqn:Sn'_def.
+  (* remember (card_S n') as CSn eqn:CSn_def. *)
+  repeat rewrite cardinal_of_disjoint_union; repeat rewrite add_cardinal_2.
+  - rewrite empty_cardinal.
+    (* Stop here *)
+  rewrite app_length (* length_app *).
+    assert (length (flat_map (fun t0 : Term => [TSucc t0; TPred t0; TIsZero t0]) Sn') = Tl * 3) as eq.
     { rewrite flat_map_constant_length with (c := 3).
       - rewrite IH. reflexivity.
       - intros t H. reflexivity.
     } rewrite eq. clear eq.
-    assert (length (flat_map (fun t1 : Term => flat_map (fun t2 : Term => map (fun t3 : Term => TIf t1 t2 t3) T') T') T') = Tl^3) as eq.
+    assert (length (flat_map (fun t1 : Term => flat_map (fun t2 : Term => map (fun t3 : Term => TIf t1 t2 t3) Sn') Sn') Sn') = Tl^3) as eq.
     { rewrite flat_map_constant_length with (c := Tl^2).
       - rewrite IH. reflexivity.
       - intros t1 H1. rewrite flat_map_constant_length with (c := Tl).
@@ -60,10 +55,10 @@ Proof.
     } rewrite eq. simpl. ring.
 Qed.
 
-Compute Tlen 2. (* = 39 : nat *)
+Compute card_S 2. (* = 39 : nat *)
 
-Example T3_len: length (T 3) = 3 + 3*39 + 39^3.
-Proof. rewrite Tlen_is_len_T. reflexivity. Qed.
+Example card_S3: cardinal (Sn 3) = 3 + 3*39 + 39^3.
+Proof. rewrite card_S_is_correct. reflexivity. Qed.
 
 (* ex 3.2.5. T is cumulative *)
 Theorem incl_flat_map {A: Type} (xs ys: list A) (f: A -> list A):
@@ -86,11 +81,11 @@ Proof.
     + do 4 right.
       (* cond *)
       apply incl_flat_map with (xs := T n); try assumption.
-      apply in_flat_map in H as [cond [cond_in_Tn H]].
+      apply in_flat_map in H as [cond [cond_in_Sn H]].
       apply in_flat_map. exists cond. split; try assumption.
       (* thenBr *)
       apply incl_flat_map with (xs := T n); try assumption.
-      apply in_flat_map in H as [thenBr [thenBr_in_Tn H]].
+      apply in_flat_map in H as [thenBr [thenBr_in_Sn H]].
       apply in_flat_map. exists thenBr. split; try assumption.
       (* elseBr *)
       apply incl_map with (l1 := T n); assumption. 

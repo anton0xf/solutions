@@ -1,7 +1,9 @@
 # https://coq.discourse.group/t/how-to-import-a-file-in-coq/858
 # $ coq_makefile -f _CoqProject -o Makefile
 -Q . TAPL_03_Arith
-Arith.v
-TSet.v
+Term.v # AST definition
+SetUtil.v # some tools for MSet
+TSet.v # MSet of Term
+SnSet.v # S(n) - n-th set of Terms
 ArithTUniq.v
 Consts.v
