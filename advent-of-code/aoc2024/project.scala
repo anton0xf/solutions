@@ -1,4 +1,4 @@
-//> using scala 3
+//> using scala 3.4.2
 //> using jvm 17
 
 // Main
