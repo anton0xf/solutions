@@ -1,4 +1,3 @@
-import scala.annotation.tailrec
 import scala.util.Using
 import scala.io.Source
 
@@ -10,15 +9,13 @@ object Day02 {
   def isSafe(report: List[Int]): Boolean = isInc(report) || isDec(report)
 
   def isInc2(xs: List[Int]): Boolean = {
-    @tailrec
-    def go(i: Int, d: Int): Boolean = {
-      i + d == xs.size || (
-        if inRange(xs(i + d) - xs(i))
-        then go(i + 1, d)
-        else d == 1 && go(i, 2)
-      )
+    def go(xs: List[Int], allowSkip: Boolean): Boolean = xs match {
+      case x1 :: x2 :: xs =>
+        (inRange(x2 - x1) && go(x2 :: xs, allowSkip)) ||
+          (allowSkip && go(x1 :: xs, false))
+      case _ => true
     }
-    go(0, 1)
+    go(xs, true) || go(xs.tail, false)
   }
   def isDec2(xs: List[Int]): Boolean = isInc2(xs.map(-_))
   def isSafe2(report: List[Int]): Boolean = isInc2(report) || isDec2(report)
