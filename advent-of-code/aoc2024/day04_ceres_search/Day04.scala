@@ -6,7 +6,6 @@ object Day04 {
   def main(args: Array[String]): Unit = {
     Using(Source.fromFile("day04_ceres_search/input")) { source =>
       val input = source.getLines().map(_.toVector).toVector
-      // part 1
       val res1 = solution1(input)
       println(s"part 1: $res1")
     }
@@ -14,6 +13,7 @@ object Day04 {
 
   type Input = Vector[Vector[Char]]
 
+  // part 1
   val word = "XMAS".toList
   val dirs1 = List(-1, 0, 1)
   val dirs = for {
@@ -41,5 +41,14 @@ object Day04 {
       }
     }
     go(pos, word.tail)
+  }
+
+  // part 2
+  def solution2(input: Input): Int = {
+    0
+  }
+  
+  def checkPattern(input: Input, pos: (Int, Int)): Boolean = {
+    
   }
 }
