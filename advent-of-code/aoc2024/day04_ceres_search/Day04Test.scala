@@ -31,10 +31,11 @@ class Day04Test extends munit.FunSuite {
   }
 
   // part 2
-  val input2s: Input =
+  val input2s: Input = {
     """M.S
       |.A.
       |M.S""".stripMargin.lines().toScala(Vector).map(_.toVector)
+  }
 
   val input2: Input =
     """.M.S......
@@ -48,12 +49,12 @@ class Day04Test extends munit.FunSuite {
       |M.M.M.M.M.
       |..........""".stripMargin.lines().toScala(Vector).map(_.toVector)
 
-    test("solution2") {
-      assertEquals(solution2(input2s), 1)
-      assertEquals(solution2(input2), 9)
-    }
+  test("solution2") {
+    assertEquals(solution2(input2s), 1)
+    assertEquals(solution2(input2), 9)
+  }
 
-    test("checkPattern") {
-      assertEquals(checkPattern(input2s, (1, 1)))
-    }
+  test("checkPattern") {
+    assertEquals(checkPattern(input2s, (1, 1)), true)
+  }
 }

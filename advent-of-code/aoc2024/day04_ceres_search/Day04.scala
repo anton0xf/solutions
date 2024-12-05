@@ -6,12 +6,15 @@ object Day04 {
   def main(args: Array[String]): Unit = {
     Using(Source.fromFile("day04_ceres_search/input")) { source =>
       val input = source.getLines().map(_.toVector).toVector
-      val res1 = solution1(input)
-      println(s"part 1: $res1")
+      println(s"part 1: ${solution1(input)}")
+      println(s"part 2: ${solution2(input)}")
     }
   }
 
   type Input = Vector[Vector[Char]]
+
+  def get(input: Input, pos: (Int, Int)): Option[Char] = input.lift(pos._1).flatMap(_.lift(pos._2))
+  def getAll(input: Input, poss: (Int, Int)*): Seq[Char] = poss.flatMap(get(input, _))
 
   // part 1
   val word = "XMAS".toList
@@ -36,7 +39,7 @@ object Day04 {
     def go(pos: (Int, Int), word: List[Char]): Boolean = word.isEmpty || {
       val i = pos._1 + dir._1
       val j = pos._2 + dir._2
-      input.lift(i).flatMap(_.lift(j)).exists { nextCh =>
+      get(input, (i,j)).exists { nextCh =>
         if word.head == nextCh then go((i, j), word.tail) else false
       }
     }
@@ -45,10 +48,18 @@ object Day04 {
 
   // part 2
   def solution2(input: Input): Int = {
-    0
+    val found = for {
+      (line, i) <- input.zipWithIndex
+      (ch, j) <- line.zipWithIndex
+      if ch == 'A'
+    } yield checkPattern(input, (i, j))
+    found.count(identity)
   }
-  
+
   def checkPattern(input: Input, pos: (Int, Int)): Boolean = {
-    
+    def check(diag: Seq[Char]): Boolean = diag.toSet == Set('M', 'S')
+    val diag1 = getAll(input, (pos._1 - 1, pos._2 - 1), (pos._1 + 1, pos._2 + 1))
+    val diag2 = getAll(input, (pos._1 - 1, pos._2 + 1), (pos._1 + 1, pos._2 - 1))
+    check(diag1) && check(diag2)
   }
 }
