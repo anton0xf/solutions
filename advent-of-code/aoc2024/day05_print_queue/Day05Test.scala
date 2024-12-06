@@ -44,7 +44,7 @@ class Day05Test extends munit.FunSuite {
     assertEquals(
       parseInput(input0.iterator),
       Input(
-        List(Rule(1, 2)),
+        Set(Rule(1, 2)),
         List(Update(Vector(1, 3, 2)), Update(Vector(3, 2, 1)))
       )
     )
@@ -66,5 +66,9 @@ class Day05Test extends munit.FunSuite {
   test("solution1"){
     assertEquals(solution1(parseInput(input0.iterator)), 3)
     assertEquals(solution1(parseInput(input1.iterator)), 143)
+  }
+  test("solution2"){
+    assertEquals(solution2(parseInput(input0.iterator)), 1)
+    assertEquals(solution2(parseInput(input1.iterator)), 123)
   }
 }
