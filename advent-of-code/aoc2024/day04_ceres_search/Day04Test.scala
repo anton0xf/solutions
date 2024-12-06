@@ -14,7 +14,6 @@ class Day04Test extends munit.FunSuite {
 
   test("dirs") {
     assertEquals(dirs.size, 8)
-    println(dirs)
     assertEquals(
       dirs,
       List((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
