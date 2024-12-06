@@ -22,13 +22,13 @@ class Day06Test extends munit.FunSuite {
   test("parseInput") {
     assertEquals(
       parseInput(input0.iterator),
-      Input(size = (2, 4), pos = Pos(1, 2), obstructions = Set(Pos(0, 2)))
+      Input(size = (2, 4), start = Pos(1, 2), obstructions = Set(Pos(0, 2)))
     )
     assertEquals(
       parseInput(input1.iterator),
       Input(
         size = (10, 10),
-        pos = Pos(6, 4),
+        start = Pos(6, 4),
         obstructions = Set(
           Pos(0, 4),
           Pos(8, 0),
