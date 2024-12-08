@@ -46,4 +46,8 @@ class Day06Test extends munit.FunSuite {
     assertEquals(solution1(parseInput(input0.iterator)), 2)
     assertEquals(solution1(parseInput(input1.iterator)), 41)
   }
+  test("solution2") {
+    assertEquals(solution2(parseInput(input0.iterator)), 0)
+    assertEquals(solution2(parseInput(input1.iterator)), 6)
+  }
 }
