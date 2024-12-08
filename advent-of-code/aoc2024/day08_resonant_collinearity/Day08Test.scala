@@ -40,4 +40,8 @@ class Day08Test extends munit.FunSuite {
     assertEquals(solution1(parseInput(input.iterator)), 14)
   }
 
+  test("solution2"){
+    assertEquals(solution2(parseInput(input.iterator)), 34)
+  }
+
 }

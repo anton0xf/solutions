@@ -1,3 +1,4 @@
+import scala.collection.immutable
 import scala.util.Using
 import scala.io.Source
 
@@ -6,6 +7,7 @@ object Day08 {
     Using(Source.fromFile("day08_resonant_collinearity/input")) { source =>
       val input = parseInput(source.getLines())
       println(s"part 1: ${solution1(input)}")
+      println(s"part 2: ${solution2(input)}")
     }
   }
 
@@ -45,4 +47,20 @@ object Day08 {
   }
 
   def antinodes(p1: Pos, p2: Pos): List[Pos] = List(p2 + p2 - p1, p1 + p1 - p2)
+
+  // part 2
+  def solution2(input: Input): Int = {
+    val ass = for {
+      (ch, ps) <- input.map.groupMap(_._2)(_._1)
+      p1 <- ps
+      p2 <- ps
+      if p1 != p2
+    } yield antinodes2(input.size)(p1, p2) ++ antinodes2(input.size)(p2, p1)
+    ass.reduceLeft(_ ++ _).size
+  }
+
+  def antinodes2(size: (Int, Int))(p1: Pos, p2: Pos): Set[Pos] = {
+    val step = p2 - p1
+    Iterator.iterate(p2)(_ + step).takeWhile(_.inside(size)).toSet
+  }
 }
