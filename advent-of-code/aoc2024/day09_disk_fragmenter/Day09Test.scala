@@ -14,9 +14,13 @@ class Day09Test extends munit.FunSuite {
     assertEquals(showBlocks(toBlocks(input)), "00...111...2...333.44.5555.6666.777.888899")
   }
 
-  test("defragment") {
+  test("compact") {
     assertEquals(showBlocks(compact(toBlocks(input))), "0099811188827773336446555566..............")
   }
 
   // part 2
+  test("solution2"){
+    assertEquals(solution2(input), BigInt(2858))
+  }
+
 }
