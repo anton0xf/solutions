@@ -7,6 +7,7 @@ object Day10 {
     Using(Source.fromFile("day10_hoof_it/input")) { source =>
       val input = parseInput(source.getLines())
       println(s"part 1: ${solution1(input)}")
+      println(s"part 2: ${solution2(input)}")
     }
   }
 
@@ -40,6 +41,15 @@ object Day10 {
       if get(cur.head).get == 9 then cur
       else trailEnds(cur.flatMap(next))
 
+    def trails(cur: Map[Pos, Int]): Map[Pos, Int] =
+      if get(cur.keys.head).get == 9 then cur
+      else
+        trails(
+          cur.toList
+            .flatMap { (p, n) => next(p).map((_, n)) }
+            .groupMapReduce(_._1)(_._2)(_ + _)
+        )
+
   }
 
   def parseInput(lines: Iterator[String]): Input = Input(
@@ -56,4 +66,11 @@ object Day10 {
   }
 
   // part 2
+  def solution2(input: Input): Int = {
+    input
+      .findPos(0)
+      .map(p => input.trails(Map(p -> 1)))
+      .map(_.values.sum)
+      .sum
+  }
 }
