@@ -1,3 +1,4 @@
+import scala.annotation.tailrec
 import scala.collection.immutable
 import scala.util.Using
 import scala.io.Source
@@ -7,6 +8,7 @@ object Day12 {
     Using(Source.fromFile("day12_garden_groups/input")) { source =>
       val input = parseInput(source.getLines())
       println(s"part 1: ${solution1(input)}")
+      println(s"part 2: ${solution2(input)}")
     }
   }
 
@@ -19,6 +21,8 @@ object Day12 {
   case class Pos(i: Int, j: Int) {
     def +(p: Pos): Pos = Pos(i + p.i, j + p.j)
     def neighbours: Set[Pos] = dirs.map(this + _)
+    def rotRight: Pos = Pos(j, -i)
+    def rotLeft: Pos = Pos(-j, i)
   }
 
   val dirs: Set[Pos] = Set(Pos(0, 1), Pos(1, 0), Pos(0, -1), Pos(-1, 0))
@@ -31,6 +35,7 @@ object Day12 {
   }
 
   def regions(input: Input): List[Set[Pos]] = {
+    @tailrec
     def go(q: Set[Pos], regions: List[Set[Pos]]): List[Set[Pos]] = {
       if q.isEmpty then regions
       else {
@@ -43,6 +48,7 @@ object Day12 {
   }
 
   def searchRegion(p: Pos, input: Input): Set[Pos] = {
+    @tailrec
     def go(q: List[Pos], region: Set[Pos]): Set[Pos] = {
       q match {
         case Nil => region
@@ -63,4 +69,45 @@ object Day12 {
   }
 
   // part 2
+  def solution2(input: Input): BigInt = {
+    regions(input).map { region => BigInt(region.size) * regionSides(region) }.sum
+  }
+
+  def regionSides(region: Set[Pos]): Int = {
+    val sides = (for {
+      p <- region.iterator
+      dir <- dirs
+      if !region.contains(p + dir)
+    } yield (p, dir)).toSet
+
+    /** go around one of the region's boundaries, counting corners */
+    @tailrec
+    def go(p: Pos, dir: Pos, visited: Set[(Pos, Pos)], corners: Int): (Set[(Pos, Pos)], Int) = {
+      if visited.contains((p, dir)) then (visited, corners)
+      else {
+        val nextVisited = visited + ((p, dir))
+        val rDir = dir.rotRight
+        val n = p + rDir
+        if region.contains(n) then {
+          val n2 = n + dir
+          if region.contains(n2)
+          then go(n2, dir.rotLeft, nextVisited, corners + 1)
+          else go(n, dir, nextVisited, corners)
+        } else go(p, rDir, nextVisited, corners + 1)
+      }
+    }
+
+    /** iterate over all boundaries */
+    @tailrec
+    def iter(sides: Set[(Pos, Pos)], acc: Int): Int = {
+      val (p, dir) = sides.head
+      val (visited, corners) = go(p, dir, Set(), 0)
+      val newSides = sides -- visited
+      val newAcc = acc + corners
+      if newSides.isEmpty then newAcc else iter(newSides, newAcc)
+    }
+
+    iter(sides, 0)
+  }
+
 }
