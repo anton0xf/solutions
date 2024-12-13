@@ -11,16 +11,19 @@ object Day13 {
       val data = InputParser.parseData(source.bufferedReader())
       println(s"collinear buttons: ${data.machines.count(isCollinear)}")
       println(s"part 1: ${solution1(data)}")
+      println(s"part 2: ${solution2(data)}")
     }
   }
 
   case class Data(machines: List[Machine])
   case class Machine(a: Vec, b: Vec, prize: Vec)
-  case class Vec(x: Int, y: Int)
+  case class Vec(x: BigInt, y: BigInt) {
+    def apply(x: Int, y: Int) = Vec(BigInt(x), BigInt(y))
+  }
 
   object InputParser extends RegexParsers {
     def sep: Parser[Any] = '\n'
-    def num: Parser[Int] = """\d+""".r ^^ (_.toInt)
+    def num: Parser[BigInt] = """\d+""".r ^^ BigInt.apply
     def button(ch: Char): Parser[Vec] =
       ("Button " + ch + ": X+") ~> num ~ (", Y+" ~> num <~ """\n?""".r) ^^ { case x ~ y =>
         Vec(x, y)
@@ -39,15 +42,19 @@ object Day13 {
     a.x * b.y == a.y * b.x
 
   // part 1
-  def solution1(data: Data): Int = {
-    data.machines.flatMap(solve).map { case Vec(a, b) => a * 3 + b }.sum
+  def solution1(data: Data): BigInt = {
+    data.machines
+      .flatMap(solve)
+//      .filter { case Vec(a, b) => a <= BigInt(100) && b <= BigInt(100) }
+      .map { case Vec(a, b) => a * 3 + b }
+      .sum
   }
 
   def solve(machine: Machine): Option[Vec] = {
     import machine.*
     // a.x * na + b.x * nb = prize.x
     // a.y * na + b.y * nb = prize.y
-    val gcdB = gcd(b.x, b.y)
+    val gcdB = b.x gcd b.y
     val bx = b.x / gcdB
     val by = b.y / gcdB
     val a1 = prize.x * by - prize.y * bx
@@ -61,10 +68,15 @@ object Day13 {
     }
   }
 
-  @tailrec
-  def gcd(a: Int, b: Int): Int = {
-    if b == 0 then a else gcd(b, a % b)
-  }
-
   // part 2
+  val shift = BigInt("10000000000000")
+
+  def solution2(data: Data): BigInt = {
+    data.machines.iterator
+      .map { m => m.copy(prize = Vec(m.prize.x + shift, m.prize.y + shift)) }
+      .flatMap(solve)
+//      .filter { case Vec(a, b) => a <= BigInt(100) && b <= BigInt(100) }
+      .map { case Vec(a, b) => a * 3 + b }
+      .sum
+  }
 }
