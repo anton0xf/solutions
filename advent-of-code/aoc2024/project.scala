@@ -2,6 +2,7 @@
 //> using jvm 17
 
 // Main
+//> using dependencies "org.scala-lang.modules::scala-parser-combinators:2.4.0"
 
 // Test
 // place all tests in 'test' directory
