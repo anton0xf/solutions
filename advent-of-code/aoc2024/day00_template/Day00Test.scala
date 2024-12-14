@@ -8,12 +8,12 @@ class Day00Test extends munit.FunSuite {
       |two""".stripMargin.lines().toScala(List)
 
   test("parseInput") {
-    assertEquals(parseInput(input.iterator), Input(List("one", "two")))
+    assertEquals(parseInput(input), Input(List("one", "two")))
   }
 
   // part 1
   test("solution1"){
-    assertEquals(solution1(parseInput(input.iterator)), 2)
+    assertEquals(solution1(parseInput(input)), 2)
   }
 
   // part 2

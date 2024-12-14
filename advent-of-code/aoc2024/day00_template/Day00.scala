@@ -12,11 +12,11 @@ object Day00 {
 
   case class Input(lines: List[String])
 
-  def parseInput(lines: Iterator[String]): Input = Input(lines.toList)
+  def parseInput(lines: IterableOnce[String]): Input = Input(lines.iterator.toList)
 
   // part 1
   def solution1(input: Input): Int = {
-    input.lines.foreach(println) // TODO remove
+    println(input) // TODO remove
     input.lines.size
   }
 

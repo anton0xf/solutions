@@ -19,7 +19,7 @@ DST_TEST="$(conv_fname "$TPL_TEST")"
 mkdir -p "$DAY_NAME"
 
 conv_tpl() {
-   sed "s/00/$DAY/g"
+   sed "s/day00_template/$DAY_NAME/g; s/00/$DAY/g"
 }
 <"$TPL_DIR/$TPL_DAY" conv_tpl >"$DAY_NAME/$DST_DAY"
 <"$TPL_DIR/$TPL_TEST" conv_tpl >"$DAY_NAME/$DST_TEST"
