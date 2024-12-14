@@ -73,6 +73,6 @@ class Day13Test extends munit.FunSuite {
 
   // part 2
   test("solution2") {
-    assertEquals(solution2(parseData(StringReader(input))), BigInt(0))
+    assertEquals(solution2(parseData(StringReader(input))), BigInt("875318608908"))
   }
 }
