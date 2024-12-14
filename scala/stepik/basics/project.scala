@@ -3,6 +3,8 @@
 //> using jvm 11
 
 // Main
+// exclude .sc (scratch files)
+//> using exclude "*.sc"
 
 // Test
 // place all tests in 'test' directory
