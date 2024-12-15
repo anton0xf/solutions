@@ -7,7 +7,9 @@ object Day14 {
   def main(args: Array[String]): Unit = {
     Using(Source.fromFile("day14_restroom_redoubt/input")) { source =>
       val input = parseInput(source.getLines())
-      println(s"part 1: ${solution1(input, Vec(101, 103))}")
+      val size = Vec(101, 103)
+      println(s"part 1: ${solution1(input, size)}")
+      println(s"part 2: ${solution2(input, size)}")
     }
   }
 
@@ -42,8 +44,10 @@ object Day14 {
   // part 1
   def solution1(input: Input, size: Vec): Int = {
     simulate(input, size, 100).toList
-      .flatMap {(p, n) => quadrant(size)(p).map((_, n))}
-      .groupMapReduce(_._1)(_._2)(_+_).values.product
+      .flatMap { (p, n) => quadrant(size)(p).map((_, n)) }
+      .groupMapReduce(_._1)(_._2)(_ + _)
+      .values
+      .product
   }
 
   def simulate(input: Input, size: Vec, n: Int): Map[Vec, Int] = input
@@ -58,4 +62,23 @@ object Day14 {
   }
 
   // part 2
+  def solution2(input: Input, size: Vec): Int = {
+    val (n, m) = LazyList
+      .from(0)
+      .map(n => (n, simulate(input, size, n)))
+      .find { (n, m) => m.values.forall(_ == 1) }
+      .get
+    println(visualize(size, m))
+    n
+  }
+
+  def visualize(size: Vec, m: Map[Vec, Int]): String = {
+    (0 until size.y)
+      .map { y =>
+        (0 until size.x).map { x =>
+          m.get(Vec(x, y)).map(_.toString).getOrElse('.')
+        }.mkString
+      }
+      .mkString("\n")
+  }
 }
