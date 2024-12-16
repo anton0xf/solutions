@@ -5,7 +5,7 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 DAY_NAME="$1"
-DAY="$(echo "$DAY_NAME" | sed 's/day\([0-9]\+\).*/\1/')"
+DAY="$(echo "$DAY_NAME" | sed 's/day\([0-9]*\).*/\1/')"
 TPL_DIR='day00_template'
 TPL_DAY='Day00.scala'
 TPL_TEST='Day00Test.scala'
