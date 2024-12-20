@@ -59,7 +59,7 @@ object Day11 {
         else go(n * 2024, blinks - 1)
       })
     val res = ns.iterator.map(go(_, blinks)).sum
-    println(s"cache size: ${cache.size}")
+    // println(s"cache size: ${cache.size}")
     res
   }  
 }

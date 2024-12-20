@@ -16,7 +16,7 @@ object Day00 {
 
   // part 1
   def solution1(input: Input): Int = {
-    println(input) // TODO remove
+    // println(input)
     input.lines.size
   }
 

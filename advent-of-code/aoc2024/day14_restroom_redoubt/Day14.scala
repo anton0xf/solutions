@@ -68,7 +68,7 @@ object Day14 {
       .map(n => (n, simulate(input, size, n)))
       .find { (n, m) => m.values.forall(_ == 1) }
       .get
-    println(visualize(size, m))
+    // println(visualize(size, m))
     n
   }
 

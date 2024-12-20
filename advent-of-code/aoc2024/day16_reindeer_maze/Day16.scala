@@ -72,7 +72,7 @@ object Day16 {
   // part 1
   def solution1(input: Input): Int = {
     val (dist: Int, path: List[Pos]) = dijkstra(input).get
-    println(showMaze(input, path)) // TODO remove
+    // println(showMaze(input, path)) // TODO remove
     dist
   }
 
@@ -144,7 +144,7 @@ object Day16 {
   // part 2
   def solution2(input: Input): Int = {
     val ps = dijkstra2(input).get
-    println(showMaze2(input, ps))
+    // println(showMaze2(input, ps))
     ps.size
   }
 
