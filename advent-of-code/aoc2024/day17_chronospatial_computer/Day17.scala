@@ -14,9 +14,9 @@ object Day17 {
 
   case class Computer(
       program: Vector[Int],
-      a: Int,
-      b: Int,
-      c: Int,
+      a: BigInt,
+      b: BigInt,
+      c: BigInt,
       ip: Int = 0,
       out: Vector[Int] = Vector()
   ) {
@@ -25,7 +25,7 @@ object Day17 {
       x
     }
 
-    def comboOp: Option[Int] = program.lift(ip + 1).map { x =>
+    def comboOp: Option[BigInt] = program.lift(ip + 1).map { x =>
       assert((0 to 6).contains(x))
       if (0 to 3).contains(x) then x
       else if x == 4 then a
@@ -48,7 +48,7 @@ object Day17 {
 
     def tick: Option[Computer] = program.lift(ip).flatMap {
       // adv
-      case 0 => comboOp.map { op => copy(ip = ip + 2, a = a / (1 << op)) }
+      case 0 => comboOp.map { op => copy(ip = ip + 2, a = a >> op.toInt) }
       // bxl
       case 1 => literalOp.map { op => copy(ip = ip + 2, b = b ^ op) }
       // bst
@@ -58,16 +58,19 @@ object Day17 {
       // bxc
       case 4 => literalOp.map { _ => copy(ip = ip + 2, b = b ^ c) }
       // out
-      case 5 => comboOp.map { op => copy(ip = ip + 2, out = out :+ op % 8) }
+      case 5 => comboOp.map { op => copy(ip = ip + 2, out = out :+ (op % 8).toInt) }
       // bdv
-      case 6 => comboOp.map { op => copy(ip = ip + 2, b = a / (1 << op)) }
+      case 6 => comboOp.map { op => copy(ip = ip + 2, b = a >> op.toInt) }
       // cdv
-      case 7 => comboOp.map { op => copy(ip = ip + 2, c = a / (1 << op)) }
+      case 7 => comboOp.map { op => copy(ip = ip + 2, c = a >> op.toInt) }
     }
+
+    def state: List[(String, BigInt)] = List("ip" -> ip, "a" -> a, "b" -> b, "c" -> c)
 
     @tailrec
     final def exec: Computer =
       val next = tick
+      // println(s"$state ${program.lift(ip).map(cmds(_))}($literalOp) -> ${next.map(_.state)}")
       if next.isDefined then next.get.exec else this
 
     def show: String =
@@ -110,28 +113,32 @@ object Day17 {
 
   // part 1
   def solution1(computer: Computer): String = {
-    println(computer) // TODO remove
+    // println(computer)
     computer.exec.out.mkString(",")
   }
 
   // part 2
-  def solution2(computer: Computer): Int = {
-    println(computer.show)
-    LazyList.range(0, 1000_000_000)
-      .find(a => exec2(computer.copy(a = a)).exists(_.out == computer.program))
-      .get
+  def solution2(computer: Computer): BigInt = {
+    // println(computer.show)
+    // println(computer)
+    def go(a1s: List[BigInt], i: Int): List[BigInt] = a1s.flatMap { a1 =>
+      // println(s"a[$i] == $a1")
+      if i == 0 then List(a1)
+      else {
+        val as = stepBack(computer, a1, computer.program(i - 1))
+        go(as, i - 1)
+      }
+    }
+    go(List(0), computer.program.size).min
   }
 
-  final def exec2(init: Computer): Option[Computer] =
-    val size = init.program.size / 2
-    @tailrec
-    def go(i: Int, c: Computer): Option[Computer] =
-      if i > 20 then None else
-        val ticks: Iterator[Option[Computer]] = Iterator.iterate[Option[Computer]](Some(c))(_.flatMap(_.tick))
-        val next = ticks.drop(size).nextOption().flatten
-        if next.isEmpty then Some(c) else
-          if init.program.lift(i) == next.get.out.lift(i)
-          then go(i + 1, next.get)
-          else None
-    go(0, init)
+  def stepBack(c: Computer, a1: BigInt, p: Int): List[BigInt] = {
+    val as = (0 until 8).iterator.flatMap { x =>
+      val a = a1 * 8 + x
+      val c1 = c.copy(a = a).exec
+      if c1.out.head == p then Some(a) else None
+    }.toList
+    // println(s"stepBack(c, $a1, $p) = $as")
+    as
+  }
 }
