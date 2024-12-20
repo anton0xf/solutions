@@ -60,4 +60,21 @@ class Day17Test extends munit.FunSuite {
   }
 
   // part 2
+  val input2: List[String] =
+    """Register A: 2024
+      |Register B: 0
+      |Register C: 0
+      |
+      |Program: 0,3,5,4,3,0""".stripMargin.lines().toScala(List)
+
+  test("solution2") {
+    assertEquals(solution2(parseInput(input2)), 117440)
+  }
+
+  test("exec2") {
+    val init = parseInput(input2).copy(a = 117440)
+    val res = exec2(init)
+    println(res.get.show)
+    assertEquals(res.get.out, init.program)
+  }
 }
