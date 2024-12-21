@@ -34,11 +34,12 @@ class Day18Test extends munit.FunSuite {
     assertEquals(parseInput("5,4\n2,0".lines().toScala(List)), List(Vec(5, 4), Vec(2, 0)))
   }
 
-  private val testMem: Mem = Mem(Vec(6, 6), parseInput(input).take(12).toSet)
+  private val corner: Vec = Vec(6, 6)
+  private val mem: Mem = Mem(corner, parseInput(input).take(12).toSet)
 
   test("show") {
     assertEquals(
-      testMem.show,
+      mem.show,
       """...#...
         |..#..#.
         |....#..
@@ -51,7 +52,7 @@ class Day18Test extends munit.FunSuite {
 
   // part 1
   test("solution1") {
-    assertEquals(solution1(testMem), 22)
+    assertEquals(solution1(mem), 22)
   }
 
   test("findPath") {
@@ -60,4 +61,13 @@ class Day18Test extends munit.FunSuite {
   }
 
   // part 2
+  test("solution2") {
+    assertEquals(solution2(corner, parseInput(input)), "6,1")
+  }
+
+  test("revInits") {
+    assertEquals(revInits(List(1)), LazyList(Nil, List(1)))
+    assertEquals(revInits(List(1, 2)), LazyList(Nil, List(1), List(1, 2)))
+    assertEquals(revInits(List(1, 2, 3)), LazyList(Nil, List(1), List(1, 2), List(1, 2, 3)))
+  }
 }

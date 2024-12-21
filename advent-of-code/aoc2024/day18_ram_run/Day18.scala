@@ -11,6 +11,7 @@ object Day18 {
       val corner = Vec(70, 70)
       val mem1 = Mem(corner, input.take(1024).toSet)
       println(s"part 1: ${solution1(mem1)}")
+      println(s"part 2: ${solution2(corner, input)}")
     }
   }
 
@@ -81,4 +82,14 @@ object Day18 {
   }
 
   // part 2
+  def solution2(corner: Vec, bytes: Input): String = {
+    val blockingInits = revInits(bytes).dropWhile{init => findPath(Mem(corner, init.toSet)).isDefined }
+    val blockingByte = blockingInits.head.last
+    s"${blockingByte.x},${blockingByte.y}"
+  }
+
+  def revInits[T](xs: List[T]): LazyList[List[T]] = xs match {
+    case Nil => LazyList(Nil)
+    case x :: xs => Nil #:: revInits(xs).map(x :: _)
+  }
 }
