@@ -43,6 +43,48 @@ class Day19Test extends munit.FunSuite {
 
   // part 2
   test("solution2") {
-    assertEquals(solution2(parseInput(input1)), 16)
+    assertEquals(solution2(parseInput(input1)), BigInt(16))
   }
+
+  val towels1: List[String] = List("r", "wr", "b", "g", "bwu", "rb", "gb", "br")
+
+  test("designOptions") {
+    val f = designOptions(Trie(towels1))
+    assertEquals(f("brwrr").toInt, 2)
+    assertEquals(f("bggr").toInt, 1)
+    assertEquals(f("gbbr").toInt, 4)
+    assertEquals(f("rrbgbr").toInt, 6)
+    assertEquals(f("bwurrg").toInt, 1)
+    assertEquals(f("brgr").toInt, 2)
+    assertEquals(f("ubwu").toInt, 0)
+    assertEquals(f("bbrgwb").toInt, 0)
+    assertEquals(f("rbr").toInt, 3)
+    assertEquals(f("rbrwrrbr").toInt, 9)
+    assertEquals(f("rbrwrrbrww").toInt, 0)
+  }
+
+  test("designOptions2") {
+    val f = designOptions2(towels1)
+    assertEquals(f("brwrr").toInt, 2)
+    assertEquals(f("bggr").toInt, 1)
+    assertEquals(f("gbbr").toInt, 4)
+    assertEquals(f("rrbgbr").toInt, 6)
+    assertEquals(f("bwurrg").toInt, 1)
+    assertEquals(f("brgr").toInt, 2)
+    assertEquals(f("ubwu").toInt, 0)
+    assertEquals(f("bbrgwb").toInt, 0)
+    assertEquals(f("rbr").toInt, 3)
+    assertEquals(f("rbrwrrbr").toInt, 9)
+    assertEquals(f("rbrwrrbrww").toInt, 0)
+  }
+
+  test("designOptions == designOptions2") {
+    val towels = List("r", "wuu", "bu", "buru")
+    val f = designOptions(Trie(towels))
+    val f2 = designOptions2(towels)
+    def check(s: String): Unit =
+      assertEquals(f(s), f2(s))
+    check("wuubur")
+  }
+
 }

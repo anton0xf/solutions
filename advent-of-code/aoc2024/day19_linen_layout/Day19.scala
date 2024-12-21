@@ -1,4 +1,4 @@
-import scala.collection.immutable
+import scala.collection.{immutable, mutable}
 import scala.util.Using
 import scala.io.Source
 
@@ -55,20 +55,46 @@ object Day19 {
   }
 
   // part 2
-  def solution2(input: Input): Int = {
+  def solution2(input: Input): BigInt = {
     input.designs.map(designOptions(Trie(input.towels))).sum
+//    input.designs.map(designOptions2(input.towels)).sum
   }
 
-  def designOptions(trie: Trie)(design: String): Int = {
-    def go(s: String, rest: Trie): Int =
-      if s.isEmpty then 1
-      else {
-        val ch = s.head
-        val s1 = s.tail
-        (if rest.end then go(s, trie) else 0) +
-          rest.children.get(ch).map(go(s1, _)).getOrElse(0)
-      }
+  def designOptions(trie: Trie)(design: String): BigInt = {
+    val cache = mutable.Map[(String, List[Char]), BigInt]()
+    def go(s: String, path: List[Char], rest: Trie): BigInt =
+      if s.isEmpty
+      then if rest.end then BigInt(1) else BigInt(0)
+      else
+        cache.getOrElseUpdate(
+          (s, path), {
+            val ch = s.head
+            val s1 = s.tail
+            (if rest.end then go(s, Nil, trie) else BigInt(0)) +
+              rest.children.get(ch).map(go(s1, ch :: path, _)).getOrElse(BigInt(0))
+          }
+        )
+    go(design, Nil, trie)
+  }
 
-    go(design, trie)
+  def designOptions2(words: List[String])(design: String): BigInt = {
+    val cache = mutable.Map[String, BigInt]()
+    val usedWords = mutable.Set[String]()
+
+    def go(s: String): BigInt =
+      if s.isEmpty then BigInt(1)
+      else
+        cache.getOrElseUpdate(
+          s, {
+            words.map { word =>
+              if s.startsWith(word) then {
+                usedWords += word
+                go(s.substring(word.length))
+              } else BigInt(0)
+            }.sum
+          }
+        )
+
+    go(design)
   }
 }
