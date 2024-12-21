@@ -7,6 +7,7 @@ object Day19 {
     Using(Source.fromFile("day19_linen_layout/input")) { source =>
       val input = parseInput(source.getLines())
       println(s"part 1: ${solution1(input)}")
+      println(s"part 2: ${solution2(input)}")
     }
   }
 
@@ -25,7 +26,7 @@ object Day19 {
         val ch = s.head
         val s1 = s.tail
         copy(children = children.updatedWith(ch) {
-          case None => Some(Trie.empty.put(s1))
+          case None       => Some(Trie.empty.put(s1))
           case Some(trie) => Some(trie.put(s1))
         })
       }
@@ -44,15 +45,30 @@ object Day19 {
     input.designs.count(checkDesign(Trie(input.towels)))
   }
 
-  def checkDesign(trie:Trie)(design: String): Boolean = {
+  def checkDesign(trie: Trie)(design: String): Boolean = {
     def go(s: String, rest: Trie): Boolean = s.isEmpty || {
       val ch = s.head
       val s1 = s.tail
-      (rest.end && go(s, trie)) ||
-        rest.children.get(ch).exists(go(s1, _))
+      (rest.end && go(s, trie)) || rest.children.get(ch).exists(go(s1, _))
     }
     go(design, trie)
   }
 
   // part 2
+  def solution2(input: Input): Int = {
+    input.designs.map(designOptions(Trie(input.towels))).sum
+  }
+
+  def designOptions(trie: Trie)(design: String): Int = {
+    def go(s: String, rest: Trie): Int =
+      if s.isEmpty then 1
+      else {
+        val ch = s.head
+        val s1 = s.tail
+        (if rest.end then go(s, trie) else 0) +
+          rest.children.get(ch).map(go(s1, _)).getOrElse(0)
+      }
+
+    go(design, trie)
+  }
 }
