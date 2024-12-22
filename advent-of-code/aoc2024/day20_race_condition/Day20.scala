@@ -8,6 +8,7 @@ object Day20 {
     Using(Source.fromFile("day20_race_condition/input")) { source =>
       val input = parseInput(source.getLines().toList)
       println(s"part 1: ${solution1(input, 100)}")
+      println(s"part 2: ${solution2(input, 20, 100)}")
     }
   }
 
@@ -22,6 +23,17 @@ object Day20 {
     @targetName("plus")
     def +(p: Vec): Vec = Vec(x + p.x, y + p.y)
     def neighbours: Set[Vec] = dirs.map(+)
+
+    /** circle in Manhattan geometry
+      *
+      * <code> |x - px| + |y - py| = r </code>
+      */
+    def circle(r: Int): Seq[Vec] = (-r to r).flatMap { d =>
+      val px = x + d
+      val r1 = r - d.abs
+      if r1 == 0 then Seq(Vec(px, y))
+      else Seq(y - r1, y + r1).map(Vec(px, _))
+    }
   }
 
   val dirs: Set[Vec] = Set(Vec(1, 0), Vec(0, 1), Vec(-1, 0), Vec(0, -1))
@@ -48,8 +60,10 @@ object Day20 {
     def cheats(p: Vec): Int = {
       val num = nums(p)
       val walls = p.neighbours.filter(track.wall)
-      val ends = walls.flatMap(_.neighbours).filter(q => nums.get(q).exists(_ >= num + 2 + threshold))
-      // println(s"cheats: $p -> $ends")
+      val ends = walls.flatMap(_.neighbours).filter { q =>
+        nums.get(q).exists(_ >= num + 2 + threshold)
+      }
+      // if ends.nonEmpty then println(s"cheats: $p -> $ends")
       ends.size
     }
     path.map(cheats).sum
@@ -69,4 +83,20 @@ object Day20 {
   }
 
   // part 2
+  def solution2(track: Track, maxR: Int, threshold: Int): Int = {
+    val path = followPath(track)
+    val nums = path.iterator.zipWithIndex.toMap
+
+    // println(path)
+    def cheats(p: Vec): Int = {
+      val num = nums(p)
+      (2 to maxR).map { r =>
+        val ends = p.circle(r).filter(q => nums.get(q).exists(_ >= num + r + threshold))
+        // if ends.nonEmpty then println(s"cheats: $p -> $ends")
+        ends.size
+      }.sum
+    }
+
+    path.map(cheats).sum
+  }
 }
