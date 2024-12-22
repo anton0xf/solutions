@@ -1,0 +1,72 @@
+import scala.annotation.{tailrec, targetName}
+import scala.collection.immutable
+import scala.util.Using
+import scala.io.Source
+
+object Day20 {
+  def main(args: Array[String]): Unit = {
+    Using(Source.fromFile("day20_race_condition/input")) { source =>
+      val input = parseInput(source.getLines().toList)
+      println(s"part 1: ${solution1(input, 100)}")
+    }
+  }
+
+  case class Track(start: Vec, end: Vec, path: Set[Vec], size: (Int, Int)) {
+    def in(p: Vec): Boolean = (0 until size._1).contains(p.x) &&
+      (0 until size._2).contains(p.y)
+    def wall(p: Vec): Boolean = in(p) && p != start && p != end && !path.contains(p)
+    def onPath(p: Vec): Boolean = in(p) && (p == start || p == end || path.contains(p))
+  }
+
+  case class Vec(x: Int, y: Int) {
+    @targetName("plus")
+    def +(p: Vec): Vec = Vec(x + p.x, y + p.y)
+    def neighbours: Set[Vec] = dirs.map(+)
+  }
+
+  val dirs: Set[Vec] = Set(Vec(1, 0), Vec(0, 1), Vec(-1, 0), Vec(0, -1))
+
+  def parseInput(lines: List[String]): Track = {
+    val path = for {
+      (line, y) <- lines.zipWithIndex
+      (ch, x) <- line.zipWithIndex
+      if ch != '#'
+    } yield Vec(x, y) -> ch
+    Track(
+      start = path.find(_._2 == 'S').map(_._1).get,
+      end = path.find(_._2 == 'E').map(_._1).get,
+      path = path.filter(_._2 == '.').map(_._1).toSet,
+      size = (lines.head.length, lines.size)
+    )
+  }
+
+  // part 1
+  def solution1(track: Track, threshold: Int): Int = {
+    val path = followPath(track)
+    val nums = path.iterator.zipWithIndex.toMap
+    // println(path)
+    def cheats(p: Vec): Int = {
+      val num = nums(p)
+      val walls = p.neighbours.filter(track.wall)
+      val ends = walls.flatMap(_.neighbours).filter(q => nums.get(q).exists(_ >= num + 2 + threshold))
+      // println(s"cheats: $p -> $ends")
+      ends.size
+    }
+    path.map(cheats).sum
+  }
+
+  def followPath(track: Track): Vector[Vec] = {
+    @tailrec
+    def go(p: Vec, acc: Vector[Vec]): Vector[Vec] = {
+      val acc1 = acc :+ p
+      if p == track.end then acc1
+      else {
+        val p1 = p.neighbours.find(q => track.onPath(q) && !acc.lastOption.contains(q)).get
+        go(p1, acc1)
+      }
+    }
+    go(track.start, Vector())
+  }
+
+  // part 2
+}
