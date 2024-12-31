@@ -43,4 +43,18 @@ class Day22Test extends munit.FunSuite {
   }
 
   // part 2
+  test("solution2") {
+    assertEquals(solution2(List(1, 2, 3, 2024).map(BigInt.apply)), 23)
+  }
+
+  test("seqMap") {
+    assertEquals(seqMap(9)(BigInt(123)), Map[Vector[Byte], Byte](
+      Vector[Byte](-3, 6, -1, -1) -> 4,
+      Vector[Byte](6, -1, -1, 0) -> 4,
+      Vector[Byte](-1, -1, 0, 2) -> 6,
+      Vector[Byte](-1, 0, 2, -2) -> 4,
+      Vector[Byte](0, 2, -2, 0) -> 4,
+      Vector[Byte](2, -2, 0, -2) -> 2,
+    ))
+  }
 }
