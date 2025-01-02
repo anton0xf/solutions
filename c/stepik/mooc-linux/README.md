@@ -25,6 +25,10 @@ Hello!
 ```
 
 ## useful tools
+### utils
+* nm - list symbols from object files
+* ldd - print shared object dependencies
+
 ### linters
 https://github.com/mrtazz/checkmake
 ```shell
