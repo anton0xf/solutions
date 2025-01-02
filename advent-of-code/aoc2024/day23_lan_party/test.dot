@@ -1,0 +1,7 @@
+strict graph {
+  node [shape=plain]
+  a -- b
+  a -- c
+  a -- d
+  c -- b
+}

@@ -6,6 +6,7 @@ object Day23 {
   def main(args: Array[String]): Unit = {
     Using(Source.fromFile("day23_lan_party/input")) { source =>
       val input = parseInput(source.getLines())
+      println(s"input size: ${input.size}")
       println(s"part 1: ${solution1(input)}")
     }
   }
