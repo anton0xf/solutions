@@ -54,4 +54,8 @@ class Day23Test extends munit.FunSuite {
   }
 
   // part 2
+  test("solution2"){
+    assertEquals(solution2(parseInput(input0)), "a,b,t")
+    assertEquals(solution2(parseInput(input1)), "co,de,ka,ta")
+  }
 }
