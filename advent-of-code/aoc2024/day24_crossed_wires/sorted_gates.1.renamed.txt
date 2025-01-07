@@ -1,0 +1,403 @@
+z[0]:
+	x[0]
+	y[0]
+	x[0] XOR y[0] -> z[0]
+
+z[1]:
+	x[1]
+	y[1]
+	x[0] AND y[0] -> carry[0]
+	x[1] XOR y[1] -> sum[1]
+	sum[1] XOR carry[0] -> z[1]
+
+z[2]:
+	x[1] AND y[1] -> carry[1]
+	sum[1] AND carry[0] -> carry2[1]
+	x[2]
+	y[2]
+	carry[1] OR carry2[1] -> carry3[1]
+	x[2] XOR y[2] -> sum[2]
+	sum[2] XOR carry3[1] -> z[2]
+
+z[3]:
+	x[2] AND y[2] -> carry[2]
+	sum[2] AND carry3[1] -> carry2[2]
+	x[3]
+	y[3]
+	carry[2] OR carry2[2] -> carry3[2]
+	x[3] XOR y[3] -> sum[3]
+	sum[3] XOR carry3[2] -> z[3]
+
+z[4]:
+	x[3] AND y[3] -> carry[3]
+	sum[3] AND carry3[2] -> carry2[3]
+	x[4]
+	y[4]
+	carry[3] OR carry2[3] -> carry3[3]
+	x[4] XOR y[4] -> sum[4]
+	sum[4] XOR carry3[3] -> z[4]
+
+z[5]:
+	x[4] AND y[4] -> carry[4]
+	sum[4] AND carry3[3] -> carry2[4]
+	x[5]
+	y[5]
+	carry[4] OR carry2[4] -> carry3[4]
+	x[5] XOR y[5] -> sum[5]
+	sum[5] XOR carry3[4] -> z[5]
+
+z[6]:
+	x[5] AND y[5] -> carry[5]
+	sum[5] AND carry3[4] -> carry2[5]
+	x[6]
+	y[6]
+	carry[5] OR carry2[5] -> carry3[5]
+	x[6] XOR y[6] -> sum[6]
+	sum[6] XOR carry3[5] -> z[6]
+
+z[7]:
+	x[6] AND y[6] -> carry[6]
+	sum[6] AND carry3[5] -> carry2[6]
+	x[7]
+	y[7]
+	carry[6] OR carry2[6] -> carry3[6]
+	x[7] XOR y[7] -> sum[7]
+	sum[7] XOR carry3[6] -> z[7]
+
+z[8]:
+	x[7] AND y[7] -> carry[7]
+	sum[7] AND carry3[6] -> carry2[7]
+	x[8]
+	y[8]
+	carry[7] OR carry2[7] -> carry3[7]
+	x[8] XOR y[8] -> sum[8]
+	sum[8] XOR carry3[7] -> z[8]
+
+z[9]:
+	x[8] AND y[8] -> carry[8]
+	sum[8] AND carry3[7] -> carry2[8]
+	x[9]
+	y[9]
+	carry[8] OR carry2[8] -> carry3[8]
+	x[9] XOR y[9] -> sum[9]
+	sum[9] XOR carry3[8] -> z[9]
+
+z[10]:
+	x[9] AND y[9] -> carry[9]
+	sum[9] AND carry3[8] -> carry2[9]
+	x[10]
+	y[10]
+	carry[9] OR carry2[9] -> carry3[9]
+	x[10] XOR y[10] -> sum[10]
+	sum[10] XOR carry3[9] -> z[10]
+
+z[11]:
+	x[10] AND y[10] -> carry[10]
+	sum[10] AND carry3[9] -> carry2[10]
+	x[11]
+	y[11]
+	carry[10] OR carry2[10] -> carry3[10]
+	x[11] XOR y[11] -> sum[11]
+	sum[11] XOR carry3[10] -> z[11]
+
+z[12]:
+	x[11] AND y[11] -> carry[11]
+	sum[11] AND carry3[10] -> carry2[11]
+	x[12]
+	y[12]
+	carry[11] OR carry2[11] -> carry3[11]
+	x[12] XOR y[12] -> sum[12]
+	sum[12] XOR carry3[11] -> z[12]
+
+z[13]:
+	x[12] AND y[12] -> carry[12]
+	sum[12] AND carry3[11] -> carry2[12]
+	x[13]
+	y[13]
+	carry[12] OR carry2[12] -> carry3[12]
+	x[13] XOR y[13] -> sum[13]
+	sum[13] XOR carry3[12] -> z[13]
+
+z[14]:
+	x[13] AND y[13] -> carry[13]
+	sum[13] AND carry3[12] -> carry2[13]
+	x[14]
+	y[14]
+	carry[13] OR carry2[13] -> carry3[13]
+	x[14] XOR y[14] -> sum[14]
+	sum[14] XOR carry3[13] -> z[14]
+
+z[15]:
+	x[14] AND y[14] -> carry[14]
+	sum[14] AND carry3[13] -> carry2[14]
+	x[15]
+	y[15]
+	carry[14] OR carry2[14] -> carry3[14]
+	x[15] XOR y[15] -> sum[15]
+	x[15] AND y[15] -> carry[15]
+	sum[15] AND carry3[14] -> carry2[15]
+	carry[15] OR carry2[15] -> z[15]
+
+z[16]:
+	x[16]
+	y[16]
+	sum[15] XOR carry3[14] -> fph
+	x[16] XOR y[16] -> sum[16]
+	sum[16] XOR fph -> z[16]
+
+z[17]:
+	sum[16] AND fph -> bsb
+	x[16] AND y[16] -> carry[16]
+	x[17]
+	y[17]
+	carry[16] OR bsb -> msb
+	x[17] XOR y[17] -> sum[17]
+	sum[17] XOR msb -> z[17]
+
+z[18]:
+	x[17] AND y[17] -> carry[17]
+	sum[17] AND msb -> fng
+	x[18]
+	y[18]
+	carry[17] OR fng -> qcf
+	x[18] XOR y[18] -> sum[18]
+	sum[18] XOR qcf -> z[18]
+
+z[19]:
+	x[18] AND y[18] -> carry[18]
+	sum[18] AND qcf -> vsk
+	x[19]
+	y[19]
+	carry[18] OR vsk -> mch
+	x[19] XOR y[19] -> sum[19]
+	sum[19] XOR mch -> z[19]
+
+z[20]:
+	x[19] AND y[19] -> carry[19]
+	sum[19] AND mch -> nsq
+	x[20]
+	y[20]
+	carry[19] OR nsq -> fjh
+	x[20] XOR y[20] -> sum[20]
+	sum[20] XOR fjh -> z[20]
+
+z[21]:
+	x[21]
+	y[21]
+	x[21] AND y[21] -> z[21]
+
+z[22]:
+	x[20] AND y[20] -> carry[20]
+	sum[20] AND fjh -> pvq
+	carry[20] OR pvq -> nsp
+	x[21] XOR y[21] -> sum[21]
+	sum[21] XOR nsp -> gds
+	sum[21] AND nsp -> vqn
+	x[22]
+	y[22]
+	gds OR vqn -> fsh
+	x[22] XOR y[22] -> sum[22]
+	sum[22] XOR fsh -> z[22]
+
+z[23]:
+	x[22] AND y[22] -> carry[22]
+	sum[22] AND fsh -> nns
+	x[23]
+	y[23]
+	carry[22] OR nns -> nsj
+	x[23] XOR y[23] -> sum[23]
+	sum[23] XOR nsj -> z[23]
+
+z[24]:
+	x[24]
+	y[24]
+	x[23] AND y[23] -> carry[23]
+	sum[23] AND nsj -> wkh
+	x[24] XOR y[24] -> sum[24]
+	carry[23] OR wkh -> tqk
+	sum[24] XOR tqk -> z[24]
+
+z[25]:
+	x[24] AND y[24] -> carry[24]
+	sum[24] AND tqk -> khc
+	x[25]
+	y[25]
+	carry[24] OR khc -> cqp
+	x[25] XOR y[25] -> sum[25]
+	sum[25] XOR cqp -> z[25]
+
+z[26]:
+	x[25] AND y[25] -> carry[25]
+	sum[25] AND cqp -> fvv
+	x[26]
+	y[26]
+	carry[25] OR fvv -> btt
+	x[26] XOR y[26] -> sum[26]
+	sum[26] XOR btt -> z[26]
+
+z[27]:
+	x[26] AND y[26] -> carry[26]
+	sum[26] AND btt -> rwc
+	x[27]
+	y[27]
+	carry[26] OR rwc -> fpp
+	x[27] XOR y[27] -> sum[27]
+	sum[27] XOR fpp -> z[27]
+
+z[28]:
+	x[27] AND y[27] -> carry[27]
+	sum[27] AND fpp -> cfb
+	x[28]
+	y[28]
+	carry[27] OR cfb -> mkc
+	x[28] XOR y[28] -> sum[28]
+	sum[28] XOR mkc -> z[28]
+
+z[29]:
+	x[28] AND y[28] -> carry[28]
+	sum[28] AND mkc -> jjs
+	x[29]
+	y[29]
+	carry[28] OR jjs -> gjd
+	x[29] XOR y[29] -> sum[29]
+	sum[29] XOR gjd -> z[29]
+
+z[30]:
+	x[30]
+	y[30]
+	x[29] AND y[29] -> carry[29]
+	sum[29] AND gjd -> rjb
+	x[30] AND y[30] -> carry[30]
+	carry[29] OR rjb -> dwm
+	carry[30] XOR dwm -> z[30]
+
+z[31]:
+	carry[30] AND dwm -> hjm
+	x[30] XOR y[30] -> sum[30]
+	x[31]
+	y[31]
+	sum[30] OR hjm -> hpt
+	x[31] XOR y[31] -> sum[31]
+	sum[31] XOR hpt -> z[31]
+
+z[32]:
+	x[31] AND y[31] -> carry[31]
+	sum[31] AND hpt -> pct
+	x[32]
+	y[32]
+	carry[31] OR pct -> khs
+	x[32] XOR y[32] -> sum[32]
+	sum[32] XOR khs -> z[32]
+
+z[33]:
+	x[32] AND y[32] -> carry[32]
+	sum[32] AND khs -> qkf
+	x[33]
+	y[33]
+	carry[32] OR qkf -> gpr
+	x[33] XOR y[33] -> sum[33]
+	sum[33] XOR gpr -> z[33]
+
+z[34]:
+	sum[33] AND gpr -> bwv
+	x[33] AND y[33] -> carry[33]
+	x[34]
+	y[34]
+	carry[33] OR bwv -> ksm
+	x[34] XOR y[34] -> sum[34]
+	sum[34] AND ksm -> z[34]
+
+z[35]:
+	x[34] AND y[34] -> carry[34]
+	sum[34] XOR ksm -> cqk
+	x[35]
+	y[35]
+	carry[34] OR cqk -> bjj
+	x[35] XOR y[35] -> sum[35]
+	sum[35] XOR bjj -> z[35]
+
+z[36]:
+	x[35] AND y[35] -> carry[35]
+	sum[35] AND bjj -> fwm
+	x[36]
+	y[36]
+	carry[35] OR fwm -> nmb
+	x[36] XOR y[36] -> sum[36]
+	sum[36] XOR nmb -> z[36]
+
+z[37]:
+	x[36] AND y[36] -> carry[36]
+	sum[36] AND nmb -> jbc
+	x[37]
+	y[37]
+	carry[36] OR jbc -> jvv
+	x[37] XOR y[37] -> sum[37]
+	sum[37] XOR jvv -> z[37]
+
+z[38]:
+	x[37] AND y[37] -> carry[37]
+	sum[37] AND jvv -> nrd
+	x[38]
+	y[38]
+	carry[37] OR nrd -> bbt
+	x[38] XOR y[38] -> sum[38]
+	sum[38] XOR bbt -> z[38]
+
+z[39]:
+	x[38] AND y[38] -> carry[38]
+	sum[38] AND bbt -> chp
+	x[39]
+	y[39]
+	carry[38] OR chp -> pjj
+	x[39] XOR y[39] -> sum[39]
+	sum[39] XOR pjj -> z[39]
+
+z[40]:
+	x[39] AND y[39] -> carry[39]
+	sum[39] AND pjj -> ggp
+	x[40]
+	y[40]
+	carry[39] OR ggp -> chn
+	x[40] XOR y[40] -> sum[40]
+	sum[40] XOR chn -> z[40]
+
+z[41]:
+	x[40] AND y[40] -> carry[40]
+	sum[40] AND chn -> prp
+	x[41]
+	y[41]
+	carry[40] OR prp -> bbr
+	x[41] XOR y[41] -> sum[41]
+	sum[41] XOR bbr -> z[41]
+
+z[42]:
+	x[42]
+	y[42]
+	x[41] AND y[41] -> carry[41]
+	sum[41] AND bbr -> ncn
+	x[42] XOR y[42] -> sum[42]
+	carry[41] OR ncn -> vpj
+	sum[42] XOR vpj -> z[42]
+
+z[43]:
+	x[42] AND y[42] -> carry[42]
+	sum[42] AND vpj -> ttq
+	x[43]
+	y[43]
+	carry[42] OR ttq -> hdt
+	x[43] XOR y[43] -> sum[43]
+	sum[43] XOR hdt -> z[43]
+
+z[44]:
+	x[43] AND y[43] -> carry[43]
+	sum[43] AND hdt -> qbr
+	x[44]
+	y[44]
+	carry[43] OR qbr -> ptm
+	x[44] XOR y[44] -> sum[44]
+	sum[44] XOR ptm -> z[44]
+
+z[45]:
+	x[44] AND y[44] -> carry[44]
+	sum[44] AND ptm -> swb
+	carry[44] OR swb -> z[45]

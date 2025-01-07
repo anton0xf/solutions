@@ -3,6 +3,8 @@ import Day24.*
 import scala.jdk.StreamConverters.*
 
 class Day24Test extends munit.FunSuite {
+  import Wire.{Aux, Vec}
+
   val input0: List[String] =
     """x00: 1
       |y00: 0
@@ -76,8 +78,8 @@ class Day24Test extends munit.FunSuite {
 
   test("parseInput") {
     assertEquals(parseInput(input0), Input(
-      Map("x00" -> true, "y00" -> false),
-      List(Gate(Op.And, "x00", "y00", "z00"))
+      Map(Vec("x", 0) -> true, Vec("y", 0) -> false),
+      List(Gate(Op.And, Vec("x", 0), Vec("y", 0), Vec("z", 0)))
     ))
   }
 
