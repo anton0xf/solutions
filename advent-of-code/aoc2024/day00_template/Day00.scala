@@ -7,7 +7,7 @@ object Day00 {
     Using(Source.fromFile("day00_template/input")) { source =>
       val input = parseInput(source.getLines())
       println(s"part 1: ${solution1(input)}")
-    }
+    }.get
   }
 
   case class Input(lines: List[String])
