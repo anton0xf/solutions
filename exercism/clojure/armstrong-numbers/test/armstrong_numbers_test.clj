@@ -2,6 +2,13 @@
   (:require [clojure.test :refer [deftest testing is]]
             armstrong-numbers))
 
+(deftest digits_test
+  (is (= [0] (armstrong-numbers/digits 0)))
+  (is (= [1] (armstrong-numbers/digits 1)))
+  (is (= [1 2 3] (armstrong-numbers/digits 123)))
+  (is (= [1 0 3 0] (armstrong-numbers/digits 1030)))
+  (is (= [1 0 3 0] (armstrong-numbers/digits (bigint 1030)))))
+
 (deftest armstrong?_test_1
   (testing "Zero is an Armstrong number"
     (is (true? (armstrong-numbers/armstrong? 0)))))
