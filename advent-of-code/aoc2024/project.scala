@@ -2,6 +2,7 @@
 //> using jvm 17
 
 // Main
+// https://github.com/scala/scala-parser-combinators
 //> using dependencies "org.scala-lang.modules::scala-parser-combinators:2.4.0"
 
 // exclude .sc (scratch files)
