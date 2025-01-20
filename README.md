@@ -1,6 +1,6 @@
-Решения задач и всяких тренажёров.
+Solutions for exercises, examples and other educational or entertainment stuff
 
-# Racket dependencies
+## Racket dependencies
 * [threading](https://docs.racket-lang.org/threading/index.html)
 ```sh
 raco pkg install threading
