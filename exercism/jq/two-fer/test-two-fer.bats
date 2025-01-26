@@ -18,7 +18,7 @@ END_INPUT
 }
 
 @test 'a name given' {
-    [[ $BATS_RUN_SKIPPED == "true" ]] || skip
+    #[[ $BATS_RUN_SKIPPED == "true" ]] || skip
 
     run jq -r -f two-fer.jq << 'END_INPUT'
         {
@@ -32,7 +32,7 @@ END_INPUT
 }
 
 @test 'another name given' {
-    [[ $BATS_RUN_SKIPPED == "true" ]] || skip
+    #[[ $BATS_RUN_SKIPPED == "true" ]] || skip
 
     run jq -r -f two-fer.jq << 'END_INPUT'
         {
