@@ -23,14 +23,17 @@
 # You'll need to use parentheses to control order of operations
 
 # Task 1: replace `null` with the "name" element of the shopping list.
-null,
+.name,
 
 # Task 2: replace `null` with the count of the required ingredients.
-(null),
+(.ingredients | length),
 
 # Task 3: replace `null` with the amount of sugar.
-(null),
+(.ingredients[] | select(.item == "sugar") | .amount.quantity),
 
 # Task 4: replace `null` with the mapping of ingredient names with their substitutions
 # (no comma after the last filter)
-(null)
+([(.ingredients, .["optional ingredients"])[]
+   | select(.substitute)
+   | {(.item): .substitute}
+ ] | add)
