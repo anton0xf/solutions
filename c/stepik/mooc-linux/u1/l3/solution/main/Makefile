@@ -1,7 +1,7 @@
 all: solution
 
 solution: solution.c
-	gcc solution.c -ldl -fPIC -o solution
+	gcc solution.c -ldl -Wl,-rpath,. -fPIC -o solution
 
 clean:
 	-rm -fv solution
