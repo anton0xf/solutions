@@ -1,4 +1,0 @@
-.*
-!.gitignore
-!.scalafmt.conf
-/target/
