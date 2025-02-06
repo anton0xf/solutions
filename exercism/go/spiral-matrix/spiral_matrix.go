@@ -24,19 +24,17 @@ func SpiralMatrix(size int) [][]int {
 	p := vec{0, -1}
 	// initial direction
 	dir := vec{0, 1}
-	// count of steps along direction
+	// count of steps in a given direction
 	steps := size
 	step := 0
-	// number of rotations before steps decreasing
-	const rots = 2
-	rot := 1 // decrease steps after first rotation
+	rots := 1 // roots until steps decreasing
 	for n := 1; n <= size * size; n++ {
 		if step == steps {
 			step = 0
 			dir = dir.rotate()
-			rot++
-			if rot == rots {
-				rot = 0
+			rots--
+			if rots == 0 {
+				rots = 2
 				steps--
 			}
 		}
