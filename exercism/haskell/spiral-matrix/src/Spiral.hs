@@ -1,13 +1,13 @@
 module Spiral (spiral) where
 
 import Data.Function ((&))
-import Data.Map (Map, (!))
-import qualified Data.Map as Map
+import Data.List (find)
+import Data.Maybe (fromJust)
 
 spiral :: Int -> [[Int]]
 spiral size = foldl go s0 [1 .. (size * size)] & m & toLists size
   where s0 = State {
-          m = Map.empty
+          m = []
           , pos = (0, -1)
           , dir = (0, 1)
           , steps = size
@@ -24,8 +24,6 @@ data State = State {
   , rots :: Int -- roots until steps decreasing
   } deriving Show
 
-type Matrix = Map Vec Int
-
 type Vec = (Int, Int) -- (row, col), 0-based
 
 plus :: Vec -> Vec -> Vec
@@ -33,6 +31,11 @@ plus (i1, j1) (i2, j2) = (i1 + i2, j1 + j2)
 
 rotate :: Vec -> Vec
 rotate (i, j) = (j, -i)
+
+type Matrix = [(Vec, Int)]
+
+matrixGet :: Vec -> Matrix -> Int
+matrixGet p = snd . fromJust . find ((== p) . fst)
 
 go :: State -> Int -> State
 go s n = stepState n $ if shouldRotate s then rotateState s else s
@@ -56,11 +59,11 @@ stepState n s =
   in s {
     step = step s + 1
     , pos = newPos
-    , m = Map.insert newPos n (s & m)
+    , m = (newPos, n) : (s & m)
     }
 
 toLists :: Int -> Matrix -> [[Int]]
 toLists size mx = do
   i <- [0 .. (size-1)]
-  pure [ mx ! (i, j) | j <- [0 .. (size-1)]]
+  pure [ matrixGet (i, j) mx | j <- [0 .. (size-1)] ]
   
