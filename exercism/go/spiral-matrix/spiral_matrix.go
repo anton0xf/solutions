@@ -15,31 +15,26 @@ func (v vec) rotate() vec {
 	return vec{v.j, -v.i}
 }
 
+func (v vec) in(bounds vec) bool {
+	return 0 <= v.i && v.i < bounds.i &&
+		0 <= v.j && v.j < bounds.j
+}
+
 func SpiralMatrix(size int) [][]int {
 	var m = make([][]int, size)
 	for i := range m {
 		m[i] = make([]int, size)
 	}
-	// initial position
-	p := vec{0, -1}
-	// initial direction
-	dir := vec{0, 1}
-	// count of steps in a given direction
-	steps := size
-	step := 0
-	rots := 1 // roots until steps decreasing
+	p := vec{0, -1} // initial position
+	dir := vec{0, 1} // initial direction
+	bounds := vec{size, size}
 	for n := 1; n <= size * size; n++ {
-		if step == steps {
-			step = 0
+		pn := p.plus(dir) // next positions
+		if !pn.in(bounds) || m[pn.i][pn.j] != 0 {
 			dir = dir.rotate()
-			rots--
-			if rots == 0 {
-				rots = 2
-				steps--
-			}
+			pn = p.plus(dir)
 		}
-		step++
-		p = p.plus(dir)
+		p = pn
 		m[p.i][p.j] = n
 	}
 	
