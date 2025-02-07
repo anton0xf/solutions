@@ -2,6 +2,15 @@
   (:require [clojure.test :refer [deftest is]]
             squeaky-clean))
 
+(deftest capitalize
+  (is (= "" (squeaky-clean/capitalize "")))
+  (is (= "A" (squeaky-clean/capitalize "A")))
+  (is (= "A" (squeaky-clean/capitalize "a")))
+  (is (= "Ab" (squeaky-clean/capitalize "Ab")))
+  (is (= "Ab" (squeaky-clean/capitalize "ab")))
+  (is (= "AB" (squeaky-clean/capitalize "aB")))
+  (is (= "Abc" (squeaky-clean/capitalize "abc"))))
+
 (deftest ^{:task 1} clean-single-letter
   (is (= "A" (squeaky-clean/clean "A"))))
 
