@@ -1,0 +1,91 @@
+#!/usr/bin/env bb
+;; -*- Clojure -*-
+(ns do
+  (:require [babashka.cli :as cli]
+            [babashka.process :refer [shell]]
+            [babashka.fs :as fs]
+            [clojure.string :as str]
+            [clojure.core.match :refer [match]]
+            [clojure.pprint :refer [pprint]]))
+
+(def root-path (fs/parent *file*))
+
+(defn relativize [path]
+  (let [r (str (fs/relativize (fs/cwd) path))]
+    (if (str/blank? r) "." r)))
+
+(defn exercise-path [track exercise]
+  (relativize (fs/file root-path track exercise)))
+
+(defn exercise-commit-prefix [track exercise]
+  (format "exercism/%s/%s: " track exercise))
+
+(defn start [{:keys [opts args] :as params}]
+  (let [{:keys [help track exercise]} opts]
+    {:params params
+     :command
+     (if help
+       [:help :start]
+       (let [path (exercise-path track exercise)]
+         [:list
+          [:shell "exercism" "download" (str "--track=" track) (str "--exercise=" exercise)]
+          [:shell "git" "add" path]
+          [:shell "git" "commit" "-m" (str (exercise-commit-prefix track exercise) "init") "--" path]
+          [:echo (format "Track %s / exercise %s -> %s" track exercise path)]]))}))
+
+(defn finish [{:keys [opts args] :as params}]
+  (let [{:keys [help track exercise]} opts]
+    {:params params
+     :command
+     (if help
+       [:help :finish]
+       (let [path (exercise-path track exercise)
+             solution-path (str (fs/file path (str (str/replace exercise "-" "_") ".go")))]
+         [:list
+          [:shell "go" "test"]
+          [:shell "exercism" "submit" solution-path]
+          [:shell "git" "add" path]
+          [:shell "git" "commit" "-m" (str (exercise-commit-prefix track exercise) "done") "--" path]
+          [:echo (format "Track %s / exercise %s -- %s: DONE" track exercise path)]]))}))
+
+(defn help [opts]
+  [:help opts])
+
+(defn exec-command [command verbose dry-run]
+  (if verbose (pprint command))
+  (match command
+    [:help & r] (println "Help" r)
+    [:list & cmds] (doseq [cmd cmds]
+                     (exec-command cmd verbose dry-run))
+    [:echo & strs] (println strs)
+    [:shell cmd & args] (if dry-run
+                          (println "execute:" (str (into [cmd] args)))
+                          (apply shell cmd args))))
+
+(defn exec [{:keys [command params]}]
+  (let [{:keys [verbose dry-run]} (:opts params)]
+    (if verbose (pprint params))
+    (exec-command command verbose dry-run)))
+
+(def global-opts
+  {:help {:coerce :boolean
+          :alias :h}
+   :verbose {:coerce :boolean
+             :alias :v}
+   :dry-run {:coerce :boolean
+             :alias :n}})
+
+(def table
+  [{:cmds ["start"] :fn start
+    :args->opts [:track :exercise]
+    :spec global-opts}
+   {:cmds ["finish"] :fn finish
+    :args->opts [:track :exercise]
+    :spec global-opts}
+   {:cmds [] :fn help :spec global-opts}])
+
+(defn -main [& args]
+  (exec (cli/dispatch table args)))
+
+(when (= *file* (System/getProperty "babashka.file"))
+  (apply -main *command-line-args*))
