@@ -1,7 +1,5 @@
 package speed
 
-import "math"
-
 type Car struct {
 	battery      int
 	batteryDrain int
@@ -40,7 +38,5 @@ func Drive(car Car) Car {
 
 // CanFinish checks if a car is able to finish a certain track.
 func CanFinish(car Car, track Track) bool {
-	t := float64(track.distance) / float64(car.speed)
-	b := int(math.Ceil(t)) * car.batteryDrain
-	return b <= car.battery
+	return track.distance*car.batteryDrain <= car.battery*car.speed
 }
