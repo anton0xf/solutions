@@ -51,16 +51,23 @@
 (defn help [opts]
   [:help opts])
 
+(defn shell-log [cmd args]
+  (println "execute:" (str (into [cmd] args))))
+
+(defn shell-exec [cmd args]
+  (apply shell cmd args))
+
 (defn exec-command [command verbose dry-run]
-  (if verbose (pprint command))
+  ;; (if verbose (pprint command))
   (match command
     [:help & r] (println "Help" r)
     [:list & cmds] (doseq [cmd cmds]
                      (exec-command cmd verbose dry-run))
     [:echo & strs] (println strs)
     [:shell cmd & args] (if dry-run
-                          (println "execute:" (str (into [cmd] args)))
-                          (apply shell cmd args))))
+                          (shell-log cmd args)
+                          (do (when verbose (shell-log cmd args))
+                              (shell-exec cmd args)))))
 
 (defn exec [{:keys [command params]}]
   (let [{:keys [verbose dry-run]} (:opts params)]
