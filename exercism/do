@@ -20,6 +20,14 @@
 (defn exercise-commit-prefix [track exercise]
   (format "exercism/%s/%s: " track exercise))
 
+(defn solution-path [track exercise]
+  (let [path (exercise-path track exercise)
+        ex-underscored (str/replace exercise "-" "_")
+        ex-path (case track
+                  "go" (str ex-underscored ".go")
+                  "clojure" (fs/path "src" (str ex-underscored ".clj")))]
+    (str (fs/file path ex-path))))
+
 (defn start [{:keys [opts args] :as params}]
   (let [{:keys [help track exercise]} opts]
     {:params params
@@ -33,17 +41,20 @@
           [:shell "git" "commit" "-m" (str (exercise-commit-prefix track exercise) "init") "--" path]
           [:echo (format "Track %s / exercise %s -> %s" track exercise path)]]))}))
 
+(defn test-command [track]
+  (case track
+    "go" [:shell "go" "test"]
+    "clojure" [:shell "lein" "test"]))
 (defn finish [{:keys [opts args] :as params}]
   (let [{:keys [help track exercise]} opts]
     {:params params
      :command
      (if help
        [:help :finish]
-       (let [path (exercise-path track exercise)
-             solution-path (str (fs/file path (str (str/replace exercise "-" "_") ".go")))]
+       (let [path (exercise-path track exercise)]
          [:list
-          [:shell "go" "test"]
-          [:shell "exercism" "submit" solution-path]
+          (test-command track)
+          [:shell "exercism" "submit" (solution-path track exercise)]
           [:shell "git" "add" path]
           [:shell "git" "commit" "-m" (str (exercise-commit-prefix track exercise) "done") "--" path]
           [:echo (format "Track %s / exercise %s -- %s: DONE" track exercise path)]]))}))
