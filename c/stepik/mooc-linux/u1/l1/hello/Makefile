@@ -10,7 +10,7 @@ clean:
 	-rm -fv hello
 
 test:
-# https://github.com/mrtazz/checkmake # use nix
+# https://github.com/mrtazz/checkmake # use nix or brew
 	checkmake Makefile
 
 .PHONY: all test clean
