@@ -1,7 +1,7 @@
 (** simple enumeration *)
 Inductive bool: Type :=
-  | true
-  | false.
+| true
+| false.
 
 Check true: bool.
 Check false: bool.
