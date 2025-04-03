@@ -19,7 +19,7 @@ Locate "_ && _".
 Locate "&&".
 (* Notation "x && y" := (andb x y) : bool_scope (default interpretation) *)
 
-Print Notation "_ && _".
+Print Notation "_ && _". (* doesn't work in jscoq *)
 (* Notation "_ && _" at level 40 with arguments constr at level 40, constr at next level,
    left associativity. *)
 
@@ -37,7 +37,14 @@ Unset Printing Parentheses.
 Check 0: nat.
 Check 5: nat.
 Check (5 + 7) : nat.
+
 Compute (5 + 7). (* = 12 : nat *)
+
+Theorem theorem_example : 5 + 7 = 12.
+Proof. simpl. reflexivity. Qed.
+
+Check theorem_example.
+
 Compute 2 * 3.
 
 (** definitions *)
@@ -91,6 +98,9 @@ Check Nat.mul 3 : nat -> nat.
 Definition mul3_curry: nat -> nat := Nat.mul 3.
 
 Compute mul3_curry 5.
+
+Theorem mul3_def: forall n: nat, mul3 n = n * 3.
+Proof. intro n. simpl. unfold mul3. reflexivity. Qed.
 
 (** anonymous functions *)
 Check (fun (n: nat) => n * 3): nat -> nat.
