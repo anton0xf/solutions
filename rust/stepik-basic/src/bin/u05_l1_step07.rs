@@ -1,8 +1,6 @@
-use std::io;
-
 // test it with: $ printf "%s\n" a b c d e | cargo run --bin u05_l1_step07
 fn main() {
-    let ls: Vec<_> = io::stdin().lines()
+    let ls: Vec<_> = std::io::stdin().lines()
         .filter_map(|line| line.ok())
         .map(|line| line + "\n")
         .collect();
