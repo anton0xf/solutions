@@ -28,39 +28,72 @@
                   "clojure" (fs/path "src" (str ex-underscored ".clj")))]
     (str (fs/file path ex-path))))
 
+(def global-opts
+  {:help {:coerce :boolean
+          :alias :h
+          :desc "show help"}
+   :verbose {:coerce :boolean
+             :alias :v
+             :desc "verbose mode"}
+   :dry-run {:coerce :boolean
+             :alias :n
+             :desc "dry run"}})
+
+(def help-command
+  [:help
+   "Usage: ./do [global-options] [subcommand args..] "
+   "Subcommands:"
+   (cli/format-table
+    {:rows [["start"  "<track>" "<exercise>" "-" "download and commit exercise"]
+            ["finish" "<track>" "<exercise>" "-" "upload and commit solution"]]})
+   "Global options:"
+   (cli/format-opts {:spec global-opts})])
+
 (defn start [{:keys [opts args] :as params}]
   (let [{:keys [help track exercise]} opts]
     {:params params
      :command
-     (if help
-       [:help :start]
+     (if (or help (nil? track) (nil? exercise))
+       help-command
        (let [path (exercise-path track exercise)]
          [:list
-          [:shell "exercism" "download" (str "--track=" track) (str "--exercise=" exercise)]
+          [:shell "exercism" "download"
+           (str "--track=" track) (str "--exercise=" exercise)]
           [:shell "git" "add" path]
-          [:shell "git" "commit" "-m" (str (exercise-commit-prefix track exercise) "init") "--" path]
+          [:shell "git" "commit"
+           "-m" (str (exercise-commit-prefix track exercise) "init")
+           "--" path]
           [:echo (format "Track %s / exercise %s -> %s" track exercise path)]]))}))
 
 (defn test-command [track]
   (case track
     "go" [:shell "go" "test"]
     "clojure" [:shell "lein" "test"]))
+
 (defn finish [{:keys [opts args] :as params}]
   (let [{:keys [help track exercise]} opts]
     {:params params
      :command
-     (if help
-       [:help :finish]
+     (if (or help (nil? track) (nil? exercise))
+       help-command
        (let [path (exercise-path track exercise)]
          [:list
           (test-command track)
           [:shell "exercism" "submit" (solution-path track exercise)]
           [:shell "git" "add" path]
-          [:shell "git" "commit" "-m" (str (exercise-commit-prefix track exercise) "done") "--" path]
+          [:shell "git" "commit" "-m"
+           (str (exercise-commit-prefix track exercise) "done") "--" path]
           [:echo (format "Track %s / exercise %s -- %s: DONE" track exercise path)]]))}))
 
-(defn help [opts]
-  [:help opts])
+(def table
+  [{:cmds ["start"] :fn start
+    :args->opts [:track :exercise]
+    :spec global-opts}
+   {:cmds ["finish"] :fn finish
+    :args->opts [:track :exercise]
+    :spec global-opts}
+   {:cmds [] :fn (fn [opts] {:command help-command :params opts})
+    :spec global-opts}])
 
 (defn shell-log [cmd args]
   (println "execute:" (str (into [cmd] args))))
@@ -71,36 +104,29 @@
 (defn exec-command [command verbose dry-run]
   ;; (if verbose (pprint command))
   (match command
-    [:help & r] (println "Help" r)
+    [:help & rs] (doseq [r rs] (println r))
     [:list & cmds] (doseq [cmd cmds]
                      (exec-command cmd verbose dry-run))
     [:echo & strs] (println strs)
     [:shell cmd & args] (if dry-run
                           (shell-log cmd args)
                           (do (when verbose (shell-log cmd args))
-                              (shell-exec cmd args)))))
+                              (shell-exec cmd args)))
+    :else (println "Unexpected command" command)))
 
 (defn exec [{:keys [command params]}]
   (let [{:keys [verbose dry-run]} (:opts params)]
     (if verbose (pprint params))
     (exec-command command verbose dry-run)))
 
-(def global-opts
-  {:help {:coerce :boolean
-          :alias :h}
-   :verbose {:coerce :boolean
-             :alias :v}
-   :dry-run {:coerce :boolean
-             :alias :n}})
-
-(def table
-  [{:cmds ["start"] :fn start
-    :args->opts [:track :exercise]
-    :spec global-opts}
-   {:cmds ["finish"] :fn finish
-    :args->opts [:track :exercise]
-    :spec global-opts}
-   {:cmds [] :fn help :spec global-opts}])
+(comment
+  (cli/dispatch table [])
+  (cli/dispatch table ["-v"])
+  
+  
+  (exec [:help {:dispatch [], :opts {}, :args nil}])
+  (cli/format-opts {:spec global-opts})
+  )
 
 (defn -main [& args]
   (exec (cli/dispatch table args)))
