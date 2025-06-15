@@ -1,2 +1,2 @@
-#lang racket
+#lang sicp
 (+ 1 2)
