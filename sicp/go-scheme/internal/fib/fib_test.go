@@ -1,11 +1,12 @@
-package main
+package fib
 
 import "testing"
 
-func TestExample(t *testing.T) {
+func TestFib(t *testing.T) {
 	cases := []struct {
 		n, f int
 	}{
+		{0, 0},
 		{1, 1},
 		{2, 1},
 		{3, 2},
@@ -19,11 +20,4 @@ func TestExample(t *testing.T) {
 			t.Errorf("Fib(%d) == %d, want %d", c.n, got, c.f)
 		}
 	}
-}
-
-func Fib(n int) int {
-	if n <= 2 {
-		return 1
-	}
-	return Fib(n-2) + Fib(n-1)
 }
