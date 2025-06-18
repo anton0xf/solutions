@@ -1,25 +1,24 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"io"
 	"os"
+
+	"go-scheme/internal/sexp"
 )
 
 func main() {
-	var in *bufio.Reader = bufio.NewReader(os.Stdin)
+	parser := sexp.NewParser(os.Stdin)
 	for {
-		ch, _, err := in.ReadRune()
-		if err == nil {
-			fmt.Printf("%c", ch)
-		} else {
-			if err == io.EOF {
-				fmt.Println("DONE")
-				return
-			} else {
-				panic(fmt.Errorf("Unexpected error: %v", err))
-			}
+		expr, done, err := parser.Parse()
+		if err != nil {
+			panic(err)
 		}
+		if done {
+			fmt.Println()
+			return
+		}
+		// TODO evaluate expr
+		fmt.Print(expr)
 	}
 }
