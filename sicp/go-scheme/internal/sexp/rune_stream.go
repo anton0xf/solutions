@@ -2,12 +2,22 @@ package sexp
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 )
 
 type RuneStream struct {
 	in *bufio.Reader
+}
+
+func NewRuneStream(in io.Reader) *RuneStream {
+	bin := bufio.NewReader(in)
+	return &RuneStream{bin}
+}
+
+func NewRuneStreamFromBuffer(bs []byte) *RuneStream {
+	return NewRuneStream(bytes.NewBuffer(bs))
 }
 
 func (s *RuneStream) Next() (rune, error) {

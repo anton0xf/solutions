@@ -7,8 +7,14 @@ Run command `fib`
 $ go run ./cmd/fib
 ```
 
-## Test
+## Unit tests
 Run all tests:
 ```shell
 $ go test ./...
+```
+
+## Test app
+```shell
+$ echo 'asdф☺️' | go run ./cmd/gs
+asdф☺️
 ```
