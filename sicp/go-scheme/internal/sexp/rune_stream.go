@@ -20,15 +20,15 @@ func NewRuneStreamFromBuffer(bs []byte) *RuneStream {
 	return NewRuneStream(bytes.NewBuffer(bs))
 }
 
-func (s *RuneStream) Next() (rune, error) {
+func (s *RuneStream) Next() (next rune, eof bool, err error) {
 	ch, _, err := s.in.ReadRune()
 	if err == nil {
-		return ch, nil
+		return ch, false, nil
 	} else {
 		if err == io.EOF {
-			return 0, err
+			return 0, true, nil
 		} else {
-			return 0, fmt.Errorf("Unexpected error: %v", err)
+			return 0, false, fmt.Errorf("Unexpected error: %v", err)
 		}
 	}
 }

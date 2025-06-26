@@ -28,13 +28,11 @@ func (e *Char) String() string {
 	return fmt.Sprintf("%c", e.ch)
 }
 
-func (p *Parser) Parse() (Expr, bool, error) {
-	ch, err := p.in.Next()
-	if err != nil {
-		if err == io.EOF {
-			return nil, true, nil
-		}
-		return nil, false, err
+func (p *Parser) Parse() (res Expr, eof bool, err error) {
+	ch, eof, err := p.in.Next()
+	if eof || err != nil {
+		return
 	}
-	return &Char{ch}, false, nil
+	res = &Char{ch}
+	return
 }

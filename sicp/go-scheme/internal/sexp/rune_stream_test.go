@@ -1,16 +1,49 @@
 package sexp
 
 import (
+	"errors"
 	"testing"
+	"testing/iotest"
 
-	"go-scheme/internal/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRuneStream(t *testing.T) {
+	t.Run("error", func(t *testing.T) {
+		s := NewRuneStream(iotest.ErrReader(errors.New("fail")))
+		_, eof, err := s.Next()
+		assert.False(t, eof, "EOF is not expected")
+		assert.EqualError(t, err, "Unexpected error: fail")
+	})
+
+	t.Run("no chars", func(t *testing.T) {
+		s := NewRuneStreamFromBuffer([]byte{})
+		_, eof, err := s.Next()
+		assert.True(t, eof, "EOF is expected")
+		assert.NoError(t, err)
+	})
+
 	t.Run("ascii char", func(t *testing.T) {
 		s := NewRuneStreamFromBuffer([]byte("a"))
-		ch, err := s.Next()
+		ch, eof, err := s.Next()
+		assert.False(t, eof, "EOF is not expected")
 		assert.NoError(t, err)
-		assert.EqRune(t, ch, 'a')
+		assert.Equal(t, ch, 'a')
+
+		_, eof, err = s.Next()
+		assert.True(t, eof, "EOF is expected")
+		assert.NoError(t, err)
+	})
+
+	t.Run("cyrilic char", func(t *testing.T) {
+		s := NewRuneStreamFromBuffer([]byte("ф"))
+		ch, eof, err := s.Next()
+		assert.False(t, eof, "EOF is not expected")
+		assert.NoError(t, err)
+		assert.Equal(t, ch, 'ф')
+
+		_, eof, err = s.Next()
+		assert.True(t, eof, "EOF is expected")
+		assert.NoError(t, err)
 	})
 }
