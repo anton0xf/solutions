@@ -2,7 +2,7 @@
 * [ ] parse S-exp
   * [x] parse char as Char
   * [x] test RuneStream
-  * [ ] test Parser
+  * [x] test Parser
   * [ ] parse every seq of non-space characters as Seq
   * [ ] parse literal
     * [ ] int
