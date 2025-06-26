@@ -22,6 +22,6 @@ func TestParser(t *testing.T) {
 		expr, eof, err := p.Parse()
 		assert.False(t, eof, "EOF is not expected")
 		assert.NoError(t, err)
-		assert.Equal(t, expr, &Char{'a'})
+		assert.Equal(t, &Char{'a'}, expr)
 	})
 }

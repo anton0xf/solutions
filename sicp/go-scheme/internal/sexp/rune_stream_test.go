@@ -29,7 +29,7 @@ func TestRuneStream(t *testing.T) {
 		ch, eof, err := s.Next()
 		assert.False(t, eof, "EOF is not expected")
 		assert.NoError(t, err)
-		assert.Equal(t, ch, 'a')
+		assert.Equal(t, 'a', ch)
 
 		_, eof, err = s.Next()
 		assert.True(t, eof, "EOF is expected")
@@ -41,7 +41,7 @@ func TestRuneStream(t *testing.T) {
 		ch, eof, err := s.Next()
 		assert.False(t, eof, "EOF is not expected")
 		assert.NoError(t, err)
-		assert.Equal(t, ch, 'ф')
+		assert.Equal(t, 'ф', ch)
 
 		_, eof, err = s.Next()
 		assert.True(t, eof, "EOF is expected")
