@@ -2,23 +2,31 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"go-scheme/internal/sexp"
 )
 
 func main() {
-	parser := sexp.NewParser(os.Stdin)
+	err := Run(os.Stdin, os.Stdout)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func Run(in io.Reader, out io.Writer) error {
+	parser := sexp.NewParser(in)
 	for {
 		expr, done, err := parser.Parse()
 		if err != nil {
-			panic(err)
+			return err
 		}
 		if done {
-			fmt.Println()
-			return
+			fmt.Fprintln(out)
+			return nil
 		}
 		// TODO evaluate expr
-		fmt.Print(expr)
+		fmt.Fprint(out, expr)
 	}
 }
