@@ -1,6 +1,7 @@
 package sexp
 
 import (
+	"bytes"
 	"errors"
 	"testing"
 	"testing/iotest"
@@ -17,14 +18,14 @@ func TestRuneStream(t *testing.T) {
 	})
 
 	t.Run("no chars", func(t *testing.T) {
-		s := NewRuneStreamFromBuffer([]byte{})
+		s := NewRuneStream(bytes.NewBufferString(""))
 		_, eof, err := s.Next()
 		assert.True(t, eof, "EOF is expected")
 		assert.NoError(t, err)
 	})
 
 	t.Run("ascii char", func(t *testing.T) {
-		s := NewRuneStreamFromBuffer([]byte("a"))
+		s := NewRuneStream(bytes.NewBufferString("a"))
 		ch, eof, err := s.Next()
 		assert.False(t, eof, "EOF is not expected")
 		assert.NoError(t, err)
@@ -36,7 +37,7 @@ func TestRuneStream(t *testing.T) {
 	})
 
 	t.Run("cyrilic char", func(t *testing.T) {
-		s := NewRuneStreamFromBuffer([]byte("ф"))
+		s := NewRuneStream(bytes.NewBufferString("ф"))
 		ch, eof, err := s.Next()
 		assert.False(t, eof, "EOF is not expected")
 		assert.NoError(t, err)
