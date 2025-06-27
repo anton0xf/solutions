@@ -17,28 +17,26 @@ func TestParser(t *testing.T) {
 		assert.Error(t, err, "Unexpected error: fail")
 	})
 
-	t.Run("read char", func(t *testing.T) {
-		p := NewParser(bytes.NewBufferString("a"))
-		expr, eof, err := p.Parse()
-		assert.True(t, eof, "EOF is expected")
-		assert.NoError(t, err)
-		assert.Equal(t, NewSeq("a"), expr)
-	})
-
-	t.Run("read char, stop at space", func(t *testing.T) {
-		t.Skip()
-		p := NewParser(bytes.NewBufferString("a "))
-		expr, eof, err := p.Parse()
-		assert.False(t, eof, "EOF is not expected")
-		assert.NoError(t, err)
-		assert.Equal(t, NewSeq("a"), expr)
-	})
-
-	t.Run("read chars", func(t *testing.T) {
-		p := NewParser(bytes.NewBufferString("asdf"))
-		expr, eof, err := p.Parse()
-		assert.True(t, eof, "EOF is expected")
-		assert.NoError(t, err)
-		assert.Equal(t, NewSeq("asdf"), expr)
-	})
+	examples := []struct {
+		name string
+		in   string
+		eof  bool
+		expr Expr
+		rest string
+	}{
+		{"read char", "a", true, NewSeq("a"), ""},
+		// TODO {"read char, stop at space", "a ", true, NewSeq("a"), " "},
+		{"read chars", "asdf", true, NewSeq("asdf"), ""},
+	}
+	for _, ex := range examples {
+		t.Run(ex.name, func(t *testing.T) {
+			in := bytes.NewBufferString(ex.in)
+			p := NewParser(in)
+			expr, eof, err := p.Parse()
+			assert.Equal(t, ex.eof, eof)
+			assert.NoError(t, err)
+			assert.Equal(t, ex.expr, expr)
+			assert.Equal(t, ex.rest, string(in.Bytes()))
+		})
+	}
 }
