@@ -43,11 +43,12 @@ func (p *Parser) Parse() (res Expr, eof bool, err error) {
 func (p *Parser) ParseSeq() (res *Seq, eof bool, err error) {
 	var seq Seq
 	res = &seq
-	// TODO loop
-	ch, eof, err := p.in.Next()
-	if eof || err != nil {
-		return
+	for {
+		ch, eof, err := p.in.Next()
+		// TODO stop at spaces
+		if eof || err != nil {
+			return res, eof, err
+		}
+		seq.Append(ch)
 	}
-	seq.Append(ch)
-	return
 }

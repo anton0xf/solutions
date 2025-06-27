@@ -23,7 +23,7 @@ func Run(in io.Reader, out io.Writer) error {
 			return err
 		}
 		if done {
-			fmt.Fprintln(out)
+			fmt.Fprintln(out, expr)
 			return nil
 		}
 		// TODO evaluate expr
