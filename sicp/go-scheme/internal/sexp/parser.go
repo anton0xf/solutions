@@ -37,8 +37,24 @@ func (e *Seq) String() string {
 }
 
 func (p *Parser) Parse() (res Expr, eof bool, err error) {
-	// TODO skip spaces
+	eof, err = p.SkipSpaces()
+	if eof || err != nil {
+		return
+	}
 	return p.ParseSeq()
+}
+
+func (p *Parser) SkipSpaces() (eof bool, err error) {
+	for {
+		ch, eof, err := p.in.Next()
+		if eof || err != nil {
+			return eof, err
+		}
+		if !unicode.IsSpace(ch) {
+			p.in.UnreadRune()
+			return false, nil
+		}
+	}
 }
 
 func (p *Parser) ParseSeq() (res *Seq, eof bool, err error) {

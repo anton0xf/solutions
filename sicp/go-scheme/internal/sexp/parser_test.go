@@ -25,8 +25,10 @@ func TestParser(t *testing.T) {
 	}{
 		{"read char", "a", NewSeq("a"), ""},
 		{"read char, stop at space", "a ", NewSeq("a"), " "},
+		{"read char, skip space", " a", NewSeq("a"), ""},
 		{"read chars", "asdf", NewSeq("asdf"), ""},
 		{"read chars, stop at spaces", "asdf\nq", NewSeq("asdf"), "\nq"},
+		{"read chars inside spaces", " \tasdf\nq", NewSeq("asdf"), "\nq"},
 	}
 	for _, ex := range examples {
 		t.Run(ex.name, func(t *testing.T) {
