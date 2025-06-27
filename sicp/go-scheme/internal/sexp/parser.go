@@ -37,15 +37,17 @@ func (e *Seq) String() string {
 
 func (p *Parser) Parse() (res Expr, eof bool, err error) {
 	// TODO skip spaces
-	// TODO loop
-	seq := new(Seq)
-	res = seq
+	return p.ParseSeq()
+}
 
+func (p *Parser) ParseSeq() (res *Seq, eof bool, err error) {
+	var seq Seq
+	res = &seq
+	// TODO loop
 	ch, eof, err := p.in.Next()
 	if eof || err != nil {
 		return
 	}
 	seq.Append(ch)
-
 	return
 }
