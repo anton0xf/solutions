@@ -22,6 +22,33 @@ func TestParser(t *testing.T) {
 		expr, eof, err := p.Parse()
 		assert.False(t, eof, "EOF is not expected")
 		assert.NoError(t, err)
-		assert.Equal(t, &Char{'a'}, expr)
+		assert.Equal(t, NewSeq("a"), expr)
+	})
+
+	t.Run("read char (new)", func(t *testing.T) {
+		t.Skip()
+		p := NewParser(bytes.NewBufferString("a"))
+		expr, eof, err := p.Parse()
+		assert.True(t, eof, "EOF is expected")
+		assert.NoError(t, err)
+		assert.Equal(t, NewSeq("a"), expr)
+	})
+
+	t.Run("read char, stop at space", func(t *testing.T) {
+		t.Skip()
+		p := NewParser(bytes.NewBufferString("a "))
+		expr, eof, err := p.Parse()
+		assert.False(t, eof, "EOF is not expected")
+		assert.NoError(t, err)
+		assert.Equal(t, NewSeq("a"), expr)
+	})
+
+	t.Run("read chars", func(t *testing.T) {
+		t.Skip()
+		p := NewParser(bytes.NewBufferString("asdf"))
+		expr, eof, err := p.Parse()
+		assert.True(t, eof, "EOF is expected")
+		assert.NoError(t, err)
+		assert.Equal(t, NewSeq("asdf"), expr)
 	})
 }

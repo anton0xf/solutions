@@ -2,7 +2,6 @@ package sexp
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 )
 
@@ -20,19 +19,33 @@ type Expr interface {
 	String() string
 }
 
-type Char struct {
-	ch rune
+type Seq struct {
+	chs []rune
 }
 
-func (e *Char) String() string {
-	return fmt.Sprintf("%c", e.ch)
+func NewSeq(s string) *Seq {
+	return &Seq{[]rune(s)}
+}
+
+func (e *Seq) Append(ch rune) {
+	e.chs = append(e.chs, ch)
+}
+
+func (e *Seq) String() string {
+	return string(e.chs)
 }
 
 func (p *Parser) Parse() (res Expr, eof bool, err error) {
+	// TODO skip spaces
+	// TODO loop
+	seq := new(Seq)
+	res = seq
+
 	ch, eof, err := p.in.Next()
 	if eof || err != nil {
 		return
 	}
-	res = &Char{ch}
+	seq.Append(ch)
+
 	return
 }
