@@ -1,0 +1,6 @@
+#!/bin/sh
+ag -F '[ ]' TODO.md
+echo
+ag -F 'TODO'
+echo
+ag -F 't.Skip'
