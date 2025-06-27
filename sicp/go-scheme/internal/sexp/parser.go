@@ -3,6 +3,7 @@ package sexp
 import (
 	"bufio"
 	"io"
+	"unicode"
 )
 
 type Parser struct {
@@ -45,10 +46,29 @@ func (p *Parser) ParseSeq() (res *Seq, eof bool, err error) {
 	res = &seq
 	for {
 		ch, eof, err := p.in.Next()
-		// TODO stop at spaces
 		if eof || err != nil {
 			return res, eof, err
 		}
+		if IsDelimiter(ch) {
+			p.in.UnreadRune()
+			return res, false, nil
+		}
 		seq.Append(ch)
+	}
+}
+
+func IsDelimiter(ch rune) bool {
+	// TODO parents etc.
+	return unicode.IsSpace(ch)
+}
+
+func (p *Parser) Rest() (string, error) {
+	var res []rune
+	for {
+		ch, eof, err := p.in.Next()
+		if eof || err != nil {
+			return string(res), err
+		}
+		res = append(res, ch)
 	}
 }

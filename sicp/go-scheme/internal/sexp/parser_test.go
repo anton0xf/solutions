@@ -20,23 +20,25 @@ func TestParser(t *testing.T) {
 	examples := []struct {
 		name string
 		in   string
-		eof  bool
 		expr Expr
 		rest string
 	}{
-		{"read char", "a", true, NewSeq("a"), ""},
-		// TODO {"read char, stop at space", "a ", true, NewSeq("a"), " "},
-		{"read chars", "asdf", true, NewSeq("asdf"), ""},
+		{"read char", "a", NewSeq("a"), ""},
+		{"read char, stop at space", "a ", NewSeq("a"), " "},
+		{"read chars", "asdf", NewSeq("asdf"), ""},
+		{"read chars, stop at spaces", "asdf\nq", NewSeq("asdf"), "\nq"},
 	}
 	for _, ex := range examples {
 		t.Run(ex.name, func(t *testing.T) {
 			in := bytes.NewBufferString(ex.in)
 			p := NewParser(in)
 			expr, eof, err := p.Parse()
-			assert.Equal(t, ex.eof, eof)
+			assert.Equal(t, ex.rest == "", eof)
 			assert.NoError(t, err)
 			assert.Equal(t, ex.expr, expr)
-			assert.Equal(t, ex.rest, string(in.Bytes()))
+			rest, err := p.Rest()
+			assert.NoError(t, err)
+			assert.Equal(t, ex.rest, rest)
 		})
 	}
 }

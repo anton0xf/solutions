@@ -27,3 +27,7 @@ func (s *RuneStream) Next() (next rune, eof bool, err error) {
 		}
 	}
 }
+
+func (s *RuneStream) UnreadRune() error {
+	return s.in.UnreadRune()
+}
