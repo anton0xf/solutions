@@ -25,7 +25,8 @@
         ex-underscored (str/replace exercise "-" "_")
         ex-path (case track
                   "go" (str ex-underscored ".go")
-                  "clojure" (fs/path "src" (str ex-underscored ".clj")))]
+                  "clojure" (fs/path "src" (str ex-underscored ".clj"))
+                  "rust" "src/lib.rs")]
     (str (fs/file path ex-path))))
 
 (def global-opts
@@ -68,7 +69,8 @@
 (defn test-command [track]
   (case track
     "go" [:shell "go" "test"]
-    "clojure" [:shell "lein" "test"]))
+    "clojure" [:shell "lein" "test"]
+    "rust" [:shell "cargo" "test"]))
 
 (defn finish [{:keys [opts args] :as params}]
   (let [{:keys [help track exercise]} opts]
