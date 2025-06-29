@@ -74,7 +74,7 @@ func (p *Parser) ParseSeq() (res *Seq, eof bool, err error) {
 }
 
 func IsDelimiter(ch rune) bool {
-	// TODO parents etc.
+	// TODO parens etc.
 	return unicode.IsSpace(ch)
 }
 
