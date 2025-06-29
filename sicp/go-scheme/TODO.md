@@ -4,7 +4,7 @@
   * [x] test RuneStream
   * [x] test Parser
   * [x] test main()
-  * [ ] parse every seq of non-space characters as Seq
+  * [x] parse every seq of non-space characters as Seq
   * [ ] parse literal
     * [ ] int
     * [ ] string

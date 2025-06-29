@@ -41,7 +41,11 @@ func (p *Parser) Parse() (res Expr, eof bool, err error) {
 	if eof || err != nil {
 		return
 	}
-	return p.ParseSeq()
+	runes, eof, err := p.ParseSeq()
+	if err != nil {
+		return
+	}
+	return &Seq{runes}, eof, nil
 }
 
 func (p *Parser) SkipSpaces() (eof bool, err error) {
@@ -57,9 +61,7 @@ func (p *Parser) SkipSpaces() (eof bool, err error) {
 	}
 }
 
-func (p *Parser) ParseSeq() (res *Seq, eof bool, err error) {
-	var seq Seq
-	res = &seq
+func (p *Parser) ParseSeq() (res []rune, eof bool, err error) {
 	for {
 		ch, eof, err := p.in.Next()
 		if eof || err != nil {
@@ -69,7 +71,7 @@ func (p *Parser) ParseSeq() (res *Seq, eof bool, err error) {
 			p.in.UnreadRune()
 			return res, false, nil
 		}
-		seq.Append(ch)
+		res = append(res, ch)
 	}
 }
 
