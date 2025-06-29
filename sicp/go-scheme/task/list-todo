@@ -1,6 +1,9 @@
 #!/bin/sh
-ag -F '[ ]' TODO.md
-echo
-ag -F 'TODO'
-echo
-ag -F 't.Skip'
+search() {
+    ag --ignore-dir '/task/' -F "$@"
+    echo
+}
+
+search '[ ]' TODO.md
+search 'TODO'
+search 't.Skip'
