@@ -2,7 +2,9 @@ package sexp
 
 import (
 	"bufio"
+	"fmt"
 	"io"
+	"strconv"
 	"unicode"
 )
 
@@ -20,20 +22,33 @@ type Expr interface {
 	String() string
 }
 
-type Seq struct {
-	chs []rune
+func IsIntString(rs []rune) bool {
+	if rs == nil {
+		return false
+	}
+	if len(rs) > 0 && unicode.IsDigit(rs[0]) {
+		return true
+	}
+	if len(rs) > 1 && rs[0] == '-' && unicode.IsDigit(rs[1]) {
+		return true
+	}
+	return false
 }
 
-func NewSeq(s string) *Seq {
-	return &Seq{[]rune(s)}
+type Int struct {
+	x int
 }
 
-func (e *Seq) Append(ch rune) {
-	e.chs = append(e.chs, ch)
+func (e *Int) String() string {
+	return string(strconv.Itoa(e.x))
 }
 
-func (e *Seq) String() string {
-	return string(e.chs)
+type Symbol struct {
+	name string
+}
+
+func (e *Symbol) String() string {
+	return e.name
 }
 
 func (p *Parser) Parse() (res Expr, eof bool, err error) {
@@ -45,7 +60,20 @@ func (p *Parser) Parse() (res Expr, eof bool, err error) {
 	if err != nil {
 		return
 	}
-	return &Seq{runes}, eof, nil
+	switch {
+	case len(runes) == 0:
+		return nil, eof, fmt.Errorf("unsupported. expected literal")
+
+	case IsIntString(runes):
+		n, err := strconv.Atoi(string(runes))
+		if err != nil {
+			return nil, eof, err
+		}
+		return &Int{n}, eof, nil
+
+	default:
+		return &Symbol{string(runes)}, eof, nil
+	}
 }
 
 func (p *Parser) SkipSpaces() (eof bool, err error) {
@@ -62,6 +90,7 @@ func (p *Parser) SkipSpaces() (eof bool, err error) {
 }
 
 func (p *Parser) ParseSeq() (res []rune, eof bool, err error) {
+	res = []rune{}
 	for {
 		ch, eof, err := p.in.Next()
 		if eof || err != nil {
