@@ -22,14 +22,18 @@ type Expr interface {
 	String() string
 }
 
+func IsDigit(r rune) bool {
+	return '0' <= r && r <= '9'
+}
+
 func IsIntString(rs []rune) bool {
 	if rs == nil {
 		return false
 	}
-	if len(rs) > 0 && unicode.IsDigit(rs[0]) {
+	if len(rs) > 0 && IsDigit(rs[0]) {
 		return true
 	}
-	if len(rs) > 1 && rs[0] == '-' && unicode.IsDigit(rs[1]) {
+	if len(rs) > 1 && rs[0] == '-' && IsDigit(rs[1]) {
 		return true
 	}
 	return false

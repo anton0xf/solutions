@@ -3,6 +3,7 @@ package sexp
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"testing"
 	"testing/iotest"
 
@@ -132,6 +133,26 @@ func TestParser_SkipSpaces(t *testing.T) {
 			rest, err := p.Rest()
 			assert.NoError(t, err)
 			assert.Equal(t, ex.rest, rest)
+		})
+	}
+}
+
+func TestIsDigit(t *testing.T) {
+	examples := []struct {
+		r       rune
+		isDigit bool
+	}{
+		{'0' - 1, false},
+		{'0', true},
+		{'1', true},
+		{'5', true},
+		{'9', true},
+		{'9' + 1, false},
+		{0x0663, false}, // ARABIC-INDIC DIGIT THREE
+	}
+	for _, ex := range examples {
+		t.Run(fmt.Sprintf("'%c'", ex.r), func(t *testing.T) {
+			assert.Equal(t, ex.isDigit, IsDigit(ex.r))
 		})
 	}
 }
