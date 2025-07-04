@@ -9,19 +9,19 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	t.Run("echo", func(t *testing.T) {
-		in := strings.NewReader("fф -23")
-		out := new(bytes.Buffer)
-		err := Run(in, out)
-		assert.NoError(t, err)
-		assert.Equal(t, []byte("fф\n-23\n"), out.Bytes())
-	})
-
-	t.Run("echo with trailing spaces", func(t *testing.T) {
-		in := strings.NewReader("12 ")
-		out := new(bytes.Buffer)
-		err := Run(in, out)
-		assert.NoError(t, err)
-		assert.Equal(t, []byte("12\n"), out.Bytes())
-	})
+	cases := []struct {
+		in, out string
+	}{
+		{"fф -23", "fф\n-23\n"},
+		{"12 ", "12\n"},
+	}
+	for _, c := range cases {
+		t.Run(c.in, func(t *testing.T) {
+			in := strings.NewReader(c.in)
+			out := new(bytes.Buffer)
+			err := Run(in, out)
+			assert.NoError(t, err)
+			assert.Equal(t, []byte(c.out), out.Bytes())
+		})
+	}
 }
