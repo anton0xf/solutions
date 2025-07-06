@@ -55,6 +55,14 @@ func (e *Symbol) String() string {
 	return e.name
 }
 
+type String struct {
+	s string
+}
+
+func (e *String) String() string {
+	return fmt.Sprintf(`"%s"`, e.s)
+}
+
 func (p *Parser) Parse() (res Expr, eof bool, err error) {
 	eof, err = p.SkipSpaces()
 	if eof || err != nil {
@@ -66,7 +74,7 @@ func (p *Parser) Parse() (res Expr, eof bool, err error) {
 	}
 	switch {
 	case len(runes) == 0:
-		return nil, eof, fmt.Errorf("unsupported. expected literal")
+		return p.ParseDelimited()
 
 	case IsIntString(runes):
 		n, err := strconv.Atoi(string(runes))
@@ -109,8 +117,13 @@ func (p *Parser) ParseSeq() (res []rune, eof bool, err error) {
 }
 
 func IsDelimiter(ch rune) bool {
-	// TODO parens etc.
-	return unicode.IsSpace(ch)
+	switch ch {
+	case '"':
+		return true
+
+	default:
+		return unicode.IsSpace(ch)
+	}
 }
 
 func (p *Parser) Rest() (string, error) {
@@ -121,5 +134,43 @@ func (p *Parser) Rest() (string, error) {
 			return string(res), err
 		}
 		res = append(res, ch)
+	}
+}
+
+func (p *Parser) Ignore(expected string) (eof bool, err error) {
+	for _, ech := range expected {
+		var ch rune
+		ch, eof, err = p.in.Next()
+		if eof || err != nil {
+			return eof, err
+		}
+		if ch != ech {
+			return eof, fmt.Errorf(
+				"unexpected next char '%c'. expected '%c'", ch, ech)
+		}
+	}
+	return eof, nil
+}
+
+func (p *Parser) ParseDelimited() (res Expr, eof bool, err error) {
+	ch, eof, err := p.in.Next()
+	if eof || err != nil {
+		return nil, eof, err
+	}
+	switch ch {
+	case '"':
+		// TODO support spaces and backslash escaping
+		runes, eof, err := p.ParseSeq()
+		if eof || err != nil {
+			return nil, eof, err
+		}
+		eof, err = p.Ignore(`"`)
+		if err != nil {
+			return nil, eof, err
+		}
+		return &String{string(runes)}, eof, nil
+
+	default:
+		return nil, eof, fmt.Errorf("unexpected next char: '%c'", ch)
 	}
 }

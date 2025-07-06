@@ -31,6 +31,8 @@ func TestParser_Parse(t *testing.T) {
 		{"read int, skip spaces", "\t 123", &Int{123}, ""},
 		{"read int, stop at spaces", "123\na", &Int{123}, "\na"},
 		{"read symbol", "qwer ty", &Symbol{"qwer"}, " ty"},
+		{"read string", `"qwer" ty`, &String{"qwer"}, " ty"},
+		{"read string, skip spaces", " \t\"qwer\" ty", &String{"qwer"}, " ty"},
 	}
 	for _, ex := range examples {
 		t.Run(ex.name, func(t *testing.T) {
@@ -153,6 +155,23 @@ func TestIsDigit(t *testing.T) {
 	for _, ex := range examples {
 		t.Run(fmt.Sprintf("'%c'", ex.r), func(t *testing.T) {
 			assert.Equal(t, ex.isDigit, IsDigit(ex.r))
+		})
+	}
+}
+
+func TestIsDelimiter(t *testing.T) {
+	delims := " \t\n\"" // TODO "()'"
+	notDelims := "01289abpuzABPUZ+-_"
+
+	for _, ch := range delims {
+		t.Run(fmt.Sprintf("delimiter '%c'", ch), func(t *testing.T) {
+			assert.True(t, IsDelimiter(ch))
+		})
+	}
+
+	for _, ch := range notDelims {
+		t.Run(fmt.Sprintf("not delimiter '%c'", ch), func(t *testing.T) {
+			assert.False(t, IsDelimiter(ch))
 		})
 	}
 }
