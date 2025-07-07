@@ -33,6 +33,8 @@ func TestParser_Parse(t *testing.T) {
 		{"read symbol", "qwer ty", &Symbol{"qwer"}, " ty"},
 		{"read string", `"qwer" ty`, &String{"qwer"}, " ty"},
 		{"read string, skip spaces", " \t\"qwer\" ty", &String{"qwer"}, " ty"},
+		{"read string with spaces", ` "qw  er"ty`, &String{"qw  er"}, "ty"},
+		{"read string with delims", ` "(qw)e'r"ty`, &String{"(qw)e'r"}, "ty"},
 	}
 	for _, ex := range examples {
 		t.Run(ex.name, func(t *testing.T) {

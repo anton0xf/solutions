@@ -2,6 +2,7 @@ package sexp
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -57,6 +58,10 @@ func (e *Symbol) String() string {
 
 type String struct {
 	s string
+}
+
+func NewString(runes []rune) *String {
+	return &String{string(runes)}
 }
 
 func (e *String) String() string {
@@ -159,18 +164,32 @@ func (p *Parser) ParseDelimited() (res Expr, eof bool, err error) {
 	}
 	switch ch {
 	case '"':
-		// TODO support spaces and backslash escaping
-		runes, eof, err := p.ParseSeq()
-		if eof || err != nil {
-			return nil, eof, err
-		}
-		eof, err = p.Ignore(`"`)
-		if err != nil {
-			return nil, eof, err
-		}
-		return &String{string(runes)}, eof, nil
-
+		return p.ParseString()
 	default:
 		return nil, eof, fmt.Errorf("unexpected next char: '%c'", ch)
+	}
+}
+
+func (p *Parser) ParseString() (res *String, eof bool, err error) {
+	rs := []rune{}
+	for {
+		ch, eof, err := p.in.Next()
+		if err != nil {
+			return NewString(rs), eof, err
+		}
+
+		if eof {
+			return NewString(rs), eof, errors.New("unexpected EOF inside string")
+		}
+
+		switch ch {
+		case '"':
+			return NewString(rs), eof, err
+
+		// TODO support backslash escaping
+
+		default:
+			rs = append(rs, ch)
+		}
 	}
 }

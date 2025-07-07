@@ -9,7 +9,7 @@
     * [x] int
     * [ ] string
       * [x] "simple" strings without delimiterts or escaping
-      * [ ] strings with delimiters
+      * [x] strings with delimiters
       * [ ] support simple escaping: `\n \t \" \\`
       * [ ] support runes by code: `\uXXX`
   * [x] parse symbol
