@@ -11,7 +11,7 @@ import (
 )
 
 func TestParser_Parse(t *testing.T) {
-	t.Run("read error", func(t *testing.T) {
+	t.Run("error", func(t *testing.T) {
 		p := NewParser(iotest.ErrReader(errors.New("fail")))
 		_, eof, err := p.Parse()
 		assert.False(t, eof, "EOF is not expected")
@@ -24,20 +24,20 @@ func TestParser_Parse(t *testing.T) {
 		res  Expr
 		rest string
 	}{
-		{"read empty", "", nil, ""},
-		{"read 1-digit int", "1", &Int{1}, ""},
-		{"read int", "123", &Int{123}, ""},
-		{"read negative int", "-123", &Int{-123}, ""},
-		{"read int, skip spaces", "\t 123", &Int{123}, ""},
-		{"read int, stop at spaces", "123\na", &Int{123}, "\na"},
-		{"read symbol", "qwer ty", &Symbol{"qwer"}, " ty"},
+		{"empty", "", nil, ""},
+		{"1-digit int", "1", &Int{1}, ""},
+		{"int", "123", &Int{123}, ""},
+		{"negative int", "-123", &Int{-123}, ""},
+		{"int, skip spaces", "\t 123", &Int{123}, ""},
+		{"int, stop at spaces", "123\na", &Int{123}, "\na"},
+		{"symbol", "qwer ty", &Symbol{"qwer"}, " ty"},
 		// TODO eof == false here
-		// {"read string", `"qwer"`, &String{"qwer"}, ""},
-		{"read string with suffix", `"qwer" ty`, &String{"qwer"}, " ty"},
-		{"read string, skip spaces", " \t\"qwer\" ty", &String{"qwer"}, " ty"},
-		{"read string with spaces", ` "qw  er"ty`, &String{"qw  er"}, "ty"},
-		{"read string with delims", ` "(qw)e'r"ty`, &String{"(qw)e'r"}, "ty"},
-		{"read string with escaping", `"\n \t \a \"c" `, &String{"\n \t a \"c"}, " "},
+		// {"string", `"qwer"`, &String{"qwer"}, ""},
+		{"string with suffix", `"qwer" ty`, &String{"qwer"}, " ty"},
+		{"string, skip spaces", " \t\"qwer\" ty", &String{"qwer"}, " ty"},
+		{"string with spaces", ` "qw  er"ty`, &String{"qw  er"}, "ty"},
+		{"string with delims", ` "(qw)e'r"ty`, &String{"(qw)e'r"}, "ty"},
+		{"string with escaping", `"\n \t \a \"c" `, &String{"\n \t a \"c"}, " "},
 	}
 	for _, ex := range examples {
 		t.Run(ex.name, func(t *testing.T) {
@@ -79,7 +79,7 @@ func TestParser_Parse(t *testing.T) {
 }
 
 func TestParser_ParseSeq(t *testing.T) {
-	t.Run("read error", func(t *testing.T) {
+	t.Run("error", func(t *testing.T) {
 		p := NewParser(iotest.ErrReader(errors.New("fail")))
 		_, eof, err := p.ParseSeq()
 		assert.False(t, eof, "EOF is not expected")
@@ -92,12 +92,12 @@ func TestParser_ParseSeq(t *testing.T) {
 		res  []rune
 		rest string
 	}{
-		{"read nothing", "", []rune{}, ""},
-		{"read nothing, stop at spaces", "\n q", []rune{}, "\n q"},
-		{"read char", "a", []rune("a"), ""},
-		{"read char, stop at space", "a ", []rune("a"), " "},
-		{"read chars", "asdf", []rune("asdf"), ""},
-		{"read chars, stop at spaces", "asdf\nq", []rune("asdf"), "\nq"},
+		{"nothing", "", []rune{}, ""},
+		{"nothing, stop at spaces", "\n q", []rune{}, "\n q"},
+		{"char", "a", []rune("a"), ""},
+		{"char, stop at space", "a ", []rune("a"), " "},
+		{"chars", "asdf", []rune("asdf"), ""},
+		{"chars, stop at spaces", "asdf\nq", []rune("asdf"), "\nq"},
 	}
 	for _, ex := range examples {
 		t.Run(ex.name, func(t *testing.T) {
@@ -115,7 +115,7 @@ func TestParser_ParseSeq(t *testing.T) {
 }
 
 func TestParser_SkipSpaces(t *testing.T) {
-	t.Run("read error", func(t *testing.T) {
+	t.Run("error", func(t *testing.T) {
 		p := NewParser(iotest.ErrReader(errors.New("fail")))
 		eof, err := p.SkipSpaces()
 		assert.False(t, eof, "EOF is not expected")
