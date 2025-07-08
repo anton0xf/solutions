@@ -186,10 +186,36 @@ func (p *Parser) ParseString() (res *String, eof bool, err error) {
 		case '"':
 			return NewString(rs), eof, err
 
-		// TODO support backslash escaping
+		case '\\':
+			ch, eof, err := p.ReadEscapedChar()
+			if err != nil {
+				return NewString(rs), eof, err
+			}
+			if eof {
+				return NewString(rs), eof,
+					errors.New("unexpected EOF inside escape sequence")
+			}
+			rs = append(rs, ch)
 
 		default:
 			rs = append(rs, ch)
 		}
+	}
+}
+
+func (p *Parser) ReadEscapedChar() (ch rune, eof bool, err error) {
+	ch, eof, err = p.in.Next()
+	if eof || err != nil {
+		return
+	}
+	switch ch {
+	case 'n':
+		return '\n', false, nil
+
+	case 't':
+		return '\t', false, nil
+
+	default:
+		return ch, false, nil
 	}
 }
