@@ -23,28 +23,30 @@ func TestParser_Parse(t *testing.T) {
 		in   string
 		res  Expr
 		rest string
+		eof  bool
 	}{
-		{"empty", "", nil, ""},
-		{"1-digit int", "1", &Int{1}, ""},
-		{"int", "123", &Int{123}, ""},
-		{"negative int", "-123", &Int{-123}, ""},
-		{"int, skip spaces", "\t 123", &Int{123}, ""},
-		{"int, stop at spaces", "123\na", &Int{123}, "\na"},
-		{"symbol", "qwer ty", &Symbol{"qwer"}, " ty"},
-		// TODO eof == false here
-		// {"string", `"qwer"`, &String{"qwer"}, ""},
-		{"string with suffix", `"qwer" ty`, &String{"qwer"}, " ty"},
-		{"string, skip spaces", " \t\"qwer\" ty", &String{"qwer"}, " ty"},
-		{"string with spaces", ` "qw  er"ty`, &String{"qw  er"}, "ty"},
-		{"string with delims", ` "(qw)e'r"ty`, &String{"(qw)e'r"}, "ty"},
-		{"string with escaping", `"\n \t \a \"c" `, &String{"\n \t a \"c"}, " "},
+		{"empty", "", nil, "", true},
+		{"1-digit int", "1", &Int{1}, "", true},
+		{"int", "123", &Int{123}, "", true},
+		{"negative int", "-123", &Int{-123}, "", true},
+		{"int, skip spaces", "\t 123", &Int{123}, "", true},
+		{"int, stop at spaces", "123\na", &Int{123}, "\na", false},
+		{"symbol", "qwer ty", &Symbol{"qwer"}, " ty", false},
+		{"string", `"qwer"`, &String{"qwer"}, "", false},
+		{"string with suffix", `"qwer" ty`, &String{"qwer"}, " ty", false},
+		{"string, skip spaces",
+			" \t\"qwer\" ty", &String{"qwer"}, " ty", false},
+		{"string with spaces", ` "qw  er"ty`, &String{"qw  er"}, "ty", false},
+		{"string with delims", ` "(qw)e'r"ty`, &String{"(qw)e'r"}, "ty", false},
+		{"string with escaping",
+			`"\n \t \a \"c" `, &String{"\n \t a \"c"}, " ", false},
 	}
 	for _, ex := range examples {
 		t.Run(ex.name, func(t *testing.T) {
 			in := bytes.NewBufferString(ex.in)
 			p := NewParser(in)
 			res, eof, err := p.Parse()
-			assert.Equal(t, ex.rest == "", eof)
+			assert.Equal(t, ex.eof, eof)
 			assert.NoError(t, err)
 			assert.Equal(t, ex.res, res)
 			rest, err := p.Rest()
