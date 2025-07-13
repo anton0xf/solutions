@@ -40,6 +40,8 @@ func TestParser_Parse(t *testing.T) {
 		{"string with delims", ` "(qw)e'r"ty`, &String{"(qw)e'r"}, "ty", false},
 		{"string with escaping",
 			`"\n \t \a \"c" `, &String{"\n \t a \"c"}, " ", false},
+		{"string with unicode escaping",
+			`"\u0033 \u2713 \U0001f600"`, &String{"3 ✓ 😀"}, "", false},
 	}
 	for _, ex := range examples {
 		t.Run(ex.name, func(t *testing.T) {
@@ -180,5 +182,51 @@ func TestIsDelimiter(t *testing.T) {
 		t.Run(fmt.Sprintf("not delimiter '%c'", ch), func(t *testing.T) {
 			assert.False(t, IsDelimiter(ch))
 		})
+	}
+}
+
+func TestParser_ReadHex(t *testing.T) {
+	exs := []struct {
+		size int
+		in   string
+		n    uint64
+		eof  bool
+		err  string
+		rest string
+	}{
+		{1, "", 0, true, "", ""},
+		{1, "Z", 0, false, "Unexpected hex digit 'Z'", ""},
+		{1, "/", 0, false, "Unexpected hex digit '/'", ""}, // '0' - 1
+		{1, "0", 0, false, "", ""},
+		{1, "1", 1, false, "", ""},
+		{1, "9", 9, false, "", ""},
+		{1, ":", 0, false, "Unexpected hex digit ':'", ""}, // '9' + 1
+		{1, "`", 0, false, "Unexpected hex digit '`'", ""}, // 'a' - 1
+		{1, "a", 10, false, "", ""},
+		{1, "f", 15, false, "", ""},
+		{1, "g", 0, false, "Unexpected hex digit 'g'", ""}, // 'f' + 1
+		{1, "@", 0, false, "Unexpected hex digit '@'", ""}, // 'A' - 1
+		{1, "A", 10, false, "", ""},
+		{1, "F", 15, false, "", ""},
+		{1, "G", 0, false, "Unexpected hex digit 'G'", ""}, // 'F' + 1
+
+		{2, "a", 10, true, "", ""},
+		{1, "ab", 10, false, "", "b"},
+		{2, "1f?", 31, false, "", "?"},
+	}
+	for _, ex := range exs {
+		t.Run(fmt.Sprintf("ReadHex(%d) on '%s'", ex.n, ex.in),
+			func(t *testing.T) {
+				in := bytes.NewBufferString(ex.in)
+				p := NewParser(in)
+				n, eof, err := p.ReadHex(ex.size)
+				assert.Equal(t, ex.n, n)
+				assert.Equal(t, ex.eof, eof)
+				if len(ex.err) == 0 {
+					assert.NoError(t, err)
+				} else {
+					assert.EqualError(t, err, ex.err)
+				}
+			})
 	}
 }

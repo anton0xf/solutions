@@ -215,7 +215,52 @@ func (p *Parser) ReadEscapedChar() (ch rune, eof bool, err error) {
 	case 't':
 		return '\t', false, nil
 
+	case 'u':
+		return p.ReadUnicodeCode(4)
+
+	case 'U':
+		return p.ReadUnicodeCode(8)
+
 	default:
 		return ch, false, nil
 	}
+}
+
+func (p *Parser) ReadUnicodeCode(size int) (ch rune, eof bool, err error) {
+	var code uint64
+	code, eof, err = p.ReadHex(size)
+	if eof || err != nil {
+		return
+	}
+	return rune(code), false, nil
+}
+
+func (p *Parser) ReadHex(size int) (res uint64, eof bool, err error) {
+	for range size {
+		var ch rune
+		ch, eof, err = p.in.Next()
+		if eof || err != nil {
+			return
+		}
+
+		var d uint64 = 0
+
+		switch {
+		case '0' <= ch && ch <= '9':
+			d = uint64(ch - '0')
+
+		case 'a' <= ch && ch <= 'f':
+			d = uint64(ch - 'a' + 10)
+
+		case 'A' <= ch && ch <= 'F':
+			d = uint64(ch - 'A' + 10)
+
+		default:
+			err = fmt.Errorf("Unexpected hex digit '%c'", ch)
+			return
+		}
+
+		res = res*16 + d
+	}
+	return
 }

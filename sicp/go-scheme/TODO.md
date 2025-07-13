@@ -5,13 +5,13 @@
   * [x] test Parser
   * [x] test main()
   * [x] parse every seq of non-space characters as Seq
-  * [ ] parse literal
+  * [x] parse literal
     * [x] int
-    * [ ] string
+    * [x] string
       * [x] "simple" strings without delimiterts or escaping
       * [x] strings with delimiters
-      * [ ] support simple escaping: `\n \t \" \\`
-      * [ ] support runes by code: `\uXXX`
+      * [x] support simple escaping: `\n \t \" \\`
+      * [x] support runes by code: `\uXXXX \UXXXXXXXX`
   * [x] parse symbol
   * [ ] parse list
   * [ ] quot
