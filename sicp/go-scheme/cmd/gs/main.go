@@ -22,13 +22,12 @@ func Run(in io.Reader, out io.Writer) error {
 		if err != nil {
 			return err
 		}
+		if expr != nil {
+			// TODO evaluate expr
+			fmt.Fprintln(out, expr)
+		}
 		if done {
-			if expr != nil {
-				fmt.Fprintln(out, expr)
-			}
 			return nil
 		}
-		// TODO evaluate expr
-		fmt.Fprintln(out, expr)
 	}
 }
