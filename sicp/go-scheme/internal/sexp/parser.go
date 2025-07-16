@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 	"unicode"
 )
 
@@ -19,6 +20,7 @@ func NewParser(in io.Reader) *Parser {
 	}
 }
 
+// TODO move the exprs hierarchy to a separate file
 type Expr interface {
 	String() string
 }
@@ -66,6 +68,23 @@ func NewString(runes []rune) *String {
 
 func (e *String) String() string {
 	return fmt.Sprintf(`"%s"`, e.s)
+}
+
+type List struct {
+	xs []Expr
+}
+
+func (e *List) String() string {
+	var b strings.Builder
+	b.WriteRune('(')
+	for i, x := range e.xs {
+		if i > 0 {
+			b.WriteRune(' ')
+		}
+		b.WriteString(x.String())
+	}
+	b.WriteRune(')')
+	return b.String()
 }
 
 func (p *Parser) Parse() (res Expr, eof bool, err error) {
@@ -123,7 +142,7 @@ func (p *Parser) ParseSeq() (res []rune, eof bool, err error) {
 
 func IsDelimiter(ch rune) bool {
 	switch ch {
-	case '"':
+	case '"', '(', ')':
 		return true
 
 	default:
@@ -165,6 +184,14 @@ func (p *Parser) ParseDelimited() (res Expr, eof bool, err error) {
 	switch ch {
 	case '"':
 		return p.ParseString()
+
+	case '(':
+		return p.ParseList()
+
+	case ')': // TODO looks like a hack
+		p.in.UnreadRune()
+		return nil, false, nil
+
 	default:
 		return nil, eof, fmt.Errorf("unexpected next char: '%c'", ch)
 	}
@@ -263,4 +290,22 @@ func (p *Parser) ReadHex(size int) (res uint64, eof bool, err error) {
 		res = res*16 + d
 	}
 	return
+}
+
+func (p *Parser) ParseList() (res *List, eof bool, err error) {
+	res = &List{nil}
+	for {
+		var expr Expr
+		expr, eof, err = p.Parse()
+		if eof || err != nil {
+			return
+		}
+
+		if expr == nil {
+			p.Ignore(")")
+			return
+		}
+
+		res.xs = append(res.xs, expr)
+	}
 }

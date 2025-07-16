@@ -42,6 +42,14 @@ func TestParser_Parse(t *testing.T) {
 			`"\n \t \a \"c" `, &String{"\n \t a \"c"}, " ", false},
 		{"string with unicode escaping",
 			`"\u0033 \u2713 \U0001f600"`, &String{"3 ✓ 😀"}, "", false},
+		{"empty list", "()", &List{nil}, "", false},
+		{"list with number", "(1)a", &List{[]Expr{&Int{1}}}, "a", false},
+		{"list with 2 values",
+			"(1 ab)", &List{[]Expr{&Int{1}, &Symbol{"ab"}}}, "", false},
+		{"list of list", "(())", &List{[]Expr{&List{nil}}}, "", false},
+		{"list tree",
+			"(1 ((3) 2))", &List{[]Expr{&Int{1},
+				&List{[]Expr{&List{[]Expr{&Int{3}}}, &Int{2}}}}}, "", false},
 	}
 	for _, ex := range examples {
 		t.Run(ex.name, func(t *testing.T) {
@@ -169,7 +177,7 @@ func TestIsDigit(t *testing.T) {
 }
 
 func TestIsDelimiter(t *testing.T) {
-	delims := " \t\n\"" // TODO "()'"
+	delims := " \t\n\"()"
 	notDelims := "01289abpuzABPUZ+-_"
 
 	for _, ch := range delims {

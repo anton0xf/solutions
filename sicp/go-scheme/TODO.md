@@ -13,7 +13,9 @@
       * [x] support simple escaping: `\n \t \" \\`
       * [x] support runes by code: `\uXXXX \UXXXXXXXX`
   * [x] parse symbol
-  * [ ] parse list
+  * [x] parse list
+    * [x] empty
+    * [x] non-empty
   * [ ] quot
     * [ ] parse quoted literal
     * [ ] parse quoted list
