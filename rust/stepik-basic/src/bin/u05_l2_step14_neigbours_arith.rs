@@ -5,8 +5,8 @@ fn main() {
     let mut s = String::new();
     std::io::stdin().read_line(&mut s).expect("read err");
     let i: usize = s.trim().parse().expect("parse err");
-    let (x, y) = (arr[i-1], arr[i+1]);
-    println!("{}", x+y);
-    println!("{}", x-y);
-    println!("{}", x*y);
+    let (x, y) = (arr[i - 1], arr[i + 1]);
+    println!("{}", x + y);
+    println!("{}", x - y);
+    println!("{}", x * y);
 }
