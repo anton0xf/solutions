@@ -50,6 +50,24 @@ func TestParser_Parse(t *testing.T) {
 		{"list tree",
 			"(1 ((3) 2))", &List{[]Expr{&Int{1},
 				&List{[]Expr{&List{[]Expr{&Int{3}}}, &Int{2}}}}}, "", false},
+		{"quoted int", "'12", &Int{12}, "", true},
+		{"quoted symbol", "'ab", &Quoted{&Symbol{"ab"}}, "", true},
+		{"quoted string", "' \"ab\"", &String{"ab"}, "", false},
+		{"quoted empty list", "'()", &List{nil}, "", false},
+		{"quoted list",
+			"'(ab 3)",
+			&List{[]Expr{&Quoted{&Symbol{"ab"}}, &Int{3}}}, "", false},
+		{"double-quoted int", "' '12", &Int{12}, "", true},
+		{"double-quoted symbol",
+			"''ab ", &Quoted{&Quoted{&Symbol{"ab"}}}, " ", false},
+		{"quoted in list",
+			"'(() '('ab 3))",
+			&List{[]Expr{
+				&List{nil},
+				&List{[]Expr{
+					&Quoted{&Quoted{&Quoted{&Symbol{"ab"}}}},
+					&Int{3}}}}},
+			"", false},
 	}
 	for _, ex := range examples {
 		t.Run(ex.name, func(t *testing.T) {
@@ -177,7 +195,7 @@ func TestIsDigit(t *testing.T) {
 }
 
 func TestIsDelimiter(t *testing.T) {
-	delims := " \t\n\"()"
+	delims := " \t\n\"'()"
 	notDelims := "01289abpuzABPUZ+-_"
 
 	for _, ch := range delims {

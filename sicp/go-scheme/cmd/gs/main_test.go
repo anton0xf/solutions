@@ -16,6 +16,7 @@ func TestRun(t *testing.T) {
 		{"12 ", "12\n"},
 		{`"1a3"`, "\"1a3\"\n"},
 		{"a () (a 1\n()(2) )", "a\n()\n(a 1 () (2))\n"},
+		{"'10 'a", "10\n(quot a)\n"},
 	}
 	for _, c := range cases {
 		t.Run(c.in, func(t *testing.T) {

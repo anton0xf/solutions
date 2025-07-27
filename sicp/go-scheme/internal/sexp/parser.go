@@ -87,6 +87,14 @@ func (e *List) String() string {
 	return b.String()
 }
 
+type Quoted struct {
+	x Expr
+}
+
+func (e *Quoted) String() string {
+	return fmt.Sprintf("(quot %s)", e.x.String())
+}
+
 func (p *Parser) Parse() (res Expr, eof bool, err error) {
 	eof, err = p.SkipSpaces()
 	if eof || err != nil {
@@ -142,7 +150,7 @@ func (p *Parser) ParseSeq() (res []rune, eof bool, err error) {
 
 func IsDelimiter(ch rune) bool {
 	switch ch {
-	case '"', '(', ')':
+	case '"', '\'', '(', ')':
 		return true
 
 	default:
@@ -184,6 +192,9 @@ func (p *Parser) ParseDelimited() (res Expr, eof bool, err error) {
 	switch ch {
 	case '"':
 		return p.ParseString()
+
+	case '\'':
+		return p.ParseQuoted()
 
 	case '(':
 		return p.ParseList()
@@ -307,5 +318,41 @@ func (p *Parser) ParseList() (res *List, eof bool, err error) {
 		}
 
 		res.xs = append(res.xs, expr)
+	}
+}
+
+func (p *Parser) ParseQuoted() (res Expr, eof bool, err error) {
+	var expr Expr
+	expr, eof, err = p.Parse()
+	if err != nil {
+		return
+	}
+
+	if expr == nil {
+		err = errors.New("ParseQuoted: unexpected nil expr")
+		return
+	}
+
+	res = Quote(expr)
+	return
+}
+
+func Quote(expr Expr) Expr {
+	switch x := expr.(type) {
+	case *Int, *String:
+		return x
+
+	case *List:
+		if len(x.xs) == 0 {
+			return &List{nil}
+		}
+		es := make([]Expr, len(x.xs))
+		for i, e := range x.xs {
+			es[i] = Quote(e)
+		}
+		return &List{es}
+
+	default:
+		return &Quoted{x}
 	}
 }

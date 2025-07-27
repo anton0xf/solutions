@@ -16,9 +16,9 @@
   * [x] parse list
     * [x] empty
     * [x] non-empty
-  * [ ] quot
-    * [ ] parse quoted literal
-    * [ ] parse quoted list
+  * [x] quot
+    * [x] parse quoted literal
+    * [x] parse quoted list
 * [ ] evaluate literals
   * [ ] int
   * [ ] string
