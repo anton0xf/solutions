@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"strconv"
-	"strings"
 	"unicode"
 )
 
@@ -18,81 +17,6 @@ func NewParser(in io.Reader) *Parser {
 	return &Parser{
 		&RuneStream{bufio.NewReader(in)},
 	}
-}
-
-// TODO move the exprs hierarchy to a separate file
-type Expr interface {
-	String() string
-}
-
-func IsDigit(r rune) bool {
-	return '0' <= r && r <= '9'
-}
-
-func IsIntString(rs []rune) bool {
-	if rs == nil {
-		return false
-	}
-	if len(rs) > 0 && IsDigit(rs[0]) {
-		return true
-	}
-	if len(rs) > 1 && rs[0] == '-' && IsDigit(rs[1]) {
-		return true
-	}
-	return false
-}
-
-type Int struct {
-	x int
-}
-
-func (e *Int) String() string {
-	return string(strconv.Itoa(e.x))
-}
-
-type Symbol struct {
-	name string
-}
-
-func (e *Symbol) String() string {
-	return e.name
-}
-
-type String struct {
-	s string
-}
-
-func NewString(runes []rune) *String {
-	return &String{string(runes)}
-}
-
-func (e *String) String() string {
-	return fmt.Sprintf(`"%s"`, e.s)
-}
-
-type List struct {
-	xs []Expr
-}
-
-func (e *List) String() string {
-	var b strings.Builder
-	b.WriteRune('(')
-	for i, x := range e.xs {
-		if i > 0 {
-			b.WriteRune(' ')
-		}
-		b.WriteString(x.String())
-	}
-	b.WriteRune(')')
-	return b.String()
-}
-
-type Quoted struct {
-	x Expr
-}
-
-func (e *Quoted) String() string {
-	return fmt.Sprintf("(quot %s)", e.x.String())
 }
 
 func (p *Parser) Parse() (res Expr, eof bool, err error) {
@@ -118,6 +42,23 @@ func (p *Parser) Parse() (res Expr, eof bool, err error) {
 	default:
 		return &Symbol{string(runes)}, eof, nil
 	}
+}
+
+func IsIntString(rs []rune) bool {
+	if rs == nil {
+		return false
+	}
+	if len(rs) > 0 && IsDigit(rs[0]) {
+		return true
+	}
+	if len(rs) > 1 && rs[0] == '-' && IsDigit(rs[1]) {
+		return true
+	}
+	return false
+}
+
+func IsDigit(r rune) bool {
+	return '0' <= r && r <= '9'
 }
 
 func (p *Parser) SkipSpaces() (eof bool, err error) {
