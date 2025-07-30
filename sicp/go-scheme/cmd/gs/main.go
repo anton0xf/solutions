@@ -23,8 +23,11 @@ func Run(in io.Reader, out io.Writer) error {
 			return err
 		}
 		if expr != nil {
-			// TODO evaluate expr
-			fmt.Fprintln(out, expr)
+			res, err := sexp.Eval(expr)
+			if err != nil {
+				return err
+			}
+			fmt.Fprintln(out, res)
 		}
 		if done {
 			return nil
