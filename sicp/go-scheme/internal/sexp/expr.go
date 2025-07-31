@@ -1,6 +1,7 @@
 package sexp
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -40,6 +41,15 @@ func (e *String) String() string {
 
 type List struct {
 	xs []Expr
+}
+
+func (e *List) Car() (Expr, error) {
+	if e == nil {
+		return nil, errors.New("car: list is not initialized")
+	} else if len(e.xs) == 0 {
+		return nil, errors.New("car: list is empty")
+	}
+	return e.xs[0], nil
 }
 
 func (e *List) String() string {
