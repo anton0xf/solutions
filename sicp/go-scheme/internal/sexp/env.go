@@ -1,6 +1,8 @@
 package sexp
 
-func Eval(expr Expr) (Expr, error) {
+type Env struct{}
+
+func (env *Env) Eval(expr Expr) (Expr, error) {
 	switch e := expr.(type) {
 	case *List:
 		return EvalList(e)
