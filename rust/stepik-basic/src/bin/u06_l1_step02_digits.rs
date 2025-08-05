@@ -1,4 +1,5 @@
 // test: $ echo 21 | cargo run --bin u06_l1_step02_digits
+
 fn main() {
     let mut s = String::new();
     std::io::stdin().read_line(&mut s).expect("read err");
