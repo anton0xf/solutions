@@ -1,4 +1,4 @@
-// test: $ echo 1234 | cargo run --bin u06_l1_step04_sum_digits
+// test: $ echo 1234 | cargo run --bin u06_l1_step05_rev_digits
 
 fn main() {
     let mut s = String::new();
