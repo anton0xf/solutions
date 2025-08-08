@@ -17,13 +17,14 @@ func main() {
 
 func Run(in io.Reader, out io.Writer) error {
 	parser := sexp.NewParser(in)
+	env := &sexp.Env{}
 	for {
 		expr, done, err := parser.Parse()
 		if err != nil {
 			return err
 		}
 		if expr != nil {
-			res, err := sexp.Eval(expr)
+			res, err := env.Eval(expr)
 			if err != nil {
 				return err
 			}

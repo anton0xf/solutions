@@ -1,5 +1,5 @@
 * [x] print input
-* [ ] parse S-exp
+* [x] parse S-exp
   * [x] parse char as Char
   * [x] test RuneStream
   * [x] test Parser
@@ -24,6 +24,7 @@
   * [ ] string
   * [ ] symbol
 * [ ] evaluate special composites
+  * [ ] evaluate define()
   * [ ] evaluate quoted literal
   * [ ] evaluate quoted symbol
   * [ ] evaluate quoted list
