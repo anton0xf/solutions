@@ -22,6 +22,10 @@ func TestEnv_Eval(t *testing.T) {
 		// literals are self-contained
 		{&Env{}, &Int{7}, &Env{}, &Int{7}, ""},
 		{&Env{}, &String{"aa"}, &Env{}, &String{"aa"}, ""},
+
+		// Quoted
+		{&Env{}, (*Quoted)(nil), &Env{}, nil, "EvalQuoted: nil parameter"},
+		{&Env{}, &Quoted{nil}, &Env{}, nil, "EvalQuoted: Quoted{nil}"},
 		// quoted literal is just literal
 		{&Env{}, &Quoted{&Int{3}}, &Env{}, &Int{3}, ""},
 		{&Env{}, &Quoted{&String{"aa"}}, &Env{}, &String{"aa"}, ""},

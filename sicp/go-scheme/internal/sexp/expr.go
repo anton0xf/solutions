@@ -76,5 +76,16 @@ type Quoted struct {
 }
 
 func (e *Quoted) String() string {
-	return fmt.Sprintf("(quot %s)", e.x.String())
+	if e == nil {
+		return "NULL"
+	}
+
+	var s string
+	if e.x == nil {
+		s = "NULL"
+	} else {
+		s = e.x.String()
+	}
+
+	return fmt.Sprintf("(quot %s)", s)
 }
