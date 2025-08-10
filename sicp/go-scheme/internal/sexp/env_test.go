@@ -38,6 +38,9 @@ func TestEnv_Eval(t *testing.T) {
 
 		// List
 		// TODO error on empty list
+		{&Env{}, (*List)(nil), &Env{}, nil, "EvalList: nil parameter"},
+		{&Env{}, &List{nil}, &Env{}, nil, "EvalList: empty List"},
+		{&Env{}, &List{[]Expr{}}, &Env{}, nil, "EvalList: empty List"},
 		// TODO call function
 
 		// special forms

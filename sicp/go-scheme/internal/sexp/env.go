@@ -47,6 +47,13 @@ func EvalQuoted(e *Quoted) (Expr, error) {
 }
 
 func EvalList(e *List) (Expr, error) {
-	// if e == nil {
+	if e == nil {
+		return nil, errors.New("EvalList: nil parameter")
+	}
+
+	if len(e.xs) == 0 {
+		return nil, errors.New("EvalList: empty List")
+	}
+
 	return nil, nil
 }
