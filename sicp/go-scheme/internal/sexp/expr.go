@@ -40,6 +40,8 @@ func (e *String) String() string {
 }
 
 type List struct {
+	// TODO it should be consed list.
+	// It's impossible to implement default lists mutation behaviour using slice
 	xs []Expr
 }
 
@@ -53,6 +55,10 @@ func (e *List) Car() (Expr, error) {
 }
 
 func (e *List) String() string {
+	if e == nil {
+		return "NULL"
+	}
+
 	var b strings.Builder
 	b.WriteRune('(')
 	for i, x := range e.xs {

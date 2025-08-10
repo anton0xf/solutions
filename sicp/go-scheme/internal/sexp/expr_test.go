@@ -19,10 +19,14 @@ func TestList_Car(t *testing.T) {
 		{&List{[]Expr{&Int{1}}}, &Int{1}, ""},
 	}
 	for _, c := range cases {
-		res, err := c.list.Car()
-		assert.Equal(t, c.res, res)
-		if len(c.err) > 0 {
-			assert.EqualError(t, err, c.err)
-		}
+		t.Run(c.list.String(), func(t *testing.T) {
+			res, err := c.list.Car()
+			if len(c.err) > 0 {
+				assert.EqualError(t, err, c.err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, c.res, res)
+		})
 	}
 }
