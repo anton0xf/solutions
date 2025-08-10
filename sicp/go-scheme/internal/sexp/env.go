@@ -1,11 +1,21 @@
 package sexp
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 type Env struct{}
 
 func (env *Env) Eval(expr Expr) (Expr, error) {
 	switch e := expr.(type) {
+	case *Int, *String:
+		return e, nil
+
+	case *Symbol:
+		return nil, fmt.Errorf(
+			"Eval: Symbol parameter is not supported yet: %v", e)
+
 	case *Quoted:
 		return EvalQuoted(e)
 
@@ -13,7 +23,8 @@ func (env *Env) Eval(expr Expr) (Expr, error) {
 		return EvalList(e)
 
 	default:
-		return e, nil
+		return nil, fmt.Errorf(
+			"Eval: unexpected type %T of parameter %v", expr, expr)
 	}
 }
 
