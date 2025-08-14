@@ -1,3 +1,4 @@
+// test: $ echo '13.03.2018 14:00:15,12.03.2018 14:00:15' | go run u3/l7_time/step07/duration.go
 package main
 
 import (
