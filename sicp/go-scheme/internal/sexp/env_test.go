@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TODO use gox.Ptr or move to separate file
 func Str(s string) *string {
 	return &s
 }

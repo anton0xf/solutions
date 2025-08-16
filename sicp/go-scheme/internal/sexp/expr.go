@@ -11,6 +11,8 @@ type Expr interface {
 	String() string
 }
 
+// TODO check for nil every parameter and field
+
 type Int struct {
 	x int
 }
