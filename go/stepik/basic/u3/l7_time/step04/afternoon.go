@@ -1,3 +1,4 @@
+// test: $ echo '2020-05-15 15:00:00' | go run u3/l7_time/step04/afternoon.go
 package main
 
 import (
