@@ -71,11 +71,25 @@ func Cons(x, y Expr) *Pair {
 	return &Pair{x, y}
 }
 
+func pairString(x, y Expr) string {
+	if y == nil {
+		return fmt.Sprintf("%v . %s", x, NIL_STR)
+	}
+	switch yt := y.(type) {
+	case *Null:
+		return x.String()
+	case *Pair:
+		return fmt.Sprintf("%v %s", x, pairString(yt.x, yt.y))
+	default:
+		return fmt.Sprintf("%v . %v", x, y)
+	}
+}
+
 func (e *Pair) String() string {
 	if e == nil {
 		return NIL_STR
 	}
-	return fmt.Sprintf("'(%v . %v)", e.x, e.y)
+	return fmt.Sprintf("'(%s)", pairString(e.x, e.y))
 }
 
 func (e *Pair) Car() (Expr, error) {
