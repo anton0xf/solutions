@@ -35,6 +35,14 @@ func TestString(t *testing.T) {
 		{"(*Quoted)(nil)", (*Quoted)(nil), "<nil>"},
 		{"&Quoted{nil}", &Quoted{nil}, "'<nil>"},
 		{"(quote sym)", &Quoted{&Symbol{"sym"}}, "'sym"},
+
+		// TODO quotation is difficult
+		// > (list (list))
+		// '(())
+		// > (list (cons 1 2))
+		// '((1 . 2))
+		// > (list 1 (list 2 3) 4)
+		// '(1 (2 3) 4)
 	}
 	for _, ex := range exs {
 		t.Run(ex.name, func(t *testing.T) {
