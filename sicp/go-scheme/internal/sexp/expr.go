@@ -8,6 +8,8 @@ import (
 )
 
 type Expr interface {
+	// Get string representation of expression.
+	// It should be readable back to equal expression.
 	String() string
 }
 
@@ -19,7 +21,9 @@ type Int struct {
 }
 
 func (e *Int) String() string {
-	// TODO check e for nil
+	if e == nil {
+		return NIL_STR
+	}
 	return string(strconv.Itoa(e.x))
 }
 
@@ -28,7 +32,9 @@ type Symbol struct {
 }
 
 func (e *Symbol) String() string {
-	// TODO check e for nil
+	if e == nil {
+		return NIL_STR
+	}
 	return e.name
 }
 
@@ -41,15 +47,19 @@ func NewString(runes []rune) *String {
 }
 
 func (e *String) String() string {
-	// TODO check e for nil
+	if e == nil {
+		return NIL_STR
+	}
 	return fmt.Sprintf(`"%s"`, e.s)
 }
 
 // Empty consed list and leaf of consed binary tree
 type Null struct{}
 
-func (*Null) String() string {
-	// TODO check e for nil
+func (e *Null) String() string {
+	if e == nil {
+		return NIL_STR
+	}
 	return "'()"
 }
 

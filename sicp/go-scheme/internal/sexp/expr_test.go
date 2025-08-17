@@ -12,9 +12,13 @@ func TestString(t *testing.T) {
 		expr     Expr
 		expected string
 	}{
+		{"(*Int)(nil)", (*Int)(nil), "<nil>"},
 		{"Int{42}", &Int{42}, "42"},
-		{`String{"qwer"}`, &String{"qwer"}, `"qwer"`},
+		{"(*Symbol)(nil)", (*Symbol)(nil), "<nil>"},
 		{`Symbol{"sym"}`, &Symbol{"sym"}, "sym"},
+		{"(*String)(nil)", (*String)(nil), "<nil>"},
+		{`String{"qwer"}`, &String{"qwer"}, `"qwer"`},
+		{"(*Null)(nil)", (*Null)(nil), "<nil>"},
 		{"null", &Null{}, "'()"},
 		{"(*Pair)(nil)", (*Pair)(nil), "<nil>"},
 		{"(cons 1 2)", Cons(&Int{1}, &Int{2}), "'(1 . 2)"},
@@ -39,6 +43,12 @@ func TestNewList(t *testing.T) {
 	assert.Equal(t, &List{nil}, NewList())
 	assert.Equal(t, &List{[]Expr{nil}}, NewList(nil))
 	assert.Equal(t, &List{[]Expr{&Int{1}}}, NewList(&Int{1}))
+}
+
+func TestPair_Cons(t *testing.T) {
+	assert.Equal(t,
+		&Pair{&Int{1}, &String{"a"}},
+		Cons(&Int{1}, &String{"a"}))
 }
 
 func TestList_Car(t *testing.T) {
