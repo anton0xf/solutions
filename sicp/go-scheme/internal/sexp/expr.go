@@ -14,13 +14,12 @@ type Expr interface {
 // string reprecentation of nil Expr of any type
 const NIL_STR = "<nil>"
 
-// TODO check for nil every parameter and field
-
 type Int struct {
 	x int
 }
 
 func (e *Int) String() string {
+	// TODO check e for nil
 	return string(strconv.Itoa(e.x))
 }
 
@@ -29,6 +28,7 @@ type Symbol struct {
 }
 
 func (e *Symbol) String() string {
+	// TODO check e for nil
 	return e.name
 }
 
@@ -41,6 +41,7 @@ func NewString(runes []rune) *String {
 }
 
 func (e *String) String() string {
+	// TODO check e for nil
 	return fmt.Sprintf(`"%s"`, e.s)
 }
 
@@ -48,6 +49,7 @@ func (e *String) String() string {
 type Null struct{}
 
 func (*Null) String() string {
+	// TODO check e for nil
 	return "'()"
 }
 
@@ -56,6 +58,7 @@ type Pair struct {
 }
 
 func Cons(x, y Expr) *Pair {
+	// TODO check x and y for nil and panic?
 	return &Pair{x, y}
 }
 
@@ -70,7 +73,6 @@ func (e *Pair) Car() (Expr, error) {
 	if e == nil {
 		return nil, fmt.Errorf("Car: Pair is %s", NIL_STR)
 	}
-
 	return e.x, nil
 }
 
@@ -78,7 +80,6 @@ func (e *Pair) Cdr() (Expr, error) {
 	if e == nil {
 		return nil, fmt.Errorf("Cdr: Pair is %s", NIL_STR)
 	}
-
 	return e.y, nil
 }
 
