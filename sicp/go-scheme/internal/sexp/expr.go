@@ -68,7 +68,6 @@ type Pair struct {
 }
 
 func Cons(x, y Expr) *Pair {
-	// TODO check x and y for nil and panic?
 	return &Pair{x, y}
 }
 
