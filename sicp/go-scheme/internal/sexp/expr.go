@@ -8,8 +8,7 @@ import (
 )
 
 type Expr interface {
-	// Get string representation of expression.
-	// It should be readable back to equal expression.
+	// Get string representation of expression
 	String() string
 }
 
@@ -60,7 +59,7 @@ func (e *Null) String() string {
 	if e == nil {
 		return NIL_STR
 	}
-	return "'()"
+	return "()"
 }
 
 type Pair struct {
@@ -89,7 +88,7 @@ func (e *Pair) String() string {
 	if e == nil {
 		return NIL_STR
 	}
-	return fmt.Sprintf("'(%s)", pairString(e.x, e.y))
+	return fmt.Sprintf("(%s)", pairString(e.x, e.y))
 }
 
 func (e *Pair) Car() (Expr, error) {
@@ -131,7 +130,7 @@ func (e *List) String() string {
 	}
 
 	var b strings.Builder
-	b.WriteString("'(")
+	b.WriteString("(")
 	for i, x := range e.xs {
 		if i > 0 {
 			b.WriteRune(' ')

@@ -19,30 +19,27 @@ func TestString(t *testing.T) {
 		{"(*String)(nil)", (*String)(nil), "<nil>"},
 		{`String{"qwer"}`, &String{"qwer"}, `"qwer"`},
 		{"(*Null)(nil)", (*Null)(nil), "<nil>"},
-		{"null", &Null{}, "'()"},
+		{"null", &Null{}, "()"},
 		{"(*Pair)(nil)", (*Pair)(nil), "<nil>"},
-		{"(cons 1 2)", Cons(&Int{1}, &Int{2}), "'(1 . 2)"},
+		{"(cons 1 2)", Cons(&Int{1}, &Int{2}), "(1 . 2)"},
 		{"(cons 1 (cons 2 3))",
 			Cons(&Int{1}, Cons(&Int{2}, &Int{3})),
-			"'(1 2 . 3)"},
+			"(1 2 . 3)"},
 		{"(cons 1 (cons 2 null))",
 			Cons(&Int{1}, Cons(&Int{2}, &Null{})),
-			"'(1 2)"},
+			"(1 2)"},
 		{"(*List)(nil)", (*List)(nil), "<nil>"},
-		{"(list)", NewList(), "'()"},
-		{"(list 1)", NewList(&Int{1}), "'(1)"},
-		{"(list 1 2)", NewList(&Int{1}, &Int{2}), "'(1 2)"},
+		{"(list)", NewList(), "()"},
+		{"(list (list))", NewList(NewList()), "(())"},
+		{"(list 1)", NewList(&Int{1}), "(1)"},
+		{"(list 1 2)", NewList(&Int{1}, &Int{2}), "(1 2)"},
+		{"(list 1 (list 2 3) 4)",
+			NewList(&Int{1}, NewList(&Int{2}, &Int{3}), &Int{4}),
+			"(1 (2 3) 4)"},
+		{"(list (cons 1 2))", NewList(Cons(&Int{1}, &Int{2})), "((1 . 2))"},
 		{"(*Quoted)(nil)", (*Quoted)(nil), "<nil>"},
 		{"&Quoted{nil}", &Quoted{nil}, "'<nil>"},
 		{"(quote sym)", &Quoted{&Symbol{"sym"}}, "'sym"},
-
-		// TODO quotation is difficult
-		// > (list (list))
-		// '(())
-		// > (list (cons 1 2))
-		// '((1 . 2))
-		// > (list 1 (list 2 3) 4)
-		// '(1 (2 3) 4)
 	}
 	for _, ex := range exs {
 		t.Run(ex.name, func(t *testing.T) {
