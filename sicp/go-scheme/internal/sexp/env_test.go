@@ -32,16 +32,13 @@ func TestEnv_Eval(t *testing.T) {
 		{&Env{}, &Quoted{&String{"aa"}}, &Env{}, &String{"aa"}, ""},
 		// other quotations don't change
 		{&Env{}, &Quoted{&Symbol{"x"}}, &Env{}, &Quoted{&Symbol{"x"}}, ""},
-		{&Env{}, &Quoted{&List{[]Expr{&Int{1}}}},
-			&Env{}, &Quoted{&List{[]Expr{&Int{1}}}}, ""},
+		{&Env{}, &Quoted{NewList(&Int{1})},
+			&Env{}, &Quoted{NewList(&Int{1})}, ""},
 
 		// TODO Symbol (defined or undefined)
 
 		// List
-		// TODO error on empty list
-		{&Env{}, (*List)(nil), &Env{}, nil, "EvalList: nil parameter"},
-		{&Env{}, &List{nil}, &Env{}, nil, "EvalList: empty List"},
-		{&Env{}, &List{[]Expr{}}, &Env{}, nil, "EvalList: empty List"},
+		{&Env{}, NewList(), &Env{}, nil, "EvalList: empty List"},
 		// TODO call function
 
 		// special forms

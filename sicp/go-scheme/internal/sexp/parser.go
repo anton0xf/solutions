@@ -244,8 +244,9 @@ func (p *Parser) ReadHex(size int) (res uint64, eof bool, err error) {
 	return
 }
 
+// TODO parse '.' (dot) / Pair
 func (p *Parser) ParseList() (res *List, eof bool, err error) {
-	res = &List{nil}
+	var xs []Expr
 	for {
 		var expr Expr
 		expr, eof, err = p.Parse()
@@ -255,10 +256,11 @@ func (p *Parser) ParseList() (res *List, eof bool, err error) {
 
 		if expr == nil {
 			p.Ignore(")")
+			res = NewList(xs...)
 			return
 		}
 
-		res.xs = append(res.xs, expr)
+		xs = append(xs, expr)
 	}
 }
 
@@ -285,13 +287,13 @@ func Quote(expr Expr) Expr {
 
 	case *List:
 		if len(x.xs) == 0 {
-			return &List{nil}
+			return NewList()
 		}
 		es := make([]Expr, len(x.xs))
 		for i, e := range x.xs {
 			es[i] = Quote(e)
 		}
-		return &List{es}
+		return NewList(es...)
 
 	default:
 		return &Quoted{x}

@@ -111,6 +111,7 @@ type List struct {
 	xs []Expr
 }
 
+// TODO replace all NewList() by NULL
 func NewList(exprs ...Expr) *List {
 	return &List{exprs}
 }

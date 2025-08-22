@@ -67,10 +67,8 @@ func TestList_Car(t *testing.T) {
 		err  string
 	}{
 		{nil, nil, "Car: list is not initialized"},
-		{&List{}, nil, "Car: list is empty"},
-		{&List{nil}, nil, "Car: list is empty"},
-		{&List{[]Expr{}}, nil, "Car: list is empty"},
-		{&List{[]Expr{&Int{1}}}, &Int{1}, ""},
+		{NewList(), nil, "Car: list is empty"},
+		{NewList(&Int{1}), &Int{1}, ""},
 	}
 	for _, c := range cases {
 		t.Run(c.list.String(), func(t *testing.T) {
