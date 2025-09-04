@@ -38,7 +38,7 @@ func TestEnv_Eval(t *testing.T) {
 		// TODO Symbol (defined or undefined)
 
 		// List
-		{&Env{}, NewList(), &Env{}, nil, "EvalList: empty List"},
+		{&Env{}, NewList(), &Env{}, nil, "Eval: empty list"},
 		// TODO call function
 
 		// special forms

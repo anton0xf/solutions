@@ -1,6 +1,7 @@
 package sexp
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -49,9 +50,10 @@ func TestString(t *testing.T) {
 }
 
 func TestNewList(t *testing.T) {
-	assert.Equal(t, &List{nil}, NewList())
-	assert.Equal(t, &List{[]Expr{nil}}, NewList(nil))
-	assert.Equal(t, &List{[]Expr{&Int{1}}}, NewList(&Int{1}))
+	assert.Equal(t, NULL, NewList())
+	assert.Equal(t, Cons(&Int{1}, NULL), NewList(&Int{1}))
+	assert.Equal(t, Cons(&Int{1}, Cons(&Int{2}, NULL)),
+		NewList(&Int{1}, &Int{2}))
 }
 
 func TestPair_Cons(t *testing.T) {
@@ -62,17 +64,18 @@ func TestPair_Cons(t *testing.T) {
 
 func TestList_Car(t *testing.T) {
 	cases := []struct {
-		list *List
+		list Expr
 		res  Expr
 		err  string
 	}{
-		{nil, nil, "Car: list is not initialized"},
-		{NewList(), nil, "Car: list is empty"},
+		{nil, nil, "Car: Pair is <nil>"},
+		{NewList(), nil, "Car: wrong argument type (pair expected): ()"},
 		{NewList(&Int{1}), &Int{1}, ""},
+		{NewList(&Int{1}, &Int{2}), &Int{1}, ""},
 	}
 	for _, c := range cases {
-		t.Run(c.list.String(), func(t *testing.T) {
-			res, err := c.list.Car()
+		t.Run(fmt.Sprintf("%v", c.list), func(t *testing.T) {
+			res, err := Car(c.list)
 			if len(c.err) > 0 {
 				assert.EqualError(t, err, c.err)
 			} else {

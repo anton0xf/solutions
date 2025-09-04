@@ -53,17 +53,17 @@ func TestParser_Parse(t *testing.T) {
 		{"quoted int", "'12", &Int{12}, "", true},
 		{"quoted symbol", "'ab", &Quoted{&Symbol{"ab"}}, "", true},
 		{"quoted string", "' \"ab\"", &String{"ab"}, "", false},
-		{"quoted empty list", "'()", NewList(), "", false},
+		{"quoted empty list", "'()", &Quoted{NewList()}, "", false},
 		{"quoted list",
-			"'(ab 3)", NewList(&Quoted{&Symbol{"ab"}}, &Int{3}), "", false},
+			"'(ab 3)", &Quoted{NewList(&Symbol{"ab"}, &Int{3})}, "", false},
 		{"double-quoted int", "' '12", &Int{12}, "", true},
 		{"double-quoted symbol",
 			"''ab ", &Quoted{&Quoted{&Symbol{"ab"}}}, " ", false},
 		{"quoted in list",
 			"'(() '('ab 3))",
-			NewList(
+			&Quoted{NewList(
 				NewList(),
-				NewList(&Quoted{&Quoted{&Quoted{&Symbol{"ab"}}}}, &Int{3})),
+				&Quoted{NewList(&Quoted{&Symbol{"ab"}}, &Int{3})})},
 			"", false},
 	}
 	for _, ex := range examples {

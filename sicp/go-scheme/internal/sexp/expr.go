@@ -55,6 +55,8 @@ func (e *String) String() string {
 // Empty consed list and leaf of consed binary tree
 type Null struct{}
 
+var NULL = &Null{}
+
 func (e *Null) String() string {
 	if e == nil {
 		return NIL_STR
@@ -91,11 +93,18 @@ func (e *Pair) String() string {
 	return fmt.Sprintf("(%s)", pairString(e.x, e.y))
 }
 
-func (e *Pair) Car() (Expr, error) {
-	if e == nil {
+func Car(expr Expr) (Expr, error) {
+	if expr == nil {
 		return nil, fmt.Errorf("Car: Pair is %s", NIL_STR)
 	}
-	return e.x, nil
+	switch e := expr.(type) {
+	case *Pair:
+		return e.x, nil
+
+	default:
+		return nil,
+			fmt.Errorf("Car: wrong argument type (pair expected): %s", expr)
+	}
 }
 
 func (e *Pair) Cdr() (Expr, error) {
@@ -112,8 +121,15 @@ type List struct {
 }
 
 // TODO replace all NewList() by NULL
-func NewList(exprs ...Expr) *List {
-	return &List{exprs}
+func NewList(exprs ...Expr) Expr {
+	var res Expr = NULL
+	cur := &res
+	for _, e := range exprs {
+		p := Cons(e, NULL)
+		*cur = p
+		cur = &p.y
+	}
+	return res
 }
 
 func (e *List) Car() (Expr, error) {

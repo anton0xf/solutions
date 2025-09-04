@@ -19,6 +19,9 @@ func (env *Env) Eval(expr Expr) (Expr, error) {
 	case *Quoted:
 		return EvalQuoted(e)
 
+	case *Null:
+		return nil, errors.New("Eval: empty list")
+
 	case *List:
 		return EvalList(e)
 

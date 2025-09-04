@@ -245,7 +245,7 @@ func (p *Parser) ReadHex(size int) (res uint64, eof bool, err error) {
 }
 
 // TODO parse '.' (dot) / Pair
-func (p *Parser) ParseList() (res *List, eof bool, err error) {
+func (p *Parser) ParseList() (res Expr, eof bool, err error) {
 	var xs []Expr
 	for {
 		var expr Expr
