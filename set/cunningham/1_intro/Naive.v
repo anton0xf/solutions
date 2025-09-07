@@ -147,4 +147,25 @@ Proof.
   left. split. { exact HA. }
   intro HB. apply H. auto.
 Qed.
+
+Theorem not_Sub_prop (a b: NSet): ~ a ⊆ b <-> exists x, x ∈ a /\ ~ x ∈ b.
+Proof.
+  rewrite Asub. split; intro H.
+  - apply not_all_ex_not in H. destruct H as [x H].
+    exists x. apply imply_to_and in H. exact H.
+  - intro C. destruct H as [x [HA HnB]].
+    apply HnB. apply C, HA.
+Qed.
+
+(* A ⊈ C means that ∃ x ∈ A, x ∉ C. And it should be in B then. *)
+Theorem Ex1_1_7 (A B C: NSet): A \ B ⊆ C -> ~ A ⊆ C -> ~ A ∩ B = ∅.
+Proof.
+  intros H1 H2. rewrite Empty_uniq. unfold Intr. setoid_rewrite Asep.
+  intro He. apply not_Sub_prop in H2. destruct H2 as [x [HA HnC]].
+  unfold Diff in H1. rewrite Asub in H1.
+  apply (He x). split. { exact HA. }
+  destruct (classic (x ∈ B)) as [HB | HnB]. { exact HB. }
+  exfalso. apply HnC. apply H1. apply Asep. auto.
+Qed.
+
   
