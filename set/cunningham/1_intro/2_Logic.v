@@ -130,6 +130,7 @@ Qed.
     [P(X)] and [Q(X)] are logically equivalent (P <=> Q) iff [forall X, P X = Q X] *)
 Definition EqB (p q: St) := forall m, eval m p = eval m q.
 Notation "p '<=>' q" := (EqB p q) (at level 70, no associativity).
+Notation "p '</=>' q" := (~(EqB p q)) (at level 70, no associativity).
 
 (* implement ideas from https://www.cis.upenn.edu/~plclub/blog/2020-05-15-Rewriting-in-Coq/ *)
 Instance EqB_refl: Reflexive EqB.
@@ -218,3 +219,13 @@ Qed.
 
 Example apply_DML2: <{ ~((P -> Q) & (Q -> P)) }> <=> <{ ~(P -> Q) | ~(Q -> P) }>.
 Proof. rewrite DMLB2. reflexivity. Qed.
+
+(* Problem 3. Show that sentences P ∨ (Q ∧ ¬P) and (P ∨ Q) ∧ ¬P
+   are not logically equivalent.*)
+Example EqB_neg_ex: <{ P | (Q & ~P) }> </=> <{ (P | Q) & ~P }>.
+Proof.
+  unfold EqB. intros H.
+  pose (H (P !-> T; _ !-> F)) as C. simpl in C.
+  discriminate C.
+Qed.
+
