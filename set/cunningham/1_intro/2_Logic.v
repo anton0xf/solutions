@@ -57,6 +57,7 @@ Definition bvals := [F; T].
 
 Definition P: string := "P".
 Definition Q: string := "Q".
+Definition R: string := "R".
 
 (* see https://softwarefoundations.cis.upenn.edu/lf-current/Imp.html#lab403 for details *)
 Coercion StVar : string >-> St.
@@ -918,4 +919,11 @@ Theorem BiconditionalLaw (a b: St): <{ a <-> b }> <=> <{ (a -> b) & (b -> a) }>.
 Proof.
   intro m. simpl. unfold Bool.eqb.
   destruct (eval m a) eqn:eqa, (eval m b) eqn:eqb; try reflexivity.
+Qed.
+
+(* Problem 4. Show that (P → R) ∧ (Q → R) ⇔ (P ∨ Q) → R, using logic laws. *)
+Theorem ex4: <{ (P -> R) & (Q -> R) }> <=> <{ (P | Q) -> R }>.
+Proof.
+  rewrite !ConditionalBLaw1. rewrite DMLB1.
+  rewrite <- OrB_AndB_distrib_l. reflexivity.
 Qed.
