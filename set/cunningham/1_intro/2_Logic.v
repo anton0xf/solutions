@@ -927,3 +927,10 @@ Proof.
   rewrite !ConditionalBLaw1. rewrite DMLB1.
   rewrite <- OrB_AndB_distrib_l. reflexivity.
 Qed.
+
+(* Problem 5. Let A and B be any two sets.
+Show that x ∉ A\B is equivalent to the statement x ∉ A or x ∈ B. *)
+(* Remember definition from 1_Naive.v:
+ Definition Diff (a b: NSet) := { x | x ∈ a /\ ~ x ∈ b }. *)
+Theorem not_in_diff: <{ ~ ("x ∈ A" & ~ "x ∈ B") }> <=> <{ ~ "x ∈ A" | "x ∈ B" }>.
+Proof. rewrite DMLB2. rewrite DNLB. reflexivity. Qed.
