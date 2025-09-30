@@ -105,6 +105,10 @@ Proof.
   apply eqb_neq in neq. rewrite eqb_sym. rewrite neq. reflexivity.
 Qed.
 
+Definition SMap_map {X Y: Type} (f: X -> Y) (m: SMap X): SMap Y := fun k => f (m k).
+
+Definition SMap_map_bool_prop := SMap_map is_true.
+
 (* map pointwise equality *)
 Definition EqM {X: Type} (m n: SMap X) := forall x, m x = n x.
 Notation "m == n" := (EqM m n) (at level 70, no associativity).
@@ -216,6 +220,25 @@ Proof.
   - rewrite (IHs1 x y), (IHs2 x y) by exact H. reflexivity.
 Qed.
 
+Theorem eval_impl_eval_prop (s: St) (mb: SMap bool):
+  eval mb s = true <-> eval_prop (SMap_map_bool_prop mb) s.
+Proof.
+  generalize dependent mb.
+  induction s; simpl; intro mb; split; intro H; try apply H.
+  - rewrite <- IHs. apply eq_true_not_negb_iff. exact H.
+  - rewrite <- IHs in H. apply eq_true_not_negb_iff. exact H.
+  - rewrite <- IHs1, <- IHs2. apply andb_prop. exact H.
+  - rewrite <- IHs1, <- IHs2 in H. apply andb_true_intro. exact H.
+  - rewrite <- IHs1, <- IHs2. apply orb_prop. exact H.
+  - rewrite <- IHs1, <- IHs2 in H. apply orb_true_intro. exact H.
+  - rewrite <- IHs1, <- IHs2. apply implb_true_iff. exact H.
+  - rewrite <- IHs1, <- IHs2 in H. apply implb_true_iff. exact H.
+  - rewrite <- IHs1, <- IHs2. apply eq_iff_eq_true. apply Bool.eqb_eq.
+    unfold Is_true. rewrite H. exact I.
+  - rewrite <- IHs1, <- IHs2 in H. apply eq_iff_eq_true in H.
+    rewrite <- H. destruct (eval mb s1); reflexivity.
+Qed.
+
 Definition ConstB (b: bool) (s: St): Prop := forall m, eval m s = b.
 
 (** Definition 1.2.1. *)
@@ -228,6 +251,17 @@ Proof. intros m. simpl. destruct (m P); reflexivity. Qed.
 
 Example LEMP: TautologyP <{ P | ~P }>.
 Proof. intros m. simpl. destruct (classic (m P)); auto. Qed.
+
+Theorem TautologyP_impl_B (s: St): TautologyP s -> TautologyB s.
+Proof.
+  unfold TautologyB, ConstB, TautologyP.
+  intros H mb. apply eval_impl_eval_prop. apply H.
+Qed.
+
+Theorem TautologyB_impl_P (s: St): TautologyB s -> TautologyP s.
+Proof.
+  unfold TautologyB, ConstB, TautologyP.
+Abort. (* TODO is it possible? *)
 
 (** Definition 1.2.2. *)
 Definition ContradictionB := ConstB false.
@@ -803,3 +837,85 @@ Proof.
 Qed.
 
 End StSubstitution.
+
+(** Other Laws *)
+
+Theorem AndB_comm (a b: St): <{ a & b }> <=> <{ b & a }>.
+Proof. intro m. simpl. apply andb_comm. Qed.
+
+Theorem OrB_comm (a b: St): <{ a | b }> <=> <{ b | a }>.
+Proof. intro m. simpl. apply orb_comm. Qed.
+
+Theorem AndB_assoc (a b c: St): <{ a & (b & c) }> <=> <{ (a & b) & c }>.
+Proof. intro m. simpl. apply andb_assoc. Qed.
+
+Theorem OrB_assoc (a b c: St): <{ a | (b | c) }> <=> <{ (a | b) | c }>.
+Proof. intro m. simpl. apply orb_assoc. Qed.
+
+Theorem AndB_idempotent (a: St): <{ a & a }> <=> a.
+Proof. intro m. simpl. apply andb_diag. Qed.
+
+Theorem OrB_idempotent (a: St): <{ a | a }> <=> a.
+Proof. intro m. simpl. apply orb_diag. Qed.
+
+Theorem AndB_OrB_distrib_l (a b c: St): <{ (a | b) & c }> <=> <{ (a & c) | (b & c) }>.
+Proof. intro m. simpl. apply andb_orb_distrib_l. Qed.
+
+Theorem AndB_OrB_distrib_r (a b c: St): <{ a & (b | c) }> <=> <{ (a & b) | (a & c) }>.
+Proof. intro m. simpl. apply andb_orb_distrib_r. Qed.
+
+Theorem OrB_AndB_distrib_l (a b c: St): <{ (a & b) | c }> <=> <{ (a | c) & (b | c) }>.
+Proof. intro m. simpl. apply orb_andb_distrib_l. Qed.
+
+Theorem OrB_AndB_distrib_r (a b c: St): <{ a | (b & c) }> <=> <{ (a | b) & (a | c) }>.
+Proof. intro m. simpl. apply orb_andb_distrib_r. Qed.
+
+Theorem DNLB (a: St): <{ ~ ~ a }> <=> a.
+Proof. intro m. simpl. apply negb_involutive. Qed.
+
+Theorem TautologyBLaw (a b: St): TautologyB b -> <{ a & b }> <=> a.
+Proof.
+  unfold TautologyB, ConstB. intros H m. simpl.
+  rewrite H. apply andb_true_r.
+Qed.
+
+Theorem TautologyLaw (a b: St):
+  TautologyP b -> forall m, eval_prop m <{ a & b }> <-> eval_prop m a.
+Proof.
+  unfold TautologyP. intros H m. simpl. intuition.
+Qed.
+
+Theorem ContradictionBLaw (a b: St): ContradictionB b -> <{ a | b }> <=> a.
+Proof.
+  unfold ContradictionB, ConstB. intros H m. simpl.
+  rewrite H. apply orb_false_r.
+Qed.
+
+Theorem ContradictionLaw (a b: St):
+  ContradictionP b -> forall m, eval_prop m <{ a | b }> <-> eval_prop m a.
+Proof.
+  unfold ContradictionP. intros H m. simpl. split.
+  - intros [Ha | Hb].
+    + exact Ha.
+    + contradict Hb. apply H.
+  - intro Ha. left. exact Ha.
+Qed.
+
+Theorem ConditionalBLaw1 (a b: St): <{ a -> b }> <=> <{ ~a | b }>.
+Proof. intro m. simpl. apply implb_orb. Qed.
+
+Theorem ConditionalBLaw2 (a b: St): <{ a -> b }> <=> <{ ~(a & ~b) }>.
+Proof.
+  rewrite ConditionalBLaw1. rewrite DMLB2. rewrite DNLB. reflexivity.
+Qed.
+
+Theorem ContrapositiveBLaw (a b: St): <{ a -> b }> <=> <{ ~b -> ~a }>.
+Proof.
+  rewrite !ConditionalBLaw1. rewrite DNLB. apply OrB_comm.
+Qed.
+
+Theorem BiconditionalLaw (a b: St): <{ a <-> b }> <=> <{ (a -> b) & (b -> a) }>.
+Proof.
+  intro m. simpl. unfold Bool.eqb.
+  destruct (eval m a) eqn:eqa, (eval m b) eqn:eqb; try reflexivity.
+Qed.
