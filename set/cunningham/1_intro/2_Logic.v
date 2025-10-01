@@ -269,10 +269,10 @@ Definition ContradictionB := ConstB false.
 
 Definition ContradictionP (s: St) := forall m, ~ eval_prop m s.
 
-Example ContradictionB__ex: ContradictionB <{ P & ~P }>.
+Theorem ContradictionAndB': ContradictionB <{ P & ~P }>.
 Proof. intros m. simpl. destruct (m P); reflexivity. Qed.
 
-Example ContradictionP__ex: ContradictionP <{ P & ~P }>.
+Theorem ContradictionAnd: ContradictionP <{ P & ~P }>.
 Proof.
   intros m. simpl. remember (m P) as H eqn:eq. intuition.
 Qed.
@@ -337,6 +337,16 @@ Instance EqB_iff_proper: Proper (EqB ==> EqB ==> EqB) StIff.
 Proof.
   unfold Proper, respectful, EqB.
   intros p1 q1 H1 p2 q2 H2 m. simpl. rewrite H1, H2. reflexivity.
+Qed.
+
+Theorem TautologyB_prop (s: St): TautologyB s <-> (s <=> true).
+Proof.
+  unfold TautologyB, ConstB, EqB. simpl. reflexivity.
+Qed.
+
+Theorem ContradictionB_prop (s: St): ContradictionB s <-> (s <=> false).
+Proof.
+  unfold ContradictionB, ConstB, EqB. simpl. reflexivity.
 Qed.
 
 (* De Morgan’s Laws *)
@@ -469,6 +479,13 @@ Theorem eval_eq (m n: SMap bool) (s t: St):
 Proof.
   intros eq_st eq_ev.
   rewrite eq_ev. apply eq_st.
+Qed.
+
+Theorem ContradictionAndB (p: St): ContradictionB <{ p & ~p }>.
+Proof.
+  pose ContradictionAndB' as H. rewrite ContradictionB_prop in H.
+  apply (EqB_subst P p) in H. simpl in H. apply ContradictionB_prop.
+  exact H.
 Qed.
 
 (** rename to avoid collisins *)
@@ -934,3 +951,59 @@ Show that x ∉ A\B is equivalent to the statement x ∉ A or x ∈ B. *)
  Definition Diff (a b: NSet) := { x | x ∈ a /\ ~ x ∈ b }. *)
 Theorem not_in_diff: <{ ~ ("x ∈ A" & ~ "x ∈ B") }> <=> <{ ~ "x ∈ A" | "x ∈ B" }>.
 Proof. rewrite DMLB2. rewrite DNLB. reflexivity. Qed.
+
+(** Exercises 1.2 *)
+
+Theorem Ex1_2_1: <{ ~(P -> Q) }> <=> <{ P & ~Q }>.
+Proof. intro m. simpl. destruct (m P), (m Q); reflexivity. Qed.
+
+Theorem Ex1_2_1': <{ ~(P -> Q) }> <=> <{ P & ~Q }>.
+Proof. rewrite ConditionalBLaw2. rewrite DNLB. reflexivity. Qed.
+
+(* ex 1.2.2. *)
+Check (BiconditionalLaw P Q). (* : <{ P <-> Q }> <=> <{ (P -> Q) & (Q -> P) }> *)
+
+Theorem Ex1_2_3: P <=> <{ ~ P -> (Q & ~ Q) }>.
+Proof.
+  rewrite ConditionalBLaw1. rewrite DNLB.
+  rewrite (ContradictionBLaw P). { reflexivity. }
+  apply ContradictionAndB.
+Qed.
+
+Theorem Ex1_2_4: <{ (P | Q) & R }> </=> <{ P & R | P & Q }>.
+Proof.
+  unfold EqB. intro H.
+  pose (H (P !-> true; Q !-> true; R !-> false; _ !-> false)) as C.
+  simpl in C. unfold SMap_update in C. simpl in C. discriminate C.
+Qed.
+
+Theorem Ex1_2_5: <{ (P -> Q) & (P -> R) }> <=> <{ P -> (Q & R) }>.
+Proof.
+  rewrite !ConditionalBLaw1. rewrite <- OrB_AndB_distrib_r. reflexivity.
+Qed.
+
+Theorem Ex1_2_6: <{ (P -> R) | (Q -> R) }> <=> <{ P & Q -> R }>.
+Proof.
+  rewrite !ConditionalBLaw1. rewrite DMLB2. rewrite <- !OrB_assoc.
+  rewrite (OrB_comm R). rewrite <- OrB_assoc. rewrite OrB_idempotent.
+  reflexivity.
+Qed.
+
+Theorem Ex1_2_7: <{ P -> (Q -> R) }> <=> <{ (P & Q) -> R }>.
+Proof.
+  rewrite !ConditionalBLaw1. rewrite DMLB2. apply OrB_assoc.
+Qed.
+
+Theorem Ex1_2_8': <{ (P -> Q) -> R }> <=> <{ P -> (Q -> R) }>.
+Proof.
+  intro m. simpl. destruct (m P), (m Q), (m R); try reflexivity.
+  (* we have counter examples here *)
+Abort.
+
+Theorem Ex1_2_8: <{ (P -> Q) -> R }> </=> <{ P -> (Q -> R) }>.
+Proof.
+  intros H. pose (H (P !-> F; Q !-> T; R !-> F; _ !-> F)) as C.
+  simpl in C. unfold SMap_update in C. simpl in C.
+  discriminate C.
+Qed.
+
