@@ -1,4 +1,4 @@
-// test it by: $ echo '12434' | cargo run --bin u07_l2_step07_digits
+// test it by: $ echo '12434' | cargo run --bin u07_l2_step08_digits
 // > 44321
 fn main() {
     let n = read();
