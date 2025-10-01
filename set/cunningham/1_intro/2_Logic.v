@@ -2,6 +2,7 @@
 Require Import Setoid.
 Require Import Morphisms.
 From Stdlib Require Import Classical.
+From Stdlib Require Import ClassicalDescription.
 From Stdlib Require Import List. Import ListNotations.
 From Stdlib Require Import Bool.
 From Stdlib Require Import Nat.
@@ -19,6 +20,12 @@ Theorem contraposition (A B: Prop): (A -> B) -> (~ B -> ~ A).
 Proof.
   intros HAB HnB HA. apply HnB, HAB, HA.
 Qed.
+
+Definition prop_to_bool (P: Prop): bool :=
+  match (excluded_middle_informative P) with
+  | left _ => true
+  | right _ => false
+  end.
 
 Theorem not_in_cons {X: Type} (y x: X) (xs: list X):
   ~ In y (x :: xs) -> x <> y /\ ~ In y xs.
@@ -109,6 +116,7 @@ Qed.
 Definition SMap_map {X Y: Type} (f: X -> Y) (m: SMap X): SMap Y := fun k => f (m k).
 
 Definition SMap_map_bool_prop := SMap_map is_true.
+Definition SMap_map_prop_bool := SMap_map prop_to_bool.
 
 (* map pointwise equality *)
 Definition EqM {X: Type} (m n: SMap X) := forall x, m x = n x.
@@ -234,10 +242,35 @@ Proof.
   - rewrite <- IHs1, <- IHs2 in H. apply orb_true_intro. exact H.
   - rewrite <- IHs1, <- IHs2. apply implb_true_iff. exact H.
   - rewrite <- IHs1, <- IHs2 in H. apply implb_true_iff. exact H.
-  - rewrite <- IHs1, <- IHs2. apply eq_iff_eq_true. apply Bool.eqb_eq.
-    unfold Is_true. rewrite H. exact I.
+  - rewrite <- IHs1, <- IHs2. apply eqb_prop in H. rewrite H. reflexivity.
   - rewrite <- IHs1, <- IHs2 in H. apply eq_iff_eq_true in H.
-    rewrite <- H. destruct (eval mb s1); reflexivity.
+    rewrite <- H. apply eqb_reflx.
+Qed.
+
+Theorem eval_prop_impl_eval (s: St) (mp: SMap Prop):
+  eval_prop mp s <-> eval (SMap_map_prop_bool mp) s = true.
+Proof.
+  unfold SMap_map_prop_bool, SMap_map, prop_to_bool.
+  generalize dependent mp.
+  induction s; simpl; intro mp; split; intro H; try apply H.
+  - destruct (excluded_middle_informative (mp name)) as [HT | HF].
+    + reflexivity.
+    + contradiction.
+  - destruct (excluded_middle_informative (mp name)) as [HT | HF].
+    + assumption.
+    + discriminate.
+  - apply eq_true_not_negb_iff. rewrite IHs in H. exact H.
+  - rewrite IHs. apply eq_true_not_negb_iff. exact H.
+  - rewrite IHs1, IHs2 in H. apply andb_true_intro. exact H.
+  - rewrite IHs1, IHs2. apply andb_prop. exact H.
+  - rewrite IHs1, IHs2 in H. apply orb_true_intro. exact H.
+  - rewrite IHs1, IHs2. apply orb_prop. exact H.
+  - rewrite IHs1, IHs2 in H. apply implb_true_iff. exact H.
+  - rewrite IHs1, IHs2. apply implb_true_iff. exact H.
+  - rewrite IHs1, IHs2 in H. apply eq_iff_eq_true in H.
+    rewrite <- H. apply eqb_reflx.
+  - rewrite IHs1, IHs2. apply eq_iff_eq_true.
+    apply eqb_prop in H. rewrite H. reflexivity.
 Qed.
 
 Definition ConstB (b: bool) (s: St): Prop := forall m, eval m s = b.
@@ -253,16 +286,13 @@ Proof. intros m. simpl. destruct (m P); reflexivity. Qed.
 Example LEMP: TautologyP <{ P | ~P }>.
 Proof. intros m. simpl. destruct (classic (m P)); auto. Qed.
 
-Theorem TautologyP_impl_B (s: St): TautologyP s -> TautologyB s.
+Theorem TautologyP_iff_B (s: St): TautologyP s <-> TautologyB s.
 Proof.
   unfold TautologyB, ConstB, TautologyP.
-  intros H mb. apply eval_impl_eval_prop. apply H.
+  split; intros H m.
+  - apply eval_impl_eval_prop. apply H.
+  - apply eval_prop_impl_eval. apply H.
 Qed.
-
-Theorem TautologyB_impl_P (s: St): TautologyB s -> TautologyP s.
-Proof.
-  unfold TautologyB, ConstB, TautologyP.
-Abort. (* TODO is it possible? *)
 
 (** Definition 1.2.2. *)
 Definition ContradictionB := ConstB false.
@@ -1006,4 +1036,3 @@ Proof.
   simpl in C. unfold SMap_update in C. simpl in C.
   discriminate C.
 Qed.
-
