@@ -1,6 +1,6 @@
 fn main() {
-    let (l, m, n) = (read().trim(), readn(), readn());
-    let even = l == "Четный";
+    let (l, m, n) = (read(), readn(), readn());
+    let even = l.trim() == "Четный";
     check(even, m);
     check(even, n);
 }
