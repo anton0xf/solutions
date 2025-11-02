@@ -1,6 +1,6 @@
 (** 1.2 Logical Notation *)
-Require Import Setoid.
-Require Import Morphisms.
+From Stdlib Require Import Setoid.
+From Stdlib Require Import Morphisms.
 From Stdlib Require Import Classical.
 From Stdlib Require Import ClassicalDescription.
 From Stdlib Require Import List. Import ListNotations.
@@ -673,7 +673,7 @@ Fixpoint StIn (x: string) (s: St): Prop :=
 
 Theorem StIn_prop (x: string) (s: St): StIn x s <-> In x (list_vars s).
 Proof.
-  induction s; simpl; intuition.
+  induction s; simpl; intuition auto with *.
   - apply in_app_or in H3 as [H3 | H3]; intuition.
   - apply in_app_or in H3 as [H3 | H3]; intuition.
   - apply in_app_or in H3 as [H3 | H3]; intuition.

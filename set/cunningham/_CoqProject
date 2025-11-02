@@ -1,0 +1,6 @@
+# -*- Sh -*-
+# for ProofGeneral only. build with dune
+# see https://discourse.rocq-prover.org/t/dune-proof-general/1431
+# and https://github.com/ProofGeneral/PG/issues/477
+-Q _build/default/ch1_intro ch1_intro
+_build/default/ch1_intro

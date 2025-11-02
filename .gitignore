@@ -3,3 +3,4 @@
 !.scalafmt.conf
 target/
 out/
+_build/
