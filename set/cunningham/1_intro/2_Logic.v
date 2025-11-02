@@ -338,7 +338,7 @@ Qed.
 
 Instance EqB_not_proper: Proper (EqB ==> EqB) StNot.
 Proof.
-  unfold Proper, respectful, EqB.
+  unfold Proper, respectful.
   intros p q H m. simpl. rewrite H. reflexivity.
 Qed.
 
