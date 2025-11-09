@@ -1,10 +1,6 @@
 fn main() {
-    let mults: Vec<u8> = (0..=9).map(|d| d * 9 % 10).collect();
     let n = readn();
-    let mut d = 9u8;
-    for _ in 1..n {
-        d = mults[d as usize];
-    }
+    let d = if n % 2 == 0 { 1 } else { 9 } ;
     println!("Последняя цифра 9 в степени {n} равна {d}");
 }
 
