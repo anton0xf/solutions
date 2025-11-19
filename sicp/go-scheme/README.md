@@ -15,6 +15,6 @@ $ go test ./...
 
 ## Test app
 ```shell
-$ echo 'asdф☺️' | go run ./cmd/gs
-asdф☺️
+$ echo '"asdф ☺️"' | go run ./cmd/gs
+"asdф☺️"
 ```
