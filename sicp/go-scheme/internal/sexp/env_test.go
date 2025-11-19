@@ -25,8 +25,8 @@ func TestEnv_Eval(t *testing.T) {
 		{&Env{}, &String{"aa"}, &Env{}, &String{"aa"}, ""},
 
 		// Quoted
-		{&Env{}, (*Quoted)(nil), &Env{}, nil, "EvalQuoted: nil parameter"},
-		{&Env{}, &Quoted{nil}, &Env{}, nil, "EvalQuoted: Quoted{nil}"},
+		{&Env{}, (*Quoted)(nil), &Env{}, nil, "Env.EvalQuoted: nil parameter"},
+		{&Env{}, &Quoted{nil}, &Env{}, nil, "Env.EvalQuoted: Quoted{nil}"},
 		// quoted literal is just literal
 		{&Env{}, &Quoted{&Int{3}}, &Env{}, &Int{3}, ""},
 		{&Env{}, &Quoted{&String{"aa"}}, &Env{}, &String{"aa"}, ""},
@@ -37,6 +37,7 @@ func TestEnv_Eval(t *testing.T) {
 
 		// Symbol
 		{&Env{}, (*Symbol)(nil), &Env{}, nil, "Env.EvalSymbol: nil parameter"},
+		{&Env{}, &Symbol{""}, &Env{}, nil, "Env.Get: empty symbol name"},
 		{&Env{}, &Symbol{"x"}, &Env{}, nil, "Env.Get: symbol 'x not defined"},
 		{&Env{map[string]Expr{"x": &Int{4}}},
 			&Symbol{"x"},
@@ -44,7 +45,9 @@ func TestEnv_Eval(t *testing.T) {
 			&Int{4}, ""},
 
 		// List
-		{&Env{}, NewList(), &Env{}, nil, "Eval: empty list"},
+		{&Env{}, (*List)(nil), &Env{}, nil, "Env.EvalList: nil parameter"},
+		{&Env{}, &List{nil}, &Env{}, nil, "Env.EvalList: List{nil}"},
+		{&Env{}, NewList(), &Env{}, nil, "Env.Eval: empty list"},
 		// TODO call function
 
 		// special forms

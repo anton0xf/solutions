@@ -33,14 +33,14 @@ func (env *Env) Eval(expr Expr) (Expr, error) {
 		return EvalQuoted(e)
 
 	case *Null:
-		return nil, errors.New("Eval: empty list")
+		return nil, errors.New("Env.Eval: empty list")
 
 	case *List:
 		return EvalList(e)
 
 	default:
 		return nil, fmt.Errorf(
-			"Eval: unexpected type %T of parameter %v", expr, expr)
+			"Env.Eval: unexpected type %T of parameter %v", expr, expr)
 	}
 }
 
@@ -54,11 +54,11 @@ func (env *Env) EvalSymbol(e *Symbol) (Expr, error) {
 
 func EvalQuoted(e *Quoted) (Expr, error) {
 	if e == nil {
-		return nil, errors.New("EvalQuoted: nil parameter")
+		return nil, errors.New("Env.EvalQuoted: nil parameter")
 	}
 
 	if e.x == nil {
-		return nil, errors.New("EvalQuoted: Quoted{nil}")
+		return nil, errors.New("Env.EvalQuoted: Quoted{nil}")
 	}
 
 	switch x := e.x.(type) {
@@ -72,11 +72,11 @@ func EvalQuoted(e *Quoted) (Expr, error) {
 
 func EvalList(e *List) (Expr, error) {
 	if e == nil {
-		return nil, errors.New("EvalList: nil parameter")
+		return nil, errors.New("Env.EvalList: nil parameter")
 	}
 
 	if len(e.xs) == 0 {
-		return nil, errors.New("EvalList: empty List")
+		return nil, errors.New("Env.EvalList: List{nil}")
 	}
 
 	return nil, nil
