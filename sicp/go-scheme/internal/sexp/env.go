@@ -35,6 +35,9 @@ func (env *Env) Eval(expr Expr) (Expr, error) {
 	case *Null:
 		return nil, errors.New("Env.Eval: empty list")
 
+	case *Pair:
+		return env.EvalPair(e)
+
 	case *List:
 		return EvalList(e)
 
@@ -80,4 +83,16 @@ func EvalList(e *List) (Expr, error) {
 	}
 
 	return nil, nil
+}
+
+func (env *Env) EvalPair(e *Pair) (Expr, error) {
+	if e == nil {
+		return nil, errors.New("Env.EvalPair: nil parameter")
+	}
+
+	if e.x == nil {
+		return nil, errors.New("Env.EvalPair: nil head")
+	}
+
+	return nil, fmt.Errorf("Env.EvalPair: unexpected pair: %s", e)
 }
