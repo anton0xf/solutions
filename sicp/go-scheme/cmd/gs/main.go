@@ -26,9 +26,10 @@ func Run(in io.Reader, out io.Writer) error {
 		if expr != nil {
 			res, err := env.Eval(expr)
 			if err != nil {
-				return err
+				fmt.Fprintf(out, "error: %s\n", err)
+			} else {
+				fmt.Fprintln(out, res)
 			}
-			fmt.Fprintln(out, res)
 		}
 		if done {
 			return nil
