@@ -5,13 +5,26 @@ subsection \<open>Part I\<close>
 
 \<comment> \<open>If @{term foldr} over conjuctions evaluates to @{term True}, the initial value is @{term True}.\<close>
 lemma foldr_conj_init: \<open>foldr (\<lambda> x b. P x \<and> b) xs y \<Longrightarrow> y\<close>
-	sorry
+proof (induction xs)
+  case Nil 
+  then show \<open>foldr (\<lambda> x b. P x \<and> b) [] y \<Longrightarrow> y\<close> by simp
+next
+  case (Cons x xs)
+  assume \<open>foldr (\<lambda> x b. P x \<and> b) xs y \<Longrightarrow> y\<close>
+	then show \<open>foldr (\<lambda> x b. P x \<and> b) (x # xs) y \<Longrightarrow> y\<close> by simp
+qed
 
 \<comment> \<open>@{term foldr} over conjuctions with initial value @{term True} evaluates to @{term True} if an only if all conjuncts are @{term True}.\<close>
 lemma foldr_conj_prop:
 	\<open>foldr (\<lambda> x b. P x \<and> b) xs True \<longleftrightarrow> (\<forall> x \<in> set xs. P x)\<close>
-	sorry
-
+proof (induction xs)
+  case Nil
+  then show \<open>foldr (\<lambda> x b. P x \<and> b) [] True \<longleftrightarrow> (\<forall> x \<in> set []. P x)\<close> by simp
+next
+  case (Cons y ys)
+  assume \<open>foldr (\<lambda> x b. P x \<and> b) ys True \<longleftrightarrow> (\<forall> x \<in> set ys. P x)\<close>
+  then show \<open>foldr (\<lambda> x b. P x \<and> b) (y # ys) True \<longleftrightarrow> (\<forall> x \<in> set (y # ys). P x)\<close> by simp
+qed
 
 subsection \<open>Part II\<close>
 
@@ -19,11 +32,27 @@ subsection \<open>Part II\<close>
 The function uses recursion on the number of elements to pick.\<close>
 primrec pick :: \<open>nat \<Rightarrow> 'a list \<Rightarrow> 'a list\<close> where
 	\<open>pick 0 xs = []\<close> |
-	\<open>pick (Suc n) xs = []\<close>
+	\<open>pick (Suc n) xs = (case xs of [] \<Rightarrow> [] | x # xs \<Rightarrow> x # pick n xs)\<close>
 
 \<comment> \<open>The length of the prefix is the minimum between the specified prefix length and the original list length.\<close>
 lemma pick_length: \<open>length (pick n xs) = min n (length xs)\<close>
-	sorry
+proof (induction n)
+  case 0
+  then show \<open>length (pick 0 xs) = min 0 (length xs)\<close> by simp
+next
+  case (Suc n)
+  assume \<open>length (pick n xs) = min n (length xs)\<close>
+  then show \<open>length (pick (Suc n) xs) = min (Suc n) (length xs)\<close>
+  proof (induction xs)
+    case Nil
+    then show \<open>length (pick (Suc n) []) = min (Suc n) (length [])\<close> by simp
+  next
+    case (Cons y ys)
+    assume \<open>length (pick (Suc n) ys) = min (Suc n) (length ys)\<close>
+    then have \<open>min (Suc n) (length (y # ys)) = min n (length ys)\<close> by simp
+    then show \<open>length (pick (Suc n) (y # ys)) = min (Suc n) (length (y # ys))\<close> by simp
+  qed
+qed
 
 \<comment> \<open>The elements of the prefix obtained with @{term pick} are the first elements of the original list.\<close>
 lemma pick_items: \<open>\<forall> i < length (pick n xs). (pick n xs) ! i = xs ! i\<close>
