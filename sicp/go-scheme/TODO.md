@@ -1,7 +1,7 @@
-* [ ] evaluate literals
+* [x] evaluate literals
   * [x] int
   * [x] string
-  * [ ] symbol
+  * [x] symbol
 * [ ] evaluate special composites
   * [ ] evaluate define()
   * [x] evaluate quoted literal
