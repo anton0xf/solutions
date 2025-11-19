@@ -5,7 +5,21 @@ import (
 	"fmt"
 )
 
-type Env struct{}
+type Env struct {
+	m map[string]Expr
+}
+
+func (env *Env) Get(name string) (Expr, error) {
+	if name == "" {
+		return nil, errors.New("Env.Get: empty symbol name")
+	}
+	expr, ok := env.m[name]
+	if ok {
+		return expr, nil
+	} else {
+		return nil, fmt.Errorf("Env.Get: symbol '%s not defined", name)
+	}
+}
 
 func (env *Env) Eval(expr Expr) (Expr, error) {
 	switch e := expr.(type) {
@@ -13,8 +27,7 @@ func (env *Env) Eval(expr Expr) (Expr, error) {
 		return e, nil
 
 	case *Symbol:
-		return nil, fmt.Errorf(
-			"Eval: Symbol parameter is not supported yet: %v", e)
+		return env.EvalSymbol(e)
 
 	case *Quoted:
 		return EvalQuoted(e)
@@ -29,6 +42,14 @@ func (env *Env) Eval(expr Expr) (Expr, error) {
 		return nil, fmt.Errorf(
 			"Eval: unexpected type %T of parameter %v", expr, expr)
 	}
+}
+
+func (env *Env) EvalSymbol(e *Symbol) (Expr, error) {
+	if e == nil {
+		return nil, errors.New("Env.EvalSymbol: nil parameter")
+	}
+
+	return env.Get(e.name)
 }
 
 func EvalQuoted(e *Quoted) (Expr, error) {

@@ -35,7 +35,13 @@ func TestEnv_Eval(t *testing.T) {
 		{&Env{}, &Quoted{NewList(&Int{1})},
 			&Env{}, &Quoted{NewList(&Int{1})}, ""},
 
-		// TODO Symbol (defined or undefined)
+		// Symbol
+		{&Env{}, (*Symbol)(nil), &Env{}, nil, "Env.EvalSymbol: nil parameter"},
+		{&Env{}, &Symbol{"x"}, &Env{}, nil, "Env.Get: symbol 'x not defined"},
+		{&Env{map[string]Expr{"x": &Int{4}}},
+			&Symbol{"x"},
+			&Env{map[string]Expr{"x": &Int{4}}},
+			&Int{4}, ""},
 
 		// List
 		{&Env{}, NewList(), &Env{}, nil, "Eval: empty list"},
