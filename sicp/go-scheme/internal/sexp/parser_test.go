@@ -50,6 +50,9 @@ func TestParser_Parse(t *testing.T) {
 		{"list tree",
 			"(1 ((3) 2))",
 			NewList(&Int{1}, NewList(NewList(&Int{3}), &Int{2})), "", false},
+		{"pair", "(1 . b )", Cons(&Int{1}, &Symbol{"b"}), "", false},
+		{"pair with rest", "(1 . b) c", Cons(&Int{1}, &Symbol{"b"}), " c", false},
+		{"dotted list", "(1 2 . 3)", Cons(&Int{1}, Cons(&Int{2}, &Int{3})), "", false},
 		{"quoted int", "'12", &Int{12}, "", true},
 		{"quoted symbol", "'ab", &Quoted{&Symbol{"ab"}}, "", true},
 		{"quoted string", "' \"ab\"", &String{"ab"}, "", false},
@@ -101,6 +104,13 @@ func TestParser_Parse(t *testing.T) {
 		{"string wrong unicode escape sequesnce",
 			" \"__\\u2fg__\" ", "__\" ",
 			"ReadHex: unexpected hex digit 'g'"},
+		// TODO error on unfinished list?
+		{"pair without left part",
+			"(. b)", " b)",
+			"ParseList: illegal use of '.'"},
+		{"pair without right part",
+			"(a .)", ")",
+			"ParseList: illegal use of '.'"},
 	}
 	for _, ex := range errExamples {
 		t.Run(ex.name, func(t *testing.T) {

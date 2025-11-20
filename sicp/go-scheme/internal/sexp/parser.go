@@ -249,7 +249,6 @@ func (p *Parser) ReadHex(size int) (res uint64, eof bool, err error) {
 	return
 }
 
-// TODO parse '.' (dot) / Pair
 func (p *Parser) ParseList() (res Expr, eof bool, err error) {
 	var xs []Expr
 	for {
@@ -262,6 +261,37 @@ func (p *Parser) ParseList() (res Expr, eof bool, err error) {
 		if expr == nil {
 			p.Ignore(")")
 			res = NewList(xs...)
+			return
+		}
+
+		// handle '.' (dot) syntax. something like: (a b . c)
+		sym, isSym := expr.(*Symbol)
+		if isSym && sym != nil && sym.name == "." {
+			if len(xs) == 0 {
+				err = errors.New("ParseList: illegal use of '.'")
+				return
+			}
+
+			expr, eof, err = p.Parse()
+			if eof || err != nil {
+				return
+			}
+			if expr == nil {
+				err = errors.New("ParseList: illegal use of '.'")
+				return
+			}
+
+			eof, err = p.SkipSpaces()
+			if eof || err != nil {
+				return
+			}
+
+			eof, err = p.Ignore(")")
+			if eof || err != nil {
+				return
+			}
+
+			res = NewListWithTail(xs, expr)
 			return
 		}
 

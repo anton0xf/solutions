@@ -113,10 +113,14 @@ func (e *Pair) Cdr() (Expr, error) {
 }
 
 func NewList(exprs ...Expr) Expr {
-	var res Expr = NULL
+	return NewListWithTail(exprs, NULL)
+}
+
+func NewListWithTail(exprs []Expr, tail Expr) Expr {
+	var res Expr = tail
 	cur := &res
 	for _, e := range exprs {
-		p := Cons(e, NULL)
+		p := Cons(e, tail)
 		*cur = p
 		cur = &p.y
 	}
