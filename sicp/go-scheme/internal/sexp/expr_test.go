@@ -29,7 +29,7 @@ func TestString(t *testing.T) {
 		{"(cons 1 (cons 2 null))",
 			Cons(&Int{1}, Cons(&Int{2}, &Null{})),
 			"(1 2)"},
-		{"(*List)(nil)", (*List)(nil), "<nil>"},
+		{"(*Pair)(nil)", (*Pair)(nil), "<nil>"},
 		{"(list)", NULL, "()"},
 		{"(list (list))", NewList(NULL), "(())"},
 		{"(list 1)", NewList(&Int{1}), "(1)"},

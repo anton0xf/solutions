@@ -38,9 +38,6 @@ func (env *Env) Eval(expr Expr) (Expr, error) {
 	case *Pair:
 		return env.EvalPair(e)
 
-	case *List:
-		return EvalList(e)
-
 	default:
 		return nil, fmt.Errorf(
 			"Env.Eval: unexpected type %T of parameter %v", expr, expr)
@@ -71,18 +68,6 @@ func EvalQuoted(e *Quoted) (Expr, error) {
 	default:
 		return e, nil
 	}
-}
-
-func EvalList(e *List) (Expr, error) {
-	if e == nil {
-		return nil, errors.New("Env.EvalList: nil parameter")
-	}
-
-	if len(e.xs) == 0 {
-		return nil, errors.New("Env.EvalList: List{nil}")
-	}
-
-	return nil, nil
 }
 
 func (env *Env) EvalPair(e *Pair) (Expr, error) {

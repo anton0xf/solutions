@@ -1,10 +1,8 @@
 package sexp
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 )
 
 type Expr interface {
@@ -114,12 +112,6 @@ func (e *Pair) Cdr() (Expr, error) {
 	return e.y, nil
 }
 
-type List struct {
-	// TODO it should be consed list.
-	// It's impossible to implement default lists mutation behaviour using slice
-	xs []Expr
-}
-
 func NewList(exprs ...Expr) Expr {
 	var res Expr = NULL
 	cur := &res
@@ -129,32 +121,6 @@ func NewList(exprs ...Expr) Expr {
 		cur = &p.y
 	}
 	return res
-}
-
-func (e *List) Car() (Expr, error) {
-	if e == nil {
-		return nil, errors.New("Car: list is not initialized")
-	} else if len(e.xs) == 0 {
-		return nil, errors.New("Car: list is empty")
-	}
-	return e.xs[0], nil
-}
-
-func (e *List) String() string {
-	if e == nil {
-		return NIL_STR
-	}
-
-	var b strings.Builder
-	b.WriteString("(")
-	for i, x := range e.xs {
-		if i > 0 {
-			b.WriteRune(' ')
-		}
-		b.WriteString(x.String())
-	}
-	b.WriteRune(')')
-	return b.String()
 }
 
 type Quoted struct {

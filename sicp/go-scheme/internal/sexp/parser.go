@@ -285,16 +285,6 @@ func Quote(expr Expr) Expr {
 	case *Int, *String:
 		return x
 
-	case *List:
-		if len(x.xs) == 0 {
-			return NULL
-		}
-		es := make([]Expr, len(x.xs))
-		for i, e := range x.xs {
-			es[i] = Quote(e)
-		}
-		return NewList(es...)
-
 	default:
 		return &Quoted{x}
 	}
