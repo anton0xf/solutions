@@ -114,12 +114,16 @@ func (p *Parser) Ignore(expected string) (eof bool, err error) {
 	for _, ech := range expected {
 		var ch rune
 		ch, eof, err = p.in.Next()
-		if eof || err != nil {
+		if err != nil {
 			return eof, err
+		}
+		if eof {
+			return eof, fmt.Errorf("Parser: unexpected EOF. expected '%c'", ech)
+
 		}
 		if ch != ech {
 			return eof, fmt.Errorf(
-				"unexpected next char '%c'. expected '%c'", ch, ech)
+				"Parser: unexpected next char '%c'. expected '%c'", ch, ech)
 		}
 	}
 	return eof, nil
@@ -145,7 +149,7 @@ func (p *Parser) ParseDelimited() (res Expr, eof bool, err error) {
 		return nil, false, nil
 
 	default:
-		return nil, eof, fmt.Errorf("unexpected next char: '%c'", ch)
+		return nil, eof, fmt.Errorf("ParseDelimited: unexpected next char: '%c'", ch)
 	}
 }
 
@@ -158,7 +162,8 @@ func (p *Parser) ParseString() (res *String, eof bool, err error) {
 		}
 
 		if eof {
-			return NewString(rs), eof, errors.New("unexpected EOF inside string")
+			return NewString(rs), eof,
+				errors.New("ParseString: unexpected EOF inside string")
 		}
 
 		switch ch {
@@ -172,7 +177,7 @@ func (p *Parser) ParseString() (res *String, eof bool, err error) {
 			}
 			if eof {
 				return NewString(rs), eof,
-					errors.New("unexpected EOF inside escape sequence")
+					errors.New("ParseString: unexpected EOF inside escape sequence")
 			}
 			rs = append(rs, ch)
 
@@ -235,7 +240,7 @@ func (p *Parser) ReadHex(size int) (res uint64, eof bool, err error) {
 			d = uint64(ch - 'A' + 10)
 
 		default:
-			err = fmt.Errorf("Unexpected hex digit '%c'", ch)
+			err = fmt.Errorf("ReadHex: unexpected hex digit '%c'", ch)
 			return
 		}
 

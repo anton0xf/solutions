@@ -83,20 +83,32 @@ func TestParser_Parse(t *testing.T) {
 	errExamples := []struct {
 		name string
 		in   string
-		err  string
 		rest string
+		err  string
 	}{
-		{"digits+letters", "12ab ", "strconv.Atoi: parsing \"12ab\": invalid syntax", " "},
-		{"unexpected minus", "1-2", "strconv.Atoi: parsing \"1-2\": invalid syntax", ""},
+		{"digits+letters",
+			"12ab ", " ",
+			"strconv.Atoi: parsing \"12ab\": invalid syntax"},
+		{"unexpected minus",
+			"1-2", "",
+			"strconv.Atoi: parsing \"1-2\": invalid syntax"},
+		{"string unfinished",
+			" \"asdf ", "",
+			"ParseString: unexpected EOF inside string"},
+		{"string unfinished escape sequence",
+			" \"asdf \\", "",
+			"ParseString: unexpected EOF inside escape sequence"},
+		{"string wrong unicode escape sequesnce",
+			" \"__\\u2fg__\" ", "__\" ",
+			"ReadHex: unexpected hex digit 'g'"},
 	}
 	for _, ex := range errExamples {
 		t.Run(ex.name, func(t *testing.T) {
 			in := bytes.NewBufferString(ex.in)
 			p := NewParser(in)
-			res, eof, err := p.Parse()
+			_, eof, err := p.Parse()
 			assert.Equal(t, ex.rest == "", eof)
 			assert.EqualError(t, err, ex.err)
-			assert.Nil(t, res)
 			rest, err := p.Rest()
 			assert.NoError(t, err)
 			assert.Equal(t, ex.rest, rest)
@@ -171,6 +183,46 @@ func TestParser_SkipSpaces(t *testing.T) {
 	}
 }
 
+func TestParser_Ignore(t *testing.T) {
+	t.Run("error", func(t *testing.T) {
+		p := NewParser(iotest.ErrReader(errors.New("fail")))
+		eof, err := p.SkipSpaces()
+		assert.False(t, eof, "EOF is not expected")
+		assert.EqualError(t, err, "Unexpected error: fail")
+	})
+
+	examples := []struct {
+		name string
+		in   string
+		s    string
+		rest string
+		err  string
+	}{
+		{"ignore on empty",
+			"", "ab", "", "Parser: unexpected EOF. expected 'a'"},
+		{"ignore",
+			"abc___", "abc", "___", ""},
+		{"ignore mismatch",
+			"abc", "aw", "c", "Parser: unexpected next char 'b'. expected 'w'"},
+	}
+	for _, ex := range examples {
+		t.Run(ex.name, func(t *testing.T) {
+			in := bytes.NewBufferString(ex.in)
+			p := NewParser(in)
+			eof, err := p.Ignore(ex.s)
+			assert.Equal(t, ex.rest == "", eof)
+			if ex.err == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, ex.err)
+			}
+			rest, err := p.Rest()
+			assert.NoError(t, err)
+			assert.Equal(t, ex.rest, rest)
+		})
+	}
+}
+
 func TestIsDigit(t *testing.T) {
 	examples := []struct {
 		r       rune
@@ -218,20 +270,20 @@ func TestParser_ReadHex(t *testing.T) {
 		rest string
 	}{
 		{1, "", 0, true, "", ""},
-		{1, "Z", 0, false, "Unexpected hex digit 'Z'", ""},
-		{1, "/", 0, false, "Unexpected hex digit '/'", ""}, // '0' - 1
+		{1, "Z", 0, false, "ReadHex: unexpected hex digit 'Z'", ""},
+		{1, "/", 0, false, "ReadHex: unexpected hex digit '/'", ""}, // '0' - 1
 		{1, "0", 0, false, "", ""},
 		{1, "1", 1, false, "", ""},
 		{1, "9", 9, false, "", ""},
-		{1, ":", 0, false, "Unexpected hex digit ':'", ""}, // '9' + 1
-		{1, "`", 0, false, "Unexpected hex digit '`'", ""}, // 'a' - 1
+		{1, ":", 0, false, "ReadHex: unexpected hex digit ':'", ""}, // '9' + 1
+		{1, "`", 0, false, "ReadHex: unexpected hex digit '`'", ""}, // 'a' - 1
 		{1, "a", 10, false, "", ""},
 		{1, "f", 15, false, "", ""},
-		{1, "g", 0, false, "Unexpected hex digit 'g'", ""}, // 'f' + 1
-		{1, "@", 0, false, "Unexpected hex digit '@'", ""}, // 'A' - 1
+		{1, "g", 0, false, "ReadHex: unexpected hex digit 'g'", ""}, // 'f' + 1
+		{1, "@", 0, false, "ReadHex: unexpected hex digit '@'", ""}, // 'A' - 1
 		{1, "A", 10, false, "", ""},
 		{1, "F", 15, false, "", ""},
-		{1, "G", 0, false, "Unexpected hex digit 'G'", ""}, // 'F' + 1
+		{1, "G", 0, false, "ReadHex: unexpected hex digit 'G'", ""}, // 'F' + 1
 
 		{2, "a", 10, true, "", ""},
 		{1, "ab", 10, false, "", "b"},
