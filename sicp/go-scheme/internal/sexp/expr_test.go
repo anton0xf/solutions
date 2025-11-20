@@ -30,8 +30,8 @@ func TestString(t *testing.T) {
 			Cons(&Int{1}, Cons(&Int{2}, &Null{})),
 			"(1 2)"},
 		{"(*List)(nil)", (*List)(nil), "<nil>"},
-		{"(list)", NewList(), "()"},
-		{"(list (list))", NewList(NewList()), "(())"},
+		{"(list)", NULL, "()"},
+		{"(list (list))", NewList(NULL), "(())"},
 		{"(list 1)", NewList(&Int{1}), "(1)"},
 		{"(list 1 2)", NewList(&Int{1}, &Int{2}), "(1 2)"},
 		{"(list 1 (list 2 3) 4)",
@@ -50,7 +50,7 @@ func TestString(t *testing.T) {
 }
 
 func TestNewList(t *testing.T) {
-	assert.Equal(t, NULL, NewList())
+	assert.Equal(t, NULL, NULL)
 	assert.Equal(t, Cons(&Int{1}, NULL), NewList(&Int{1}))
 	assert.Equal(t, Cons(&Int{1}, Cons(&Int{2}, NULL)),
 		NewList(&Int{1}, &Int{2}))
@@ -69,7 +69,7 @@ func TestList_Car(t *testing.T) {
 		err  string
 	}{
 		{nil, nil, "Car: Pair is <nil>"},
-		{NewList(), nil, "Car: wrong argument type (pair expected): ()"},
+		{NULL, nil, "Car: wrong argument type (pair expected): ()"},
 		{NewList(&Int{1}), &Int{1}, ""},
 		{NewList(&Int{1}, &Int{2}), &Int{1}, ""},
 	}

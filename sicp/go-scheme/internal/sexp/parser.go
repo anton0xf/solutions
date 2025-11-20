@@ -287,7 +287,7 @@ func Quote(expr Expr) Expr {
 
 	case *List:
 		if len(x.xs) == 0 {
-			return NewList()
+			return NULL
 		}
 		es := make([]Expr, len(x.xs))
 		for i, e := range x.xs {

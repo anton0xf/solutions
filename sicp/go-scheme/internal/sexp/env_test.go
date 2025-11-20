@@ -49,7 +49,7 @@ func TestEnv_Eval(t *testing.T) {
 		{&Env{}, &List{nil}, &Env{}, nil, "Env.EvalList: List{nil}"},
 		{&Env{}, (*Pair)(nil), &Env{}, nil, "Env.EvalPair: nil parameter"},
 		{&Env{}, &Pair{nil, nil}, &Env{}, nil, "Env.EvalPair: nil head"},
-		{&Env{}, NewList(), &Env{}, nil, "Env.Eval: empty list"},
+		{&Env{}, NULL, &Env{}, nil, "Env.Eval: empty list"},
 		// TODO call function
 
 		// special forms
