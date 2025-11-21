@@ -21,7 +21,7 @@ func NewEnv(fns []*Function) *Env {
 }
 
 func NewEnvDefault() *Env {
-	return NewEnv([]*Function{FnInc})
+	return NewEnv([]*Function{FnInc, FnPlus})
 }
 
 func (env *Env) Get(name string) (Expr, error) {

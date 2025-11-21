@@ -17,3 +17,18 @@ var FnInc = &Function{
 		return nil, fmt.Errorf("inc: unexpected argument type: %s", args[0])
 	},
 }
+
+var FnPlus = &Function{
+	name: "+",
+	f: func(args ...Expr) (Expr, error) {
+		res := 0
+		for i, arg := range args {
+			n, ok := arg.(*Int)
+			if !ok {
+				return nil, fmt.Errorf("+: unexpected argument type: [%d] %s", i, arg)
+			}
+			res += n.x
+		}
+		return &Int{res}, nil
+	},
+}
