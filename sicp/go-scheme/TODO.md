@@ -12,7 +12,7 @@
       see [here](https://github.com/mattn/go-isatty/issues/24)
 * [ ] functions
   * [ ] predefined
-    * [ ] +, -, *, /
+    * [x] inc, dec, +, -, *, /
     * [ ] cons, null?, list, list?, car, cdr
 * [ ] substitution model
   * [ ] applicative evaluation order
