@@ -20,7 +20,7 @@ func main() {
 
 func Run(interactive bool, in io.Reader, out io.Writer) error {
 	parser := sexp.NewParser(in)
-	env := &sexp.Env{}
+	env := sexp.NewEnvDefault()
 	for {
 		if interactive {
 			fmt.Fprint(out, "> ")

@@ -9,6 +9,21 @@ type Env struct {
 	m map[string]Expr
 }
 
+func NewEnv(fns []*Function) *Env {
+	m := make(map[string]Expr)
+	for _, fn := range fns {
+		if fn == nil {
+			panic(errors.New("NewEnv: <nil> function"))
+		}
+		m[fn.name] = fn
+	}
+	return &Env{m}
+}
+
+func NewEnvDefault() *Env {
+	return NewEnv([]*Function{FnInc})
+}
+
 func (env *Env) Get(name string) (Expr, error) {
 	if name == "" {
 		return nil, errors.New("Env.Get: empty symbol name")
