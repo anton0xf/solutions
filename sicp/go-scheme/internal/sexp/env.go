@@ -111,6 +111,13 @@ func (env *Env) EvalPair(e *Pair) (Expr, error) {
 			return nil, fmt.Errorf("Env.EvalPair: %w", err)
 		}
 
+		for i, arg := range args {
+			args[i], err = env.Eval(arg)
+			if err != nil {
+				return nil, fmt.Errorf("Env.EvalPair: %w", err)
+			}
+		}
+
 		return f.f(args...)
 	}
 

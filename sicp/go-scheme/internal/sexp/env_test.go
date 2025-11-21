@@ -16,7 +16,7 @@ func TestEnv_Eval(t *testing.T) {
 	defaultEnv := NewEnvDefault()
 
 	examples := []struct {
-		env      *Env
+		env      *Env // TODO: make map of envs and pass here only name
 		expr     Expr
 		envAfter *Env
 		result   Expr
@@ -52,13 +52,26 @@ func TestEnv_Eval(t *testing.T) {
 		{&Env{}, &Pair{nil, nil}, &Env{}, nil, "Env.EvalPair: nil head"},
 
 		// call function
+		{&Env{}, NewList(&Symbol{"a"}), &Env{}, nil,
+			"Env.EvalPair: Env.Get: symbol 'a not defined"},
+		{&Env{map[string]Expr{"a": &Int{1}}},
+			NewList(&Symbol{"a"}),
+			&Env{map[string]Expr{"a": &Int{1}}},
+			nil, "Env.EvalPair: not a function: 1"},
+		{defaultEnv, NewListWithTail([]Expr{&Symbol{"inc"}}, nil), defaultEnv, nil,
+			"Env.EvalPair: ToArray: unsupported type: <nil>"},
 		{defaultEnv, NewList(&Symbol{"inc"}, &Int{1}), defaultEnv, &Int{2}, ""},
+		{defaultEnv, NewList(&Symbol{"inc"}, &Symbol{"a"}), defaultEnv, nil,
+			"Env.EvalPair: Env.Get: symbol 'a not defined"},
+		{defaultEnv, NewList(&Symbol{"inc"}, NewList(&Symbol{"inc"}, &Int{1})),
+			defaultEnv, &Int{3}, ""},
 
 		// special forms
 
 		// TODO define
 	}
 	for _, ex := range examples {
+		// TODO make env printing more readable
 		t.Run(fmt.Sprintf("[%v] %v", ex.env, ex.expr), func(t *testing.T) {
 			res, err := ex.env.Eval(ex.expr)
 			if len(ex.err) > 0 {
