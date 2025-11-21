@@ -5,20 +5,26 @@ import (
 	"io"
 	"os"
 
+	"github.com/mattn/go-isatty"
+
 	"go-scheme/internal/sexp"
 )
 
 func main() {
-	err := Run(os.Stdin, os.Stdout)
+	interactive := isatty.IsTerminal(os.Stdin.Fd())
+	err := Run(interactive, os.Stdin, os.Stdout)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func Run(in io.Reader, out io.Writer) error {
+func Run(interactive bool, in io.Reader, out io.Writer) error {
 	parser := sexp.NewParser(in)
 	env := &sexp.Env{}
 	for {
+		if interactive {
+			fmt.Fprint(out, "> ")
+		}
 		expr, done, err := parser.Parse()
 		if err != nil {
 			return err
