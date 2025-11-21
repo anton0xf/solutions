@@ -117,7 +117,7 @@ func TestList_ToArray(t *testing.T) {
 		res  []Expr
 		err  string
 	}{
-		{&Symbol{"a"}, nil, "ToArray: unsupported type: *sexp.Symbol"},
+		{&Symbol{"a"}, nil, "ToArray: list expected: a"},
 		{NULL, nil, ""},
 		{(*Pair)(nil), nil, "ToArray: list expected: <nil>"},
 		{&Pair{nil, &Int{1}}, nil, "ToArray: list expected: (<nil> . 1)"},
@@ -125,9 +125,8 @@ func TestList_ToArray(t *testing.T) {
 		{&Pair{&Int{1}, &Int{2}}, nil, "ToArray: list expected: (1 . 2)"},
 		{&Pair{&Int{1}, NULL}, []Expr{&Int{1}}, ""},
 		{&Pair{&Int{1}, &Pair{&Int{2}, &Int{3}}}, nil, "ToArray: list expected: (1 2 . 3)"},
-		// TODO uncomment
-		//{NewList(&Int{1}, &Symbol{"a"}), []Expr{&Int{1}, &Symbol{"a"}}, ""},
-		//{NewList(&Int{1}, &Int{2}, &Int{3}), []Expr{&Int{1}, &Int{2}, &Int{3}}, ""},
+		{NewList(&Int{1}, &Symbol{"a"}), []Expr{&Int{1}, &Symbol{"a"}}, ""},
+		{NewList(&Int{1}, &Int{2}, &Int{3}), []Expr{&Int{1}, &Int{2}, &Int{3}}, ""},
 	}
 	for _, ex := range examples {
 		t.Run(fmt.Sprintf("%s", ex.expr), func(t *testing.T) {

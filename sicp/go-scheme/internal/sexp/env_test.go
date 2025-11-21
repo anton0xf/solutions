@@ -59,7 +59,7 @@ func TestEnv_Eval(t *testing.T) {
 			&Env{map[string]Expr{"a": &Int{1}}},
 			nil, "Env.EvalPair: not a function: 1"},
 		{defaultEnv, NewListWithTail([]Expr{&Symbol{"inc"}}, nil), defaultEnv, nil,
-			"Env.EvalPair: ToArray: unsupported type: <nil>"},
+			"Env.EvalPair: ToArray: list expected: <nil>"},
 		{defaultEnv, NewList(&Symbol{"inc"}, &Int{1}), defaultEnv, &Int{2}, ""},
 		{defaultEnv, NewList(&Symbol{"inc"}, &Symbol{"a"}), defaultEnv, nil,
 			"Env.EvalPair: Env.Get: symbol 'a not defined"},

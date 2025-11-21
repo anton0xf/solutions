@@ -115,36 +115,49 @@ func (e *Pair) Cdr() (Expr, error) {
 }
 
 func IsList(expr Expr) bool {
-	switch e := expr.(type) {
-	case *Null:
-		return true
+	for {
+		if expr == nil {
+			return false
+		}
 
-	case *Pair:
-		// TODO check if TCO works here
-		return e != nil && e.x != nil && e.y != nil && IsList(e.y)
+		switch e := expr.(type) {
+		case *Null:
+			return true
 
-	default:
-		return false
+		case *Pair:
+			if e == nil || e.x == nil || e.y == nil {
+				return false
+			}
+			expr = e.y
+
+		default:
+			return false
+		}
 	}
 }
 
 func ToArray(expr Expr) ([]Expr, error) {
-	switch e := expr.(type) {
-	case *Null:
-		return nil, nil
+	if !IsList(expr) {
+		return nil, fmt.Errorf("ToArray: list expected: %v", expr)
+	}
 
-	case *Pair:
-		if !IsList(expr) {
-			return nil, fmt.Errorf("ToArray: list expected: %s", expr)
+	var res []Expr
+	for {
+		if expr == nil {
+			return nil, errors.New("ToArray: <nil> argument")
 		}
-		// TODO support more than one element in list
-		if e.y == NULL {
-			return []Expr{e.x}, nil
-		}
-		return nil, errors.New("ToArray: unimplemented")
 
-	default:
-		return nil, fmt.Errorf("ToArray: unsupported type: %T", expr)
+		switch e := expr.(type) {
+		case *Null:
+			return res, nil
+
+		case *Pair:
+			res = append(res, e.x)
+			expr = e.y
+
+		default:
+			return nil, fmt.Errorf("ToArray: unsupported type: %T", expr)
+		}
 	}
 }
 
