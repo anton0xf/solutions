@@ -1,6 +1,7 @@
 package sexp
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 )
@@ -105,11 +106,46 @@ func Car(expr Expr) (Expr, error) {
 	}
 }
 
+// TODO make it a function like Car
 func (e *Pair) Cdr() (Expr, error) {
 	if e == nil {
 		return nil, fmt.Errorf("Cdr: Pair is %s", NIL_STR)
 	}
 	return e.y, nil
+}
+
+func IsList(expr Expr) bool {
+	switch e := expr.(type) {
+	case *Null:
+		return true
+
+	case *Pair:
+		// TODO check if TCO works here
+		return e != nil && e.x != nil && e.y != nil && IsList(e.y)
+
+	default:
+		return false
+	}
+}
+
+func ToArray(expr Expr) ([]Expr, error) {
+	switch e := expr.(type) {
+	case *Null:
+		return nil, nil
+
+	case *Pair:
+		if !IsList(expr) {
+			return nil, fmt.Errorf("ToArray: list expected: %s", expr)
+		}
+		// TODO support more than one element in list
+		if e.y == NULL {
+			return []Expr{e.x}, nil
+		}
+		return nil, errors.New("ToArray: unimplemented")
+
+	default:
+		return nil, fmt.Errorf("ToArray: unsupported type: %T", expr)
+	}
 }
 
 func NewList(exprs ...Expr) Expr {
@@ -144,4 +180,13 @@ func (e *Quoted) String() string {
 	}
 
 	return fmt.Sprintf("'%s", s)
+}
+
+type Function struct {
+	name string
+	f    func(args ...Expr) (Expr, error)
+}
+
+func (e *Function) String() string {
+	return fmt.Sprintf("function %s", e.name)
 }

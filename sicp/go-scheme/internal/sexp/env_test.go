@@ -1,6 +1,7 @@
 package sexp
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -13,6 +14,19 @@ func Str(s string) *string {
 }
 
 func TestEnv_Eval(t *testing.T) {
+	incFn := &Function{
+		name: "inc",
+		f: func(args ...Expr) (Expr, error) {
+			if len(args) != 1 {
+				return nil, errors.New("inc: unexpected number of arguments")
+			}
+			if n, ok := args[0].(*Int); ok {
+				return &Int{n.x + 1}, nil
+			}
+			return nil, fmt.Errorf("inc: unexpected argument type: %s", args[0])
+		},
+	}
+
 	examples := []struct {
 		env      *Env
 		expr     Expr
@@ -49,7 +63,11 @@ func TestEnv_Eval(t *testing.T) {
 		{&Env{}, (*Pair)(nil), &Env{}, nil, "Env.EvalPair: nil parameter"},
 		{&Env{}, &Pair{nil, nil}, &Env{}, nil, "Env.EvalPair: nil head"},
 
-		// TODO call function
+		// call function
+		{&Env{map[string]Expr{"inc": incFn}},
+			NewList(&Symbol{"inc"}, &Int{1}),
+			&Env{map[string]Expr{"inc": incFn}},
+			&Int{2}, ""},
 
 		// special forms
 

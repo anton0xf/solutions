@@ -2,6 +2,7 @@
   * [x] int
   * [x] string
   * [x] symbol
+  * [ ] #t, #f
 * [ ] evaluate special composites
   * [ ] evaluate define()
   * [x] evaluate quoted literal
@@ -11,8 +12,8 @@
       see [here](https://github.com/mattn/go-isatty/issues/24)
 * [ ] functions
   * [ ] predefined
-  * [ ] +, -, *, /
-  * [ ] cons, null?, list
+    * [ ] +, -, *, /
+    * [ ] cons, null?, list, list?, car, cdr
 * [ ] substitution model
   * [ ] applicative evaluation order
   * [ ] normal evaluation order

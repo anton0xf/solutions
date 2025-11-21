@@ -79,5 +79,25 @@ func (env *Env) EvalPair(e *Pair) (Expr, error) {
 		return nil, errors.New("Env.EvalPair: nil head")
 	}
 
+	switch head := e.x.(type) {
+	case *Symbol:
+		fExpr, err := env.Get(head.name)
+		if err != nil {
+			return nil, fmt.Errorf("Env.EvalPair: %w", err)
+		}
+
+		f, fOk := fExpr.(*Function)
+		if !fOk {
+			return nil, fmt.Errorf("Env.EvalPair: not a function: %s", fExpr)
+		}
+
+		args, err := ToArray(e.y)
+		if err != nil {
+			return nil, fmt.Errorf("Env.EvalPair: %w", err)
+		}
+
+		return f.f(args...)
+	}
+
 	return nil, fmt.Errorf("Env.EvalPair: unexpected pair: %s", e)
 }

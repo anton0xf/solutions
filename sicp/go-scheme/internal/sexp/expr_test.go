@@ -85,3 +85,59 @@ func TestList_Car(t *testing.T) {
 		})
 	}
 }
+
+func TestList_IsList(t *testing.T) {
+	examples := []struct {
+		expr Expr
+		res  bool
+	}{
+		{&Symbol{"a"}, false},
+		{NULL, true},
+		{(*Pair)(nil), false},
+		{&Pair{nil, &Int{1}}, false},
+		{&Pair{&Symbol{"a"}, nil}, false},
+		{&Pair{&Symbol{"a"}, &Int{2}}, false},
+		{&Pair{&Int{1}, NULL}, true},
+		{&Pair{&Int{1}, &Pair{&Int{2}, NULL}}, true},
+		{&Pair{&Int{1}, &Pair{&Int{2}, &Int{3}}}, false},
+		{&Pair{&Pair{nil, nil}, NULL}, true},
+		{NewList(&Int{1}, &Symbol{"a"}), true},
+	}
+	for _, ex := range examples {
+		t.Run(fmt.Sprintf("%s", ex.expr), func(t *testing.T) {
+			res := IsList(ex.expr)
+			assert.Equal(t, ex.res, res)
+		})
+	}
+}
+
+func TestList_ToArray(t *testing.T) {
+	examples := []struct {
+		expr Expr
+		res  []Expr
+		err  string
+	}{
+		{&Symbol{"a"}, nil, "ToArray: unsupported type: *sexp.Symbol"},
+		{NULL, nil, ""},
+		{(*Pair)(nil), nil, "ToArray: list expected: <nil>"},
+		{&Pair{nil, &Int{1}}, nil, "ToArray: list expected: (<nil> . 1)"},
+		{&Pair{&Symbol{"a"}, nil}, nil, "ToArray: list expected: (a . <nil>)"},
+		{&Pair{&Int{1}, &Int{2}}, nil, "ToArray: list expected: (1 . 2)"},
+		{&Pair{&Int{1}, NULL}, []Expr{&Int{1}}, ""},
+		{&Pair{&Int{1}, &Pair{&Int{2}, &Int{3}}}, nil, "ToArray: list expected: (1 2 . 3)"},
+		// TODO uncomment
+		//{NewList(&Int{1}, &Symbol{"a"}), []Expr{&Int{1}, &Symbol{"a"}}, ""},
+		//{NewList(&Int{1}, &Int{2}, &Int{3}), []Expr{&Int{1}, &Int{2}, &Int{3}}, ""},
+	}
+	for _, ex := range examples {
+		t.Run(fmt.Sprintf("%s", ex.expr), func(t *testing.T) {
+			res, err := ToArray(ex.expr)
+			if ex.err == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, ex.err)
+			}
+			assert.Equal(t, ex.res, res)
+		})
+	}
+}
