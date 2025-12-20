@@ -19,12 +19,12 @@
     (is (= 5 (multiples-in-range-ref -4 5 2)))
     (is (= 5 (multiples-in-range-ref -3 6 2)))
     (is (= 0 (multiples-in-range-ref 1 4 5))))
-  (testing "test actual impl"
-    (for [k (range 1 8)
-          a (range -10 11)
-          b (range -10 11)]
-      (do (println "[k a b] =" [k a b])
-          (is (= (multiples-in-range-ref a b k) (multiples-in-range a b k)))))))
+  (testing "test actual impl:"
+    (doseq [k (range 1 8)
+            a (range -10 11)
+            b (range -10 11)]
+      (testing (format "multiplies of %d in [%d, %d]" k a b)
+        (is (= (multiples-in-range-ref a b k) (multiples-in-range a b k)))))))
 
 (deftest test-exec
   (testing "Should work on example"
