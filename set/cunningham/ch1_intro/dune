@@ -1,5 +1,0 @@
-(coq.theory
- (name ch1_intro)
- ; (stdlib no)
- (theories Stdlib)
-)
