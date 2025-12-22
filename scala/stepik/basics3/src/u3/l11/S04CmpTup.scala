@@ -6,6 +6,7 @@ object S04CmpTup {
     val tuple = List[(Char, Char) => Boolean]((_ == _), (_ != _), (_ > _), (_ >= _), (_ < _), (_ <= _))
     val res = tuple.map(f => f(arg1, arg2))
     println(res.mkString("(", ",", ")"))
+    Date
   }
 
   @main
