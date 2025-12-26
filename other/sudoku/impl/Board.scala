@@ -20,12 +20,24 @@ type Val = Byte
 
 final case class Board(m: Map[Pos, Set[Val]]) {
   def set(pos: Pos, d: Val): Option[Board] = {
-    val newM = m.map { case (p, vals) =>
+    val board = Board(m.map { case (p, vals) =>
       p -> (if p == pos then Set(d)
             else if p.same(pos) then vals - d
             else vals)
+    })
+    Some(board).filter(_.valid)
+  }
+
+  private def valid: Boolean = {
+    m.forall {
+      case (pos, vals) => vals.size match {
+          case 0 => false
+          case 1 =>
+            val d = vals.head
+            !m.iterator.exists((p, vs) => pos != p && pos.same(p) && (vs - d).isEmpty)
+          case _ => true
+        }
     }
-    if newM.values.forall(_.nonEmpty) then Some(Board(newM)) else None
   }
 
   override def toString: String =
@@ -56,19 +68,15 @@ final case class Board(m: Map[Pos, Set[Val]]) {
   }
 
   def solve(): Option[Board] = {
-    def run(board: Board): Option[Board] = {
-      val unsolved = board.simplestUnsolved
-      unsolved match {
-        case SimplestUnsolved.Inconsistent => None
-        case SimplestUnsolved.Solved => Some(board)
-        case SimplestUnsolved.Some(p, vals) if vals.size < 2 =>
-          throw new RuntimeException(s"$p vals ($vals) should contain at least two vals")
-        case SimplestUnsolved.Some(p, vals) =>
-          vals.flatMap(d => board.set(p, d).flatMap(_.solve())).headOption // ??
-        case x => throw new RuntimeException(s"unexpected simplestUnsolved: $x")
-      }
+    simplestUnsolved match {
+      case SimplestUnsolved.Inconsistent => None
+      case SimplestUnsolved.Solved => Some(this)
+      case SimplestUnsolved.Some(p, vals) if vals.size < 2 =>
+        throw new RuntimeException(s"$p vals ($vals) should contain at least two vals")
+      case SimplestUnsolved.Some(p, vals) =>
+        vals.flatMap(d => set(p, d).flatMap(_.solve())).headOption // ??
+      case x => throw new RuntimeException(s"unexpected simplestUnsolved: $x")
     }
-    run(this)
   }
 }
 

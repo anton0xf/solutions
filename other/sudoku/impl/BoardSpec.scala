@@ -4,6 +4,8 @@ package sudoku.impl
 import munit.*
 import sudoku.impl.Board.*
 
+import scala.jdk.StreamConverters.*
+
 class BoardSpec extends FunSuite {
   test("solve sudoku") {
     val in =
@@ -23,15 +25,15 @@ class BoardSpec extends FunSuite {
     assertEquals(
       solution.map(_.toString),
       Some(
-        """6, 4, 2, 3, 8, 1, 9, 5, 7
-        |7, 9, 5, 4, 2, 6, 1, 8, 3
-        |3, 8, 1, 7, 9, 5, 4, 2, 6
-        |1, 7, 8, 9, 6, 4, 5, 3, 2
-        |2, 5, 9, 8, 1, 3, 7, 4, 1
-        |4, 6, 3, 5, 1, 7, 8, 1, 9
-        |9, 2, 6, 1, 7, 8, 3, 6, 5
-        |8, 3, 4, 6, 5, 9, 2, 7, 1
-        |5, 1, 7, 6, 3, 2, 6, 9, 4""".stripMargin
+        """4, 6, 2, 8, 3, 1, 9, 5, 7
+          |7, 9, 5, 4, 2, 6, 1, 8, 3
+          |3, 8, 1, 7, 9, 5, 4, 2, 6
+          |1, 7, 3, 9, 8, 4, 2, 6, 5
+          |6, 5, 9, 3, 1, 2, 7, 4, 8
+          |2, 4, 8, 5, 6, 7, 3, 1, 9
+          |9, 2, 6, 1, 7, 8, 5, 3, 4
+          |8, 3, 4, 2, 5, 9, 6, 7, 1
+          |5, 1, 7, 6, 4, 3, 8, 9, 2""".stripMargin
       )
     )
   }
@@ -57,5 +59,24 @@ class BoardSpec extends FunSuite {
     val board = empty.set(Pos(0, 0), 7)
       .flatMap(_.set(Pos(0, 1), 7))
     assertEquals(board, None)
+  }
+
+  test("same") {
+    val p = Pos(4, 6)
+    val s =
+      """
+        |_____1___
+        |_____1___
+        |_____1___
+        |_____1___
+        |_____1___
+        |111111111
+        |___111___
+        |___111___
+        |""".stripMargin
+    val res = for {
+      (ln, i) <- s.lines().toScala(Iterator).filterNot(_.isBlank).zipWithIndex
+      (v, j) <- ln.map(_ == '1').zipWithIndex
+    } yield assertEquals(p.same(Pos(i, j)), v)
   }
 }
