@@ -90,6 +90,24 @@ Definition idt' (A: Prop): A -> A := (fun x => x).
 
 Check (idt True).
 
+(* (M: T) (N: V): U *)
+(* (M: A -> B) (N: A): B *)
+Theorem application_make_tautology (A B: Prop) (M: A -> B) (N: A): B.
+Proof.
+  apply M in N.
+  exact N.
+Qed.
+
+Theorem application_make_tautology' (A B: Prop) (M: A -> B) (N: A): B.
+Proof.
+  apply M.
+  exact N.
+Qed.
+
+Print application_make_tautology.
+Definition application_make_tautology'' (A B: Prop) (M: A -> B) (N: A): B := M N.
+Print application_make_tautology''.
+
 Theorem trans (A B C: Prop): (A -> B) -> (B -> C) -> (A -> C).
 Proof.
   intros HAB HBC HA.
@@ -100,4 +118,3 @@ Definition trans' (A B C: Prop): (A -> B) -> (B -> C) -> (A -> C) :=
   fun HAB HBC HA => HBC (HAB HA).
 
 (* BHK-interpretation *)
-
