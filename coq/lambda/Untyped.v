@@ -1,5 +1,7 @@
 (* https://en.wikipedia.org/wiki/Lambda_calculus *)
-Require Import Arith String List ListSet Bool Relation_Definitions.
+Require Import Bool Arith String List
+  OrdersEx MSetWeakList MSetProperties
+  Relation_Definitions.
 Import Nat ListNotations Ascii.
 
 (** Lambda expression *)
@@ -35,50 +37,41 @@ Unset Printing Notations.
 Check <{ (x => x x) y }>.
 Set Printing Notations.
 
-(** ListSet of strings helpers *)
-Definition strs := set string.
-Definition no_strs := empty_set string.
-Definition add_str := set_add string_dec.
-Definition one_str (s: string) := add_str s no_strs.
-Definition strs_of (xs: list string): strs := nodup string_dec xs.
-Definition strs_mem := set_mem string_dec.
-Definition strs_In := @set_In string.
-Definition remove_str := set_remove string_dec.
-Definition union_strs := set_union string_dec.
+(** Set of strings *)
+Definition strs := string -> Prop.
+Definition empty_str: strs := fun x => False.
+Definition add_str (x: string) (A: strs): strs := fun y => x = y \/ A y.
+Axiom strs_eq: forall A B: strs, A = B <-> forall x, A x <-> B x.
+Definition strs_union (A B: strs): strs := fun x => A x \/ B x.
+Definition remove_str (x: string) (A: strs): strs := fun y => y <> x /\ A y.
 
-Theorem strs_mem_reflect_In (x: string) (xs: strs):
-  reflect (strs_In x xs) (strs_mem x xs).
-Proof.
-  destruct (strs_mem x xs) eqn:H.
-  - apply ReflectT. apply set_mem_correct1 with string_dec. apply H.
-  - apply ReflectF. apply set_mem_complete1 with string_dec. apply H.
-Qed.
+Notation "{{ }}" := empty_str.
+Notation "{{ x ; .. ; y }}" := (add_str x .. (add_str y empty_str) ..).
 
-Theorem strs_union_iff (x: string) (A B: strs):
-  strs_In x (union_strs A B) <-> strs_In x A \/ strs_In x B.
-Proof.
-  split.
-  - apply (set_union_elim string_dec).
-  - apply (set_union_intro string_dec).
-Qed.
-
-Theorem remove_str_spec (x: string) (xs: strs):
-  forall y, strs_In y (remove_str x xs) <-> y <> x /\ strs_In y xs.
-Proof.
-  intro y. induction xs as [|z xs IH]. { intuition. }
-  simpl. destruct (string_dec x z) as [eq|neq].
-  - subst z. 
+Check {{ "a"; "b"; "c" }}.
 
 (** Free variables of Lambda expression *)
 Fixpoint free_vars (M: LExpr): strs :=
   match M with
-  | LVar name => one_str name
-  | LApp M N => union_strs (free_vars M) (free_vars N)
+  | LVar name => {{ name }}
+  | LApp M N => strs_union (free_vars M) (free_vars N)
   | L var body => remove_str var (free_vars body)
   end.
 
-Example free_vars_ex: free_vars <{ (x => z x) y }> = strs_of [z; y].
-Proof. reflexivity. Qed.
+Example free_vars_ex: free_vars <{ (x => z x) y }> = {{ z; y }}.
+Proof.
+  simpl. apply strs_eq. intro t.
+  unfold strs_union, remove_str, add_str, empty_str.
+  split; intro H.
+  - destruct H as [[neq [[eq | []] | [eq | []]]] | [eq | []]].
+    + subst t. left. reflexivity.
+    + subst t. contradict neq. reflexivity.
+    + subst t. right. left. reflexivity.
+  - destruct H as [eqz | [eqy | []]].
+    + subst t. left. split. discriminate.
+      left. left. reflexivity.
+    + subst t. right. left. reflexivity.
+Qed.
 
 (** option helpers *)
 (* fmap / <$>
