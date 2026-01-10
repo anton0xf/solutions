@@ -1,5 +1,5 @@
 (* https://en.wikipedia.org/wiki/Lambda_calculus *)
-Require Import Arith String List ListSet.
+Require Import Arith String List ListSet Bool Relation_Definitions.
 Import Nat ListNotations Ascii.
 
 (** Lambda expression *)
@@ -42,9 +42,32 @@ Definition add_str := set_add string_dec.
 Definition one_str (s: string) := add_str s no_strs.
 Definition strs_of (xs: list string): strs := nodup string_dec xs.
 Definition strs_mem := set_mem string_dec.
-Definition strs_In := set_In string.
+Definition strs_In := @set_In string.
 Definition remove_str := set_remove string_dec.
 Definition union_strs := set_union string_dec.
+
+Theorem strs_mem_reflect_In (x: string) (xs: strs):
+  reflect (strs_In x xs) (strs_mem x xs).
+Proof.
+  destruct (strs_mem x xs) eqn:H.
+  - apply ReflectT. apply set_mem_correct1 with string_dec. apply H.
+  - apply ReflectF. apply set_mem_complete1 with string_dec. apply H.
+Qed.
+
+Theorem strs_union_iff (x: string) (A B: strs):
+  strs_In x (union_strs A B) <-> strs_In x A \/ strs_In x B.
+Proof.
+  split.
+  - apply (set_union_elim string_dec).
+  - apply (set_union_intro string_dec).
+Qed.
+
+Theorem remove_str_spec (x: string) (xs: strs):
+  forall y, strs_In y (remove_str x xs) <-> y <> x /\ strs_In y xs.
+Proof.
+  intro y. induction xs as [|z xs IH]. { intuition. }
+  simpl. destruct (string_dec x z) as [eq|neq].
+  - subst z. 
 
 (** Free variables of Lambda expression *)
 Fixpoint free_vars (M: LExpr): strs :=
@@ -87,32 +110,162 @@ Compute pair <$> (Some 1) <*> (Some false). (* = Some (1, false) *)
 substituting N for every free occurrence of x in M,
 while avoiding variable capture. *)
 
-Fixpoint subst (x: string) (M N: LExpr): option LExpr :=
+Fixpoint try_subst (x: string) (M N: LExpr): option LExpr :=
   match M with
   | LVar name => Some (if name =? x then N else M)
-  | LApp A B => LApp <$> subst x A N <*> subst x B N
+  | LApp A B => LApp <$> try_subst x A N <*> try_subst x B N
   | L var body => if var =? x then Some M else
                    if strs_mem var (free_vars N) then None
-                   else L var <$> subst x body N
+                   else L var <$> try_subst x body N
   end.
 
-Example subst_var_ex0: subst x y z = Some (LVar y).
+Example try_subst_var_ex0: try_subst x y z = Some (LVar y).
 Proof. reflexivity. Qed.
 
-Example subst_var_ex1: subst x x z = Some (LVar z).
+Example try_subst_var_ex1: try_subst x x z = Some (LVar z).
 Proof. reflexivity. Qed.
 
-Example subst_L_ex0: subst x <{ x => f y }> z = Some <{ x => f y }>.
+Example try_subst_L_ex0: try_subst x <{ x => f y }> z = Some <{ x => f y }>.
 Proof. reflexivity. Qed.
 
-Example subst_L_ex1: subst x <{ y => f y }> <{ g y }> = None.
+Example try_subst_L_ex1: try_subst x <{ y => f y }> <{ g y }> = None.
 Proof. reflexivity. Qed.
 
-Example subst_L_ex2: subst x <{ y => f x y }> z = Some <{ y => f z y }>.
+Example try_subst_L_ex2: try_subst x <{ y => f x y }> z = Some <{ y => f z y }>.
 Proof. reflexivity. Qed.
 
-Example subst_ex: subst x <{ (y => f x y) (g x) }> z = Some <{ (y => f z y) (g z) }>.
+Example try_subst_ex:
+  try_subst x <{ (y => f x y) (g x) }> z = Some <{ (y => f z y) (g z) }>.
 Proof. reflexivity. Qed.
 
+Reserved Notation "M [ x := Y ]> N" (at level 5, no associativity).
+
+Inductive subst: string -> LExpr -> LExpr -> LExpr -> Prop :=
+| subst_same_var (x: string) (Y: LExpr): x [x := Y]> Y
+| subst_other_var (x m: string) (Y: LExpr): m <> x -> m [x := Y]> m
+| subst_app (x: string) (A B Y A' B': LExpr):
+  A [x := Y]> A' -> B [x := Y]> B' -> <{ A B }> [x := Y]> <{ A' B' }>
+| subst_L_same_var (x: string) (M Y: LExpr): <{ x => M }> [x := Y]> <{ x => M }>
+| subst_L_other_var (x t: string) (M Y N: LExpr):
+  t <> x -> ~ strs_In t (free_vars Y)
+  -> M [x := Y]> N -> <{ t => M }> [x := Y]> <{ t => N }>
+where "M [ x := Y ]> N" := (subst x M Y N).
+
+Check <{ f x }> [ x := y ]> <{ f y }>.
+
+Theorem subst_correct (x: string) (M N M': LExpr):
+  subst x M N M' <-> match try_subst x M N with
+                   | None => False
+                   | Some U => U = M'
+                   end.
+Proof.
+  split.
+  - (* -> *) intro H.
+    induction H as [x N | x y N neq
+                   | x A B N A' B' HA IHA HB IHB
+                   | x M N | x y M N M' neq nIn H IH].
+    + simpl. rewrite String.eqb_refl. reflexivity.
+    + simpl. apply String.eqb_neq in neq. rewrite neq. reflexivity.
+    + simpl. destruct (try_subst x A N) as [A''|] eqn:eqA.
+      2: { destruct IHA. } subst A''.
+      destruct (try_subst x B N) as [B''|] eqn:eqB.
+      2: { destruct IHB. } subst B''.
+      simpl. reflexivity.
+    + simpl. rewrite String.eqb_refl. reflexivity.
+    + simpl. apply String.eqb_neq in neq. rewrite neq.
+      destruct (strs_mem_reflect_In y (free_vars N)). { contradiction. }
+      clear n. destruct (try_subst x M N) as [U|].
+      2: { destruct IH. } subst U.
+      simpl. reflexivity.
+  - (* <- *) generalize dependent M'.
+    induction M as [y | A IHA B IHB | y B IH]; intro M'.
+    + simpl. destruct (String.eqb_spec y x) as [eq|neq].
+      * subst y. intro eq. subst M'. apply subst_same_var.
+      * intro eq. subst M'. apply subst_other_var. exact neq.
+    + simpl. destruct (try_subst x A N) as [A'|] eqn:eqA.
+      2: { simpl. contradiction. }
+      destruct (try_subst x B N) as [B'|] eqn:eqB.
+      2: { simpl. contradiction. }
+      simpl. intro eqM. subst M'. apply subst_app.
+      * apply IHA. reflexivity.
+      * apply IHB. reflexivity.
+    + simpl. destruct (String.eqb_spec y x) as [eq|neq].
+      { intro eqM. subst x M'. apply subst_L_same_var. }
+      destruct (strs_mem_reflect_In y (free_vars N)) as [HIn|HnIn].
+      { contradiction. }
+      destruct (try_subst x B N) as [B'|].
+      2: { simpl.  contradiction. }
+      simpl. intro eqM. subst M'. apply subst_L_other_var; try assumption.
+      apply IH. reflexivity.
+Qed.
 
 
+
+Theorem subst_var_sym (u v: string) (A B: LExpr):
+  ~ strs_In v (free_vars A)
+  -> A [u := v]> B -> B [v := u]> A.
+Proof.
+  intros nIn_v_A H. remember (LVar v) as Y eqn:eqv.
+  induction H as [u V | u y v' neq_yu | u A1 A2 v' A1' A2' H1 IH1 H2 IH2
+                 | u M v' | u y M v' M' neq nIn H IH].
+  - subst V. apply subst_same_var.
+  - subst v'. apply subst_other_var. simpl in nIn_v_A.
+    apply Decidable.not_or in nIn_v_A as [neq_yv _].
+    exact neq_yv.
+  - subst v'.
+    simpl in nIn_v_A. rewrite strs_union_iff in nIn_v_A.
+    apply Decidable.not_or in nIn_v_A as [nIn_v_A1 nIn_v_A2].
+    apply subst_app.
+    + apply IH1; [assumption | reflexivity].
+    + apply IH2; [assumption | reflexivity].
+  - subst v'. simpl in nIn_v_A.
+    
+    destruct (String.eqb_spec u v) as [eq|neq].
+    + subst v. apply subst_L_same_var.
+    + apply subst_L_other_var.
+      * exact neq.
+      * admit.
+      * 
+
+    inversion H.
+  - apply subst_correct. simpl. rewrite String.eqb_refl. reflexivity.
+  - subst x0 A B Y. simpl in nIn_v_A.
+    apply Decidable.not_or in nIn_v_A as [neq _].
+    apply subst_other_var. exact neq.
+  - subst A B x0 Y.
+
+Admitted.
+
+(** α-conversion *)
+Inductive a_conv: LExpr -> LExpr -> Prop :=
+| a_conv_same_var (x: string): a_conv x x
+| a_conv_L (x y: string) (A B: LExpr): subst x A y B -> a_conv <{ x => A }> <{ y => B }>
+| a_conv_in_L (x: string) (A B: LExpr): a_conv A B -> a_conv <{ x => A }> <{ x => B }>
+| a_conv_app_l (A A' B: LExpr): a_conv A A' -> a_conv <{ A B }> <{ A' B }>
+| a_conv_app_r (A B B': LExpr): a_conv B B' -> a_conv <{ A B }> <{ A B' }>.
+
+Theorem a_conv_refl: reflexive LExpr a_conv.
+Proof.
+  unfold reflexive. intro e. induction e as [x | M IHM N IHN | x M IH].
+  - apply a_conv_same_var.
+  - apply a_conv_app_l. apply IHM.
+  - apply a_conv_in_L. apply IH.
+Qed.
+
+Theorem a_conv_sym: symmetric LExpr a_conv.
+Proof.
+  unfold symmetric. intros u v H.
+  induction H as [x | x y A B H | x A B H IH | A A' B H IH | A B B' H IH].
+  - apply a_conv_same_var.
+  - apply a_conv_L. admit.
+  - apply a_conv_in_L. exact IH.
+  - apply a_conv_app_l. exact IH.
+  - apply a_conv_app_r. exact IH.
+Qed.
+
+Theorem a_conv_equiv: equiv LExpr a_conv.
+Proof.
+  repeat split.
+  - 
+  - 
+  - 
