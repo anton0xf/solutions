@@ -82,7 +82,7 @@ Definition opt_fmap {A B: Type} (f: A -> B) (x: option A): option B :=
   | Some x => Some (f x)
   | None => None
   end.
-Notation "f <$> x" := (opt_fmap f x) (at level 55, left associativity).
+Notation "f <$> x" := (opt_fmap f x) (at level 56, left associativity).
 
 (* ap / <*>
    https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Control-Monad.html#v:ap
@@ -92,7 +92,7 @@ Definition opt_ap {A B: Type} (f: option (A -> B)) (x: option A): option B :=
   | Some f, Some x => Some (f x)
   | _, _ => None
   end.
-Notation "f <*> x" := (opt_ap f x) (at level 55, left associativity).
+Notation "f <*> x" := (opt_ap f x) (at level 56, left associativity).
 
 Check pair <$> (Some 1) <*> (Some false) : option (nat * bool).
 Compute pair <$> (Some 1) <*> (Some false). (* = Some (1, false) *)
