@@ -106,12 +106,18 @@ func Car(expr Expr) (Expr, error) {
 	}
 }
 
-// TODO make it a function like Car
-func (e *Pair) Cdr() (Expr, error) {
-	if e == nil {
+func Cdr(expr Expr) (Expr, error) {
+	if expr == nil {
 		return nil, fmt.Errorf("Cdr: Pair is %s", NIL_STR)
 	}
-	return e.y, nil
+	switch e := expr.(type) {
+	case *Pair:
+		return e.y, nil
+
+	default:
+		return nil,
+			fmt.Errorf("Cdr: wrong argument type (pair expected): %s", expr)
+	}
 }
 
 func IsList(expr Expr) bool {

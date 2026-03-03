@@ -86,6 +86,31 @@ func TestList_Car(t *testing.T) {
 	}
 }
 
+func TestList_Cdr(t *testing.T) {
+	cases := []struct {
+		list Expr
+		res  Expr
+		err  string
+	}{
+		{nil, nil, "Cdr: Pair is <nil>"},
+		{NULL, nil, "Cdr: wrong argument type (pair expected): ()"},
+		{NewList(&Int{1}), NULL, ""},
+		{NewList(&Int{1}, &Int{2}), NewList(&Int{2}), ""},
+		{NewList(&Int{1}, &Int{2}, &Int{3}), NewList(&Int{2}, &Int{3}), ""},
+	}
+	for _, c := range cases {
+		t.Run(fmt.Sprintf("%v", c.list), func(t *testing.T) {
+			res, err := Cdr(c.list)
+			if len(c.err) > 0 {
+				assert.EqualError(t, err, c.err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, c.res, res)
+		})
+	}
+}
+
 func TestList_IsList(t *testing.T) {
 	examples := []struct {
 		expr Expr
