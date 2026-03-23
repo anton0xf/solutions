@@ -29,13 +29,10 @@ func TestEnv_Eval(t *testing.T) {
 		// Quoted
 		{&Env{}, (*Quoted)(nil), &Env{}, nil, "Env.EvalQuoted: nil parameter"},
 		{&Env{}, &Quoted{nil}, &Env{}, nil, "Env.EvalQuoted: Quoted{nil}"},
-		// quoted literal is just literal
 		{&Env{}, &Quoted{&Int{3}}, &Env{}, &Int{3}, ""},
 		{&Env{}, &Quoted{&String{"aa"}}, &Env{}, &String{"aa"}, ""},
-		// other quotations don't change
-		{&Env{}, &Quoted{&Symbol{"x"}}, &Env{}, &Quoted{&Symbol{"x"}}, ""},
-		{&Env{}, &Quoted{NewList(&Int{1})},
-			&Env{}, &Quoted{NewList(&Int{1})}, ""},
+		{&Env{}, &Quoted{&Symbol{"x"}}, &Env{}, &Symbol{"x"}, ""},
+		{&Env{}, &Quoted{NewList(&Int{1})}, &Env{}, NewList(&Int{1}), ""},
 
 		// Symbol
 		{&Env{}, (*Symbol)(nil), &Env{}, nil, "Env.EvalSymbol: nil parameter"},

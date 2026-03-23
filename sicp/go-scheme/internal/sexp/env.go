@@ -87,13 +87,7 @@ func EvalQuoted(e *Quoted) (Expr, error) {
 		return nil, errors.New("Env.EvalQuoted: Quoted{nil}")
 	}
 
-	switch x := e.x.(type) {
-	case *Int, *String:
-		return x, nil
-
-	default:
-		return e, nil
-	}
+	return e.x, nil
 }
 
 func (env *Env) EvalPair(e *Pair) (Expr, error) {

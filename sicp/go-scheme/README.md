@@ -30,6 +30,6 @@ $ rlwrap go run ./cmd/gs
 > (/ 70 5 7)
 2
 > '((a . b) . (c . (d . (e . ()))))
-'((a . b) c d e)
+((a . b) c d e)
 >
 ```
