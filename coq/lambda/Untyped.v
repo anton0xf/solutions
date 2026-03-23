@@ -193,7 +193,6 @@ Proof.
 Qed.
 
 
-
 Theorem subst_var_sym (u v: string) (A B: LExpr):
   ~ strs_In v (free_vars A)
   -> A [u := v]> B -> B [v := u]> A.
@@ -259,6 +258,34 @@ Qed.
 Theorem a_conv_equiv: equiv LExpr a_conv.
 Proof.
   repeat split.
-  - 
-  - 
-  - 
+Admitted.
+
+Fixpoint reduce1 (M: LExpr): option LExpr :=
+  match M with
+  | LVar name => None
+  | L var body => match reduce1 body with
+                 | Some b => Some (L var b)
+                 | None =>  None
+                 end
+  | LApp (L var body) N => subst var body N
+  | LApp M N => match (reduce1 M, reduce1 N) with
+               | (Some m, _) => Some <{ m N }>
+               | (None, Some n) => Some <{ M n }>
+               | (None, None) => None
+               end
+  end.
+
+Fixpoint reduce (M: LExpr) (steps: nat): LExpr :=
+  match steps with
+  | O => M
+  | S steps => match reduce1 M with
+              | None => M
+              | Some M => reduce M steps
+              end
+  end.
+
+Compute reduce <{ (x => x x) x }> 10.
+Compute reduce <{ (x => f => f x) x (x => g x) }> 10.
+Compute reduce1 <{ (x => x x) (x => x x) }>.
+Compute reduce <{ (x => x x) (x => x x) }> 20.
+
