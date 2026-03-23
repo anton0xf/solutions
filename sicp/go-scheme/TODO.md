@@ -18,7 +18,7 @@
 * [ ] functions
   * [ ] predefined
     * [x] inc, dec, +, -, *, /
-    * [ ] cons, list, car, cdr
+    * [x] cons, list, car, cdr
     * [ ] null?,list?
   * [ ] 
 * [ ] [evaluation strategy](https://en.wikipedia.org/wiki/Evaluation_strategy)

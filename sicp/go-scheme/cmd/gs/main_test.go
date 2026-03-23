@@ -16,6 +16,7 @@ func TestRun(t *testing.T) {
 		{"'fф -23", "'fф\n-23\n"},
 		{`"1a3"`, "\"1a3\"\n"},
 		{`"\u0033 \u2713"`, "\"3 ✓\"\n"},
+		{"'(1 . 2)", "'(1 . 2)\n"},
 		{"'(1 . (2 . ()))", "'(1 2)\n"},
 		{"'()", "'()\n"},
 		{"null", "()\n"},
@@ -31,8 +32,17 @@ func TestRun(t *testing.T) {
 		{"(* 2 4)", "8\n"},
 		{"(* 1 2 3)", "6\n"},
 		{"(/ 70 5 7)", "2\n"},
+		{"(list)", "()\n"},
+		{"(list 1 2)", "(1 2)\n"},
+		{"(cons 1 2)", "(1 . 2)\n"},
+		{"(cons 1 null)", "(1)\n"},
+		// TODO: {"(cons 1 '(2))", "(1 2)\n"},
+		// {"(car '(1 . 2))", "1\n"},
+		{"(car (cons 1 2))", "1\n"},
+		{"(car (list 1 2 3))", "1\n"},
+		{"(cdr (cons 1 2))", "2\n"},
+
 		// TODO uncomment
-		// {"(list 1 2)", "(1 2)\n"},
 		// {"(if #t 1 2)", "1\n"},
 		// {"(define a 1) 'a a", "a\n'a\n1\n"},
 		// {"(define a 7) a '() (list a 1\n()(2) )", "'a\n7\n()\n(7 1 () (2))\n"},
@@ -43,6 +53,7 @@ func TestRun(t *testing.T) {
 			out := new(bytes.Buffer)
 			err := Run(false, in, out)
 			assert.NoError(t, err)
+			// TODO get rid of "\n" suffix in `out`
 			assert.Equal(t, []byte(c.out), out.Bytes())
 		})
 	}

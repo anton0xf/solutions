@@ -30,6 +30,7 @@ func NewEnvDefault() *Env {
 		},
 		[]*Function{
 			FnInc, FnDec, FnPlus, FnMinus, FnMult, FnDiv,
+			FnList, FnCons, FnCar, FnCdr,
 		},
 	)
 }
