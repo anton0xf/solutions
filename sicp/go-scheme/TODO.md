@@ -2,6 +2,7 @@
   * [x] int
   * [x] string
   * [x] symbol
+  * [x] null
   * [ ] #t, #f
 * [x] evaluate special composites
   * [x] evaluate quoted literal
@@ -17,7 +18,8 @@
 * [ ] functions
   * [ ] predefined
     * [x] inc, dec, +, -, *, /
-    * [ ] cons, null?, list, list?, car, cdr
+    * [ ] cons, list, car, cdr
+    * [ ] null?,list?
   * [ ] 
 * [ ] [evaluation strategy](https://en.wikipedia.org/wiki/Evaluation_strategy)
   * [ ] applicative (strict) evaluation order (default)

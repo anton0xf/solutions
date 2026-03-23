@@ -32,6 +32,7 @@ func TestParser_Parse(t *testing.T) {
 		{"int, skip spaces", "\t 123", &Int{123}, "", true},
 		{"int, stop at spaces", "123\na", &Int{123}, "\na", false},
 		{"symbol", "qwer ty", &Symbol{"qwer"}, " ty", false},
+		{"symbol", "null", &Symbol{"null"}, "", true},
 		{"string", `"qwer"`, &String{"qwer"}, "", false},
 		{"string with suffix", `"qwer" ty`, &String{"qwer"}, " ty", false},
 		{"string, skip spaces",

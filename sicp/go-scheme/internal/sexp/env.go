@@ -9,8 +9,11 @@ type Env struct {
 	m map[string]Expr
 }
 
-func NewEnv(fns []*Function) *Env {
+func NewEnv(vals map[string]Expr, fns []*Function) *Env {
 	m := make(map[string]Expr)
+	for k, v := range vals {
+		m[k] = v
+	}
 	for _, fn := range fns {
 		if fn == nil {
 			panic(errors.New("NewEnv: <nil> function"))
@@ -21,9 +24,14 @@ func NewEnv(fns []*Function) *Env {
 }
 
 func NewEnvDefault() *Env {
-	return NewEnv([]*Function{
-		FnInc, FnDec, FnPlus, FnMinus, FnMult, FnDiv,
-	})
+	return NewEnv(
+		map[string]Expr{
+			"null": NULL,
+		},
+		[]*Function{
+			FnInc, FnDec, FnPlus, FnMinus, FnMult, FnDiv,
+		},
+	)
 }
 
 func (env *Env) Get(name string) (Expr, error) {
