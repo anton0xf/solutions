@@ -1,8 +1,6 @@
 (* https://en.wikipedia.org/wiki/Lambda_calculus *)
-Require Import Bool Arith String List
-  OrdersEx MSetWeakList MSetProperties
-  Relation_Definitions.
-Import Nat ListNotations Ascii.
+Require Import Bool Arith String List ListSet Program.
+Import Nat ListNotations Ascii Decidable.
 
 (** Lambda expression *)
 (* 𝑒 ::= 𝑥 ∣ 𝜆⁢𝑥.𝑒 ∣⁢ 𝑒𝑒 *)
@@ -38,17 +36,127 @@ Check <{ (x => x x) y }>.
 Set Printing Notations.
 
 (** Set of strings *)
-Definition strs := string -> Prop.
-Definition empty_str: strs := fun x => False.
-Definition add_str (x: string) (A: strs): strs := fun y => x = y \/ A y.
-Axiom strs_eq: forall A B: strs, A = B <-> forall x, A x <-> B x.
-Definition strs_union (A B: strs): strs := fun x => A x \/ B x.
-Definition remove_str (x: string) (A: strs): strs := fun y => y <> x /\ A y.
+Record strs :=
+  mk_strs {
+      elems: set string;
+      nodup: NoDup elems;
+    }.
+
+Definition empty_str: strs := mk_strs [] (NoDup_nil string).
+
+Definition add_str (x: string) (A: strs): strs :=
+  mk_strs (set_add string_dec x A.(elems))
+          (set_add_nodup string_dec x A.(nodup)).
+
 
 Notation "{{ }}" := empty_str.
 Notation "{{ x ; .. ; y }}" := (add_str x .. (add_str y empty_str) ..).
 
 Check {{ "a"; "b"; "c" }}.
+Compute {{ "a"; "b"; "c" }}.(elems).
+
+Definition strs_empty (A: strs): Prop := A.(elems) = [].
+Definition strs_emptyb (A: strs): bool:=
+  match A.(elems) with
+  | [] => true
+  | _ => false
+  end.
+
+Theorem strs_emptyb_spec (A: strs): reflect (strs_empty A) (strs_emptyb A).
+Proof.
+  unfold strs_empty, strs_emptyb.
+    destruct A.(elems) as [|x xs]; constructor.
+    - reflexivity.
+    - discriminate.
+Qed.
+
+Definition strIn (x: string) (A: strs): Prop := set_In x A.(elems).
+
+Theorem strsIn_dec (x: string) (A: strs): {strIn x A} + {~ strIn x A}.
+Proof. apply set_In_dec, string_dec. Qed.
+
+Definition str_mem (x: string) (A: strs): bool := set_mem string_dec x A.(elems).
+
+Theorem str_mem_spec (x: string) (A: strs): reflect (strIn x A) (str_mem x A).
+Proof.
+  apply iff_reflect. unfold strIn, str_mem. split.
+  - apply set_mem_correct2.
+  - apply set_mem_correct1.
+Qed.
+
+Definition strs_union (A B: strs): strs :=
+  mk_strs (set_union string_dec A.(elems) B.(elems))
+          (set_union_nodup string_dec A.(nodup) B.(nodup)).
+
+Theorem strs_union_iff (x: string) (A B: strs): strIn x (strs_union A B) <-> strIn x A \/ strIn x B.
+Proof.
+  unfold strIn, strs_union, set_In. simpl.
+  rewrite (set_union_iff string_dec). reflexivity.
+Qed.
+
+Definition remove_str (x: string) (A: strs): strs :=
+  mk_strs (set_remove string_dec x A.(elems))
+          (set_remove_nodup string_dec x A.(nodup)).
+
+Definition strs_diff (A B: strs): strs :=
+  mk_strs (set_diff string_dec A.(elems) B.(elems))
+          (set_diff_nodup string_dec B.(elems) A.(nodup)).
+
+Definition strs_eq (A B: strs) := forall x, strIn x A <-> strIn x B.
+Notation "A == B" := (strs_eq A B) (at level 70, no associativity).
+
+Definition strs_eqb (A B: strs): bool :=
+  strs_emptyb (strs_diff A B) && strs_emptyb (strs_diff B A).
+
+Theorem empty_list_iff {X: Type} (xs: list X): xs = [] <-> forall x, ~ In x xs.
+Proof.
+  split; intro H.
+  - subst xs. apply in_nil.
+  - destruct xs as [| x xs]. { reflexivity. }
+    pose (H x) as C. contradict C.
+    simpl. left. reflexivity.
+Qed.
+
+Theorem decidable_In {X: Type} (x: X) (ys: list X) (eq_dec: forall a b: X, {a = b} + {a <> b}):
+  decidable (In x ys).
+Proof.
+  unfold decidable. induction ys as [| y ys IH].
+  { right. apply in_nil. }
+  simpl. destruct (eq_dec x y) as [D|D]. { subst y. auto. }
+  destruct IH as [IH | IH]. { auto. }
+  right. intros [H | H]. { subst y. apply D. reflexivity. }
+  contradiction.
+Qed.
+
+Definition decidable_str_In (x: string) (ys: list string): decidable (In x ys)
+  := decidable_In x ys string_dec.
+
+Theorem not_not_iff (P: Prop): decidable P -> (~~P <-> P).
+Proof. intro D. split. { apply not_not. exact D. } auto. Qed.
+
+Theorem strs_eqb_spec (A B: strs): reflect (strs_eq A B) (strs_eqb A B).
+Proof.
+  apply iff_reflect. unfold strs_eqb.
+  rewrite andb_true_iff.
+  rewrite <- !(reflect_iff _ _ (strs_emptyb_spec _)).
+  unfold strs_eq, strs_empty, strs_diff. simpl.
+  rewrite !(empty_list_iff (set_diff string_dec _ _)).
+  split.
+  - intro H. split; intros x.
+    + rewrite (set_diff_iff string_dec). intros [HA HB].
+      apply H in HA. contradiction.
+    + rewrite (set_diff_iff string_dec). intros [HA HB].
+      apply H in HA. contradiction.
+  - intros [HA HB] x. pose (HA x) as HAx. pose (HB x) as HBx.
+    rewrite (set_diff_iff string_dec) in HAx, HBx.
+    pose (decidable_str_In x (elems A)) as DA.
+    pose (decidable_str_In x (elems B)) as DB.
+    apply (Decidable.not_and _ _ DA) in HAx. rewrite (not_not_iff _ DB) in HAx.
+    apply (Decidable.not_and _ _ DB) in HBx. rewrite (not_not_iff _ DA) in HBx.
+    unfold strIn, set_In. split; intro H.
+    + destruct HAx; [contradiction | auto].
+    + destruct HBx; [contradiction | auto].
+Qed.
 
 (** Free variables of Lambda expression *)
 Fixpoint free_vars (M: LExpr): strs :=
@@ -58,20 +166,8 @@ Fixpoint free_vars (M: LExpr): strs :=
   | L var body => remove_str var (free_vars body)
   end.
 
-Example free_vars_ex: free_vars <{ (x => z x) y }> = {{ z; y }}.
-Proof.
-  simpl. apply strs_eq. intro t.
-  unfold strs_union, remove_str, add_str, empty_str.
-  split; intro H.
-  - destruct H as [[neq [[eq | []] | [eq | []]]] | [eq | []]].
-    + subst t. left. reflexivity.
-    + subst t. contradict neq. reflexivity.
-    + subst t. right. left. reflexivity.
-  - destruct H as [eqz | [eqy | []]].
-    + subst t. left. split. discriminate.
-      left. left. reflexivity.
-    + subst t. right. left. reflexivity.
-Qed.
+Example free_vars_ex: free_vars <{ (x => z x) y }> == {{ z; y }}.
+Proof. apply (reflect_iff _ _ (strs_eqb_spec _ _)). reflexivity. Qed.
 
 (** option helpers *)
 (* fmap / <$>
@@ -108,7 +204,7 @@ Fixpoint try_subst (x: string) (M N: LExpr): option LExpr :=
   | LVar name => Some (if name =? x then N else M)
   | LApp A B => LApp <$> try_subst x A N <*> try_subst x B N
   | L var body => if var =? x then Some M else
-                   if strs_mem var (free_vars N) then None
+                   if str_mem var (free_vars N) then None
                    else L var <$> try_subst x body N
   end.
 
@@ -140,7 +236,7 @@ Inductive subst: string -> LExpr -> LExpr -> LExpr -> Prop :=
   A [x := Y]> A' -> B [x := Y]> B' -> <{ A B }> [x := Y]> <{ A' B' }>
 | subst_L_same_var (x: string) (M Y: LExpr): <{ x => M }> [x := Y]> <{ x => M }>
 | subst_L_other_var (x t: string) (M Y N: LExpr):
-  t <> x -> ~ strs_In t (free_vars Y)
+  t <> x -> ~ strIn t (free_vars Y)
   -> M [x := Y]> N -> <{ t => M }> [x := Y]> <{ t => N }>
 where "M [ x := Y ]> N" := (subst x M Y N).
 
@@ -166,7 +262,7 @@ Proof.
       simpl. reflexivity.
     + simpl. rewrite String.eqb_refl. reflexivity.
     + simpl. apply String.eqb_neq in neq. rewrite neq.
-      destruct (strs_mem_reflect_In y (free_vars N)). { contradiction. }
+      destruct (str_mem_spec y (free_vars N)). { contradiction. }
       clear n. destruct (try_subst x M N) as [U|].
       2: { destruct IH. } subst U.
       simpl. reflexivity.
@@ -184,7 +280,7 @@ Proof.
       * apply IHB. reflexivity.
     + simpl. destruct (String.eqb_spec y x) as [eq|neq].
       { intro eqM. subst x M'. apply subst_L_same_var. }
-      destruct (strs_mem_reflect_In y (free_vars N)) as [HIn|HnIn].
+      destruct (str_mem_spec y (free_vars N)) as [HIn|HnIn].
       { contradiction. }
       destruct (try_subst x B N) as [B'|].
       2: { simpl.  contradiction. }
@@ -192,9 +288,8 @@ Proof.
       apply IH. reflexivity.
 Qed.
 
-
 Theorem subst_var_sym (u v: string) (A B: LExpr):
-  ~ strs_In v (free_vars A)
+  ~ strIn v (free_vars A)
   -> A [u := v]> B -> B [v := u]> A.
 Proof.
   intros nIn_v_A H. remember (LVar v) as Y eqn:eqv.
