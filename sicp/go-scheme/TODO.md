@@ -3,7 +3,7 @@
   * [x] string
   * [x] symbol
   * [x] null
-  * [ ] #t, #f
+  * [x] #t, #f
 * [x] evaluate special composites
   * [x] evaluate quoted literal
   * [x] evaluate quoted symbol

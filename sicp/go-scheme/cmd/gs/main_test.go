@@ -12,6 +12,7 @@ func TestRun(t *testing.T) {
 	cases := []struct {
 		in, out string
 	}{
+		{"#t", "#t"}, {"#f", "#f"},
 		{"12 ", "12"},
 		{"'fф -23", "fф\n-23"},
 		{`"1a3"`, "\"1a3\""},

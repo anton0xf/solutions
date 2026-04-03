@@ -27,6 +27,8 @@ func NewEnvDefault() *Env {
 	return NewEnv(
 		map[string]Expr{
 			"null": NULL,
+			"#t":   TRUE,
+			"#f":   FALSE,
 		},
 		[]*Function{
 			FnInc, FnDec, FnPlus, FnMinus, FnMult, FnDiv,

@@ -25,6 +25,23 @@ func (e *Int) String() string {
 	return string(strconv.Itoa(e.x))
 }
 
+type Bool struct {
+	b bool
+}
+
+var TRUE = &Bool{true}
+var FALSE = &Bool{false}
+
+func (e *Bool) String() string {
+	if e == nil {
+		return NIL_STR
+	} else if e.b {
+		return "#t"
+	} else {
+		return "#f"
+	}
+}
+
 type Symbol struct {
 	name string
 }

@@ -13,6 +13,11 @@ func TestString(t *testing.T) {
 		expr     Expr
 		expected string
 	}{
+		{"(*Bool)(nil)", (*Bool)(nil), "<nil>"},
+		{"Bool{true}", &Bool{true}, "#t"},
+		{"TRUE", TRUE, "#t"},
+		{"Bool{false}", &Bool{false}, "#f"},
+		{"FALSE", FALSE, "#f"},
 		{"(*Int)(nil)", (*Int)(nil), "<nil>"},
 		{"Int{42}", &Int{42}, "42"},
 		{"(*Symbol)(nil)", (*Symbol)(nil), "<nil>"},
