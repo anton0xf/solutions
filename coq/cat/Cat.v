@@ -22,9 +22,13 @@ Declare Scope cat_scope.
 Delimit Scope cat_scope with cat.
 Bind Scope cat_scope with cat.
 
-Arguments hom {_}.
-Arguments comp {_ _ _ _}.
-Arguments id {_ _}.
+Arguments hom {c0}.
+Arguments comp {c0 a b c}.
+Arguments id {c0 a}.
+Arguments id_left {c0 a b}.
+Arguments id_right {c0 a b}.
+Arguments assoc {c0 a b c d}.
+
 Notation "a ~> b" := (hom a b): cat_scope.
 Notation "f ;; g" := (comp f g): cat_scope.
 Notation "f ∘ g" := (comp g f): cat_scope.
@@ -79,8 +83,21 @@ Definition inverse {C: cat} {a b: C.(ob)}
   (f: a ~> b) (g: b ~> a): Prop :=
   g ∘ f = id.
 
+Definition inversion {C: cat} {a b: C.(ob)}
+  (f: a ~> b) (g: b ~> a): Prop :=
+  inverse f g /\ inverse g f.
+
+Theorem inversion_uniq {C: cat} {a b: C.(ob)}
+  (f: a ~> b) (g1 g2: b ~> a):
+  inversion f g1 -> inversion f g2 -> g1 = g2.
+Proof.
+  unfold inversion, inverse. intros [Hl1 Hr1] [Hl2 Hr2].
+  rewrite <- (id_left g1), <- Hl2, <- assoc.
+  rewrite Hr1, id_right. reflexivity.
+Qed.
+
 Definition isomorphism {C: cat} {a b: C.(ob)} (f: a ~> b): Prop :=
-  exists g: b ~> a, inverse f g /\ inverse g f.
+  exists g: b ~> a, inversion f g.
 
 Definition epimorphism {C: cat} {a b: C.(ob)} (f: a ~> b): Prop :=
   forall (c: C.(ob)) (g1 g2: b ~> c), g1 ∘ f = g2 ∘ f -> g1 = g2.
