@@ -83,9 +83,22 @@ Definition inverse {C: cat} {a b: C.(ob)}
   (f: a ~> b) (g: b ~> a): Prop :=
   g ∘ f = id.
 
+Theorem inverse_comp {C: cat} {a b c: C.(ob)}
+  (f: a ~> b) (f': b ~> a) (g: b ~> c) (g': c ~> b):
+  inverse f f' -> inverse g g' -> inverse (f ;; g) (g' ;; f').
+Proof.
+  unfold inverse. intros H1 H2.
+  rewrite <- assoc, (assoc _ _ g'). rewrite H2.
+  rewrite id_left. exact H1.
+Qed.
+
 Definition inversion {C: cat} {a b: C.(ob)}
   (f: a ~> b) (g: b ~> a): Prop :=
   inverse f g /\ inverse g f.
+
+Theorem inversion_sym {C: cat} {a b: C.(ob)} (f: a ~> b) (g: b ~> a):
+  inversion f g -> inversion g f.
+Proof. unfold inversion. intuition. Qed.
 
 Theorem inversion_uniq {C: cat} {a b: C.(ob)}
   (f: a ~> b) (g1 g2: b ~> a):
@@ -96,9 +109,40 @@ Proof.
   rewrite Hr1, id_right. reflexivity.
 Qed.
 
+Theorem inversion_comp {C: cat} {a b c: C.(ob)}
+  (f: a ~> b) (f': b ~> a) (g: b ~> c) (g': c ~> b):
+  inversion f f' -> inversion g g' -> inversion (f ;; g) (g' ;; f').
+Proof.
+  unfold inversion. intros [Hf Hf'] [Hg Hg'].
+  split; apply inverse_comp; assumption.
+Qed.
+
 Definition isomorphism {C: cat} {a b: C.(ob)} (f: a ~> b): Prop :=
   exists g: b ~> a, inversion f g.
 
+Definition isomorphic {C: cat} (a b: C.(ob)): Prop := exists f: a ~> b, isomorphism f.
+
+Notation "a ~~ b" := (isomorphic a b) (at level 70, no associativity).
+
+Theorem isomorphic_refl {C: cat} (a: C.(ob)): a ~~ a.
+Proof. exists id, id. split; unfold inverse; apply C.(id_left). Qed.
+
+Theorem isomorphic_sym {C: cat} (a b: C.(ob)): a ~~ b -> b ~~ a.
+Proof.
+  unfold isomorphic, isomorphism.
+  intros [f [g H]]. exists g, f. apply inversion_sym. exact H.
+Qed.
+
+Theorem isomorphic_trans {C: cat} (a b c: C.(ob)): a ~~ b -> b ~~ c -> a ~~ c.
+Proof.
+  intros [f [f' H1]] [g [g' H2]].
+  exists (f ;; g), (g' ;; f').
+  apply inversion_comp; assumption.
+Qed.
+
+Definition uniq_up_to_isomorphism {C: cat} (P: C.(ob) -> Prop) (x: C.(ob)) :=
+  P x /\ forall y, P y -> x ~~ y.
+  
 Definition epimorphism {C: cat} {a b: C.(ob)} (f: a ~> b): Prop :=
   forall (c: C.(ob)) (g1 g2: b ~> c), g1 ∘ f = g2 ∘ f -> g1 = g2.
 
@@ -108,8 +152,8 @@ Proof.
   unfold inverse, epimorphism.
   intros [g Hinv] c h1 h2 Heq.
   apply (f_equal (fun f => f ∘ g)) in Heq.
-  rewrite <-!C.(assoc) in Heq.
-  rewrite Hinv in Heq. rewrite !C.(id_right) in Heq.
+  rewrite <-!assoc in Heq.
+  rewrite Hinv in Heq. rewrite !id_right in Heq.
   exact Heq.
 Qed.
 
@@ -122,7 +166,37 @@ Proof.
   unfold inverse, monomorphism.
   intros [g Hinv] c h1 h2 Heq.
   apply (f_equal (fun f => g ∘ f)) in Heq.
-  rewrite !C.(assoc) in Heq.
+  rewrite !assoc in Heq.
   rewrite Hinv in Heq. rewrite !C.(id_left) in Heq.
   exact Heq.
 Qed.
+
+Definition terminal {C: cat} (x: C.(ob)): Prop := forall y: C.(ob), exists! f: y ~> x, True.
+
+Theorem terminal_id {C: cat} (x: C.(ob)): terminal x -> forall f: x ~> x, f = id.
+Proof. 
+  intros Ht f. pose (Ht x) as H. destruct H as [g [_ H]].
+  apply eq_trans with g; [symmetry|]; apply H; exact I.
+Qed.
+
+Theorem terminal_uniq_up_to_isomorphism {C: cat} (x: C.(ob)):
+  terminal x -> uniq_up_to_isomorphism terminal x.
+Proof.
+  unfold uniq_up_to_isomorphism. intro Hx.
+  split; [exact Hx|]. intros y Hy.
+  unfold isomorphic, isomorphism.
+  pose (Hx y) as Hxy. pose (Hy x) as Hyx.
+  destruct Hxy as [g [_ Hxy]], Hyx as [f [_ Hyx]].
+  exists f, g. unfold inversion, inverse.
+  split; apply terminal_id; assumption.
+Qed.
+
+(* TODO
+   - D initial object
+   - D oposite cat
+   - T initial object is oposite to terminal
+   - T oposite cat is inversion (functor?)
+   - D (co)product
+
+   - pre-order, partial order and total order cats
+ *)
