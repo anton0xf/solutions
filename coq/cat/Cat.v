@@ -191,6 +191,14 @@ Proof.
   split; apply terminal_id; assumption.
 Qed.
 
+Definition initial {C: cat} (x: C.(ob)): Prop := forall y: C.(ob), exists! f: x ~> y, True.
+
+Theorem initial_id {C: cat} (x: C.(ob)): initial x -> forall f: x ~> x, f = id.
+Proof. 
+  intros Hi f. pose (Hi x) as H. destruct H as [g [_ H]].
+  apply eq_trans with g; [symmetry|]; apply H; exact I.
+Qed.
+
 (* TODO
    - D initial object
    - D oposite cat
