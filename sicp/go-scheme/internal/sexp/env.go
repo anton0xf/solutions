@@ -3,13 +3,29 @@ package sexp
 import (
 	"errors"
 	"fmt"
+	"maps"
+	"slices"
+	"strings"
 )
 
 type Env struct {
 	m map[string]Expr
 }
 
-func NewEnv(vals map[string]Expr, fns []*Function) *Env {
+type FuncOrForm interface {
+	Expr
+	GetName() string
+}
+
+func (f *Function) GetName() string {
+	return f.name
+}
+
+func (f *SpecialForm) GetName() string {
+	return f.name
+}
+
+func NewEnv(vals map[string]Expr, fns []FuncOrForm) *Env {
 	m := make(map[string]Expr)
 	for k, v := range vals {
 		m[k] = v
@@ -18,7 +34,7 @@ func NewEnv(vals map[string]Expr, fns []*Function) *Env {
 		if fn == nil {
 			panic(errors.New("NewEnv: <nil> function"))
 		}
-		m[fn.name] = fn
+		m[fn.GetName()] = fn
 	}
 	return &Env{m}
 }
@@ -30,7 +46,10 @@ func NewEnvDefault() *Env {
 			"#t":   TRUE,
 			"#f":   FALSE,
 		},
-		[]*Function{
+		[]FuncOrForm{
+			// special forms
+			FQuote,
+			// functions
 			FnInc, FnDec, FnPlus, FnMinus, FnMult, FnDiv,
 			FnList, FnCons, FnCar, FnCdr,
 		},
@@ -47,6 +66,15 @@ func (env *Env) Get(name string) (Expr, error) {
 	} else {
 		return nil, fmt.Errorf("Env.Get: symbol '%s not defined", name)
 	}
+}
+
+func (e *Env) String() string {
+	keys := slices.Sorted(maps.Keys(e.m))
+	parts := make([]string, len(keys))
+	for i, k := range keys {
+		parts[i] = fmt.Sprintf("%s: %s", k, e.m[k])
+	}
+	return "{" + strings.Join(parts, ", ") + "}"
 }
 
 func (env *Env) Eval(expr Expr) (Expr, error) {
@@ -108,24 +136,39 @@ func (env *Env) EvalPair(e *Pair) (Expr, error) {
 			return nil, fmt.Errorf("Env.EvalPair: %w", err)
 		}
 
-		f, fOk := fExpr.(*Function)
-		if !fOk {
-			return nil, fmt.Errorf("Env.EvalPair: not a function: %s", fExpr)
-		}
-
-		args, err := ToArray(e.y)
-		if err != nil {
-			return nil, fmt.Errorf("Env.EvalPair: %w", err)
-		}
-
-		for i, arg := range args {
-			args[i], err = env.Eval(arg)
+		switch f := fExpr.(type) {
+		case *Function:
+			args, err := ToArray(e.y)
 			if err != nil {
 				return nil, fmt.Errorf("Env.EvalPair: %w", err)
 			}
-		}
 
-		return f.f(args...)
+			for i, arg := range args {
+				args[i], err = env.Eval(arg)
+				if err != nil {
+					return nil, fmt.Errorf("Env.EvalPair: %w", err)
+				}
+			}
+
+			return f.f(args...)
+
+		case *SpecialForm:
+			args, err := ToArray(e.y)
+			if err != nil {
+				return nil, fmt.Errorf("Env.EvalPair: %w", err)
+			}
+
+			res, err := f.f(env, args...)
+			if err != nil {
+				return nil, fmt.Errorf("Env.EvalPair: %w", err)
+			}
+
+			return env.Eval(res)
+
+		default:
+			return nil, fmt.Errorf(
+				"Env.EvalPair: not a special form or function: %s", fExpr)
+		}
 	}
 
 	return nil, fmt.Errorf("Env.EvalPair: unexpected pair: %s", e)

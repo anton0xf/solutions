@@ -54,7 +54,7 @@ func TestEnv_Eval(t *testing.T) {
 		{&Env{map[string]Expr{"a": &Int{1}}},
 			NewList(&Symbol{"a"}),
 			&Env{map[string]Expr{"a": &Int{1}}},
-			nil, "Env.EvalPair: not a function: 1"},
+			nil, "Env.EvalPair: not a special form or function: 1"},
 		{defaultEnv, NewListWithTail([]Expr{&Symbol{"inc"}}, nil), defaultEnv, nil,
 			"Env.EvalPair: ToArray: list expected: <nil>"},
 		{defaultEnv, NewList(&Symbol{"inc"}, &Int{1}), defaultEnv, &Int{2}, ""},
@@ -64,11 +64,15 @@ func TestEnv_Eval(t *testing.T) {
 			defaultEnv, &Int{3}, ""},
 
 		// special forms
+		{defaultEnv, NewList(&Symbol{"quote"}, &Int{1}), defaultEnv, &Int{1}, ""},
+		{defaultEnv, NewList(&Symbol{"quote"}, &Symbol{"a"}), defaultEnv,
+			&Symbol{"a"}, ""},
+		{defaultEnv, NewList(&Symbol{"quote"}, &Int{1}, &Symbol{"a"}), defaultEnv,
+			nil, "Env.EvalPair: quote: unexpected number of arguments"},
 
 		// TODO define
 	}
 	for _, ex := range examples {
-		// TODO make env printing more readable
 		t.Run(fmt.Sprintf("[%v] %v", ex.env, ex.expr), func(t *testing.T) {
 			res, err := ex.env.Eval(ex.expr)
 			if len(ex.err) > 0 {

@@ -314,13 +314,3 @@ func (p *Parser) ParseQuoted() (res Expr, eof bool, err error) {
 	res = Quote(expr)
 	return
 }
-
-func Quote(expr Expr) Expr {
-	switch x := expr.(type) {
-	case *Int, *String:
-		return x
-
-	default:
-		return &Quoted{x}
-	}
-}

@@ -9,10 +9,11 @@
   * [x] evaluate quoted symbol
   * [x] evaluate quoted list
 * [ ] special forms
-  * [ ] quot
+  * [x] quote
+  * [ ] if
+  * [ ] and, or
   * [ ] define
   * [ ] lambda
-  * [ ] if, and, or
 * [ ] show prompt for interactive mode
       see [here](https://github.com/mattn/go-isatty/issues/24)
 * [ ] functions

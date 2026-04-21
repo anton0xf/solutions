@@ -203,6 +203,16 @@ type Quoted struct {
 	x Expr
 }
 
+func Quote(expr Expr) Expr {
+	switch x := expr.(type) {
+	case *Int, *String:
+		return x
+
+	default:
+		return &Quoted{x}
+	}
+}
+
 func (e *Quoted) String() string {
 	if e == nil {
 		return NIL_STR
@@ -225,4 +235,13 @@ type Function struct {
 
 func (e *Function) String() string {
 	return fmt.Sprintf("function %s", e.name)
+}
+
+type SpecialForm struct {
+	name string
+	f    func(env *Env, args ...Expr) (Expr, error)
+}
+
+func (e *SpecialForm) String() string {
+	return fmt.Sprintf("special form %s", e.name)
 }
