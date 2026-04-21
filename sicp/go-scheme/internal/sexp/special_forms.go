@@ -8,6 +8,6 @@ var FQuote = &SpecialForm{
 		if len(args) != 1 {
 			return nil, errors.New("quote: unexpected number of arguments")
 		}
-		return Quote(args[0]), nil
+		return env.Eval(Quote(args[0]))
 	},
 }

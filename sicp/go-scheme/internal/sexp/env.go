@@ -158,12 +158,7 @@ func (env *Env) EvalPair(e *Pair) (Expr, error) {
 				return nil, fmt.Errorf("Env.EvalPair: %w", err)
 			}
 
-			res, err := f.f(env, args...)
-			if err != nil {
-				return nil, fmt.Errorf("Env.EvalPair: %w", err)
-			}
-
-			return env.Eval(res)
+			return f.f(env, args...)
 
 		default:
 			return nil, fmt.Errorf(

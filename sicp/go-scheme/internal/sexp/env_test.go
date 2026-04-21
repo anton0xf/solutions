@@ -68,7 +68,7 @@ func TestEnv_Eval(t *testing.T) {
 		{defaultEnv, NewList(&Symbol{"quote"}, &Symbol{"a"}), defaultEnv,
 			&Symbol{"a"}, ""},
 		{defaultEnv, NewList(&Symbol{"quote"}, &Int{1}, &Symbol{"a"}), defaultEnv,
-			nil, "Env.EvalPair: quote: unexpected number of arguments"},
+			nil, "quote: unexpected number of arguments"},
 
 		// TODO define
 	}
