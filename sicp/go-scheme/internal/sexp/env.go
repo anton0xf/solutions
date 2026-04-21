@@ -48,7 +48,7 @@ func NewEnvDefault() *Env {
 		},
 		[]FuncOrForm{
 			// special forms
-			FQuote,
+			FQuote, FIf,
 			// functions
 			FnInc, FnDec, FnPlus, FnMinus, FnMult, FnDiv,
 			FnList, FnCons, FnCar, FnCdr,
@@ -79,7 +79,7 @@ func (e *Env) String() string {
 
 func (env *Env) Eval(expr Expr) (Expr, error) {
 	switch e := expr.(type) {
-	case *Int, *String:
+	case *Int, *String, *Bool:
 		return e, nil
 
 	case *Symbol:

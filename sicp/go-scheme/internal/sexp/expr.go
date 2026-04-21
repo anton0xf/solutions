@@ -32,6 +32,13 @@ type Bool struct {
 var TRUE = &Bool{true}
 var FALSE = &Bool{false}
 
+func IsTrue(expr Expr) bool {
+	if b, ok := expr.(*Bool); ok {
+		return b.b
+	}
+	return true
+}
+
 func (e *Bool) String() string {
 	if e == nil {
 		return NIL_STR

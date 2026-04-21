@@ -70,6 +70,25 @@ func TestEnv_Eval(t *testing.T) {
 		{defaultEnv, NewList(&Symbol{"quote"}, &Int{1}, &Symbol{"a"}), defaultEnv,
 			nil, "quote: unexpected number of arguments"},
 
+		// if - true branch
+		{defaultEnv, NewList(&Symbol{"if"}, TRUE, &Int{1}, &Int{2}), defaultEnv, &Int{1}, ""},
+		{defaultEnv, NewList(&Symbol{"if"}, FALSE, &Int{1}, &Int{2}), defaultEnv, &Int{2}, ""},
+		{defaultEnv, NewList(&Symbol{"if"}, TRUE, &Int{1}), defaultEnv, &Int{1}, ""},
+		{defaultEnv, NewList(&Symbol{"if"}, FALSE, &Int{1}), defaultEnv, FALSE, ""},
+		{defaultEnv, NewList(&Symbol{"if"}, &Int{5}, &Int{1}, &Int{2}), defaultEnv, &Int{1}, ""},
+		{defaultEnv, NewList(&Symbol{"if"}, &String{"test"}, &Int{1}, &Int{2}), defaultEnv, &Int{1}, ""},
+		{defaultEnv, NewList(&Symbol{"if"}, &Quoted{NULL}, &Int{1}, &Int{2}), defaultEnv, &Int{1}, ""},
+		{defaultEnv, NewList(&Symbol{"if"}, NULL, &Int{1}, &Int{2}), defaultEnv, nil,
+			"Env.Eval: empty list"},
+		{defaultEnv, NewList(&Symbol{"if"}, TRUE, NewList(&Symbol{"+"}, &Int{1}, &Int{2}), &Int{99}),
+			defaultEnv, &Int{3}, ""},
+		{defaultEnv, NewList(&Symbol{"if"}, FALSE, &Int{99}, NewList(&Symbol{"+"}, &Int{10}, &Int{20})),
+			defaultEnv, &Int{30}, ""},
+		{defaultEnv, NewList(&Symbol{"if"}), defaultEnv, nil,
+			"if: unexpected number of arguments (expected 2 or 3)"},
+		{defaultEnv, NewList(&Symbol{"if"}, TRUE), defaultEnv, nil,
+			"if: unexpected number of arguments (expected 2 or 3)"},
+
 		// TODO define
 	}
 	for _, ex := range examples {

@@ -10,7 +10,7 @@
   * [x] evaluate quoted list
 * [ ] special forms
   * [x] quote
-  * [ ] if
+  * [x] if
   * [ ] and, or
   * [ ] define
   * [ ] lambda
