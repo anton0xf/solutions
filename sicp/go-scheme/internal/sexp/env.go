@@ -48,7 +48,7 @@ func NewEnvDefault() *Env {
 		},
 		[]FuncOrForm{
 			// special forms
-			FQuote, FIf,
+			FQuote, FIf, FAnd, FOr,
 			// functions
 			FnInc, FnDec, FnPlus, FnMinus, FnMult, FnDiv,
 			FnList, FnCons, FnCar, FnCdr,

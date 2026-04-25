@@ -52,6 +52,10 @@ func TestRun(t *testing.T) {
 		{"''foo", "'foo"},
 		{"'(quote foo)", "(quote foo)"},
 		{"(quote (quote foo))", "(quote foo)"},
+		{"(and 1 2 3)", "3"},
+		{"(and #f 1)", "#f"},
+		{"(or #f 1)", "1"},
+		{"(or)", "#f"},
 		// TODO uncomment
 		// {"(if #t 1 2)", "1"},
 		// {"(define a 1) 'a a", "a\n'a\n1"},

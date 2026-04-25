@@ -2,6 +2,48 @@ package sexp
 
 import "errors"
 
+var FAnd = &SpecialForm{
+	name: "and",
+	f: func(env *Env, args ...Expr) (Expr, error) {
+		if len(args) == 0 {
+			return TRUE, nil
+		}
+
+		var res Expr
+		for _, arg := range args {
+			var err error
+			res, err = env.Eval(arg)
+			if err != nil {
+				return nil, err
+			}
+			if !IsTrue(res) {
+				return res, nil
+			}
+		}
+		return res, nil
+	},
+}
+
+var FOr = &SpecialForm{
+	name: "or",
+	f: func(env *Env, args ...Expr) (Expr, error) {
+		if len(args) == 0 {
+			return FALSE, nil
+		}
+
+		for _, arg := range args {
+			res, err := env.Eval(arg)
+			if err != nil {
+				return nil, err
+			}
+			if IsTrue(res) {
+				return res, nil
+			}
+		}
+		return FALSE, nil
+	},
+}
+
 var FQuote = &SpecialForm{
 	name: "quote",
 	f: func(env *Env, args ...Expr) (Expr, error) {

@@ -89,6 +89,24 @@ func TestEnv_Eval(t *testing.T) {
 		{defaultEnv, NewList(&Symbol{"if"}, TRUE), defaultEnv, nil,
 			"if: unexpected number of arguments (expected 2 or 3)"},
 
+		// and - short-circuit evaluation
+		{defaultEnv, NewList(&Symbol{"and"}), defaultEnv, TRUE, ""},
+		{defaultEnv, NewList(&Symbol{"and"}, &Int{1}), defaultEnv, &Int{1}, ""},
+		{defaultEnv, NewList(&Symbol{"and"}, &Int{1}, &Int{2}), defaultEnv, &Int{2}, ""},
+		{defaultEnv, NewList(&Symbol{"and"}, FALSE, &Int{1}), defaultEnv, FALSE, ""},
+		{defaultEnv, NewList(&Symbol{"and"}, &Int{1}, FALSE, &Int{2}), defaultEnv, FALSE, ""},
+		{defaultEnv, NewList(&Symbol{"and"}, &Int{1}, &Int{2}, &Int{3}), defaultEnv, &Int{3}, ""},
+		{defaultEnv, NewList(&Symbol{"and"}, TRUE, FALSE), defaultEnv, FALSE, ""},
+
+		// or - short-circuit evaluation
+		{defaultEnv, NewList(&Symbol{"or"}), defaultEnv, FALSE, ""},
+		{defaultEnv, NewList(&Symbol{"or"}, &Int{1}), defaultEnv, &Int{1}, ""},
+		{defaultEnv, NewList(&Symbol{"or"}, &Int{1}, &Int{2}), defaultEnv, &Int{1}, ""},
+		{defaultEnv, NewList(&Symbol{"or"}, FALSE, &Int{1}), defaultEnv, &Int{1}, ""},
+		{defaultEnv, NewList(&Symbol{"or"}, FALSE, FALSE, &Int{1}), defaultEnv, &Int{1}, ""},
+		{defaultEnv, NewList(&Symbol{"or"}, FALSE, FALSE), defaultEnv, FALSE, ""},
+		{defaultEnv, NewList(&Symbol{"or"}, TRUE, &Int{1}), defaultEnv, TRUE, ""},
+
 		// TODO define
 	}
 	for _, ex := range examples {

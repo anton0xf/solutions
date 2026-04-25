@@ -11,7 +11,7 @@
 * [ ] special forms
   * [x] quote
   * [x] if
-  * [ ] and, or
+  * [x] and, or
   * [ ] define
   * [ ] lambda
 * [ ] show prompt for interactive mode
