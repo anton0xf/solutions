@@ -57,7 +57,6 @@ Example empty_cat_hom_comp_comm (a: empty_cat.(ob)) (f g: a ~> a):
 Proof. destruct a. Qed.
 
 Definition empty_cat': cat.
-Proof.
   refine {|
       ob := Empty_set;
       hom _ _ := Empty_set;
@@ -66,7 +65,6 @@ Proof.
 Defined.
 
 Definition singleton: cat.
-Proof.
   refine {|
       ob := unit;
       hom a b := unit;
@@ -76,7 +74,7 @@ Proof.
   - (* id_left *) intros. destruct f. reflexivity.
   - (* id_right *) intros. destruct f. reflexivity.
   - (* assoc *) reflexivity.
-Qed.
+Defined.
 
 (* left-side inverse *)
 Definition inverse {C: cat} {a b: C.(ob)}
@@ -200,7 +198,6 @@ Proof.
 Qed.
 
 (* TODO
-   - D initial object
    - D oposite cat
    - T initial object is oposite to terminal
    - T oposite cat is inversion (functor?)
