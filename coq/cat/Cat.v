@@ -198,7 +198,6 @@ Proof.
 Qed.
 
 (* TODO
-   - D oposite cat
    - T initial object is oposite to terminal
    - T oposite cat is inversion (functor?)
    - D (co)product
