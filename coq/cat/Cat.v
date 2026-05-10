@@ -10,9 +10,9 @@ Record cat :=
       comp {a b c: ob}: (a ~> b) -> (b ~> c) -> (a ~> c)
       where "f ∘ g" := (comp g f);
 
-      id {a: ob}: a ~> a;
-      id_left {a b: ob} (f: a ~> b): id ∘ f = f;
-      id_right {a b: ob} (f: a ~> b): f ∘ id = f;
+      id (a: ob): a ~> a;
+      id_left {a b: ob} (f: a ~> b): id b ∘ f = f;
+      id_right {a b: ob} (f: a ~> b): f ∘ id a = f;
 
       assoc {a b c d: ob} (f: a ~> b) (g: b ~> c) (h: c ~> d)
       : h ∘ (g ∘ f) = (h ∘ g) ∘ f;
