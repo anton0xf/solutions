@@ -7,6 +7,7 @@ Record cat :=
   mk_cat {
       ob: Type;
       hom: ob -> ob -> Type where "a ~> b" := (hom a b);
+      (* TODO change functions order *)
       comp {a b c: ob}: (a ~> b) -> (b ~> c) -> (a ~> c)
       where "f ∘ g" := (comp g f);
 
