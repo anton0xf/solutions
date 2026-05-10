@@ -37,7 +37,8 @@ Local Open Scope cat_scope.
 Check (forall (C: cat) (a b: C.(ob)) (f: a ~> b), True).
 Check (fun (C: cat) (a b c: C.(ob)) (f: a ~> b) (g: b ~> c) => g ∘ f).
 
-Definition empty_cat :=
+(** empty *)
+Definition empty :=
   mk_cat Empty_set (fun _ _ => Empty_set)
     (fun a _ _ _ _ => match a with end)
     (fun a => match a with end)
@@ -45,18 +46,7 @@ Definition empty_cat :=
     (fun a _ _ => match a with end)
     (fun _ _ _ _ _ _ _ => eq_refl _).
 
-Example empty_cat_ob_id (a b: empty_cat.(ob)): a = b.
-Proof. destruct a. Qed.
-
-Example empty_cat_hom_id (a: empty_cat.(ob)) (f: empty_cat.(hom) a a):
-  f = empty_cat.(id).
-Proof. destruct a. Qed.
-
-Example empty_cat_hom_comp_comm (a: empty_cat.(ob)) (f g: a ~> a):
-  f ;; g = g ;; f.
-Proof. destruct a. Qed.
-
-Definition empty_cat': cat.
+Definition empty': cat.
   refine {|
       ob := Empty_set;
       hom _ _ := Empty_set;
@@ -64,6 +54,16 @@ Definition empty_cat': cat.
     |}; intro a; destruct a.
 Defined.
 
+Example empty_ob_id (a b: empty.(ob)): a = b.
+Proof. destruct a. Qed.
+
+Example empty_hom_id (a: empty.(ob)) (f: a ~> a): f = id.
+Proof. destruct a. Qed.
+
+Example empty_hom_comp_comm (a: empty.(ob)) (f g: a ~> a): f ∘ g = g ∘ f.
+Proof. destruct a. Qed.
+
+(** singleton *)
 Definition singleton: cat.
   refine {|
       ob := unit;
@@ -75,6 +75,27 @@ Definition singleton: cat.
   - (* id_right *) intros. destruct f. reflexivity.
   - (* assoc *) reflexivity.
 Defined.
+
+Example singleton_ob_id (a b: singleton.(ob)): a = b.
+Proof. destruct a, b. reflexivity. Qed.
+
+Example singleton_hom_id (a: singleton.(ob)) (f: a ~> a): f = id.
+Proof. destruct f, id. reflexivity. Qed.
+
+(** https://ncatlab.org/nlab/show/walking+morphism *)
+(* false -> true *)
+Definition two_hom (a b: bool): Set :=
+  match a, b with
+  | true, false => Empty_set
+  | _, _ => unit
+  end.
+
+Definition two: cat.
+ refine {|
+     ob := bool;
+     hom := two_hom;
+     id a := match a return two_hom a a with false => tt | true => tt end;
+   |}.
 
 (* left-side inverse *)
 Definition inverse {C: cat} {a b: C.(ob)}
