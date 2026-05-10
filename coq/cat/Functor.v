@@ -14,3 +14,24 @@ Record functor :=
       map_hom (g ∘ f) = map_hom g ∘ map_hom f;
     }.
 
+(* endofunctor *)
+Definition id_functor (C: cat): functor :=
+  {|
+    src := C;
+    dst := C;
+    map_ob x := x;
+    map_hom _ _ f := f;
+    preserve_id _ := eq_refl;
+    preserve_comp _ _ _ _ _ := eq_refl;
+  |}.
+
+Definition const_functor (src dst: cat) (d: dst.(ob)): functor.
+  refine {|
+      src := src;
+      dst := dst;
+      map_ob _ := d;
+      map_hom _ _ _ := @id dst d;
+      preserve_id _ := eq_refl;
+    |}.
+  intros a b c f g. rewrite id_left. reflexivity.
+Qed.
