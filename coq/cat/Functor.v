@@ -1,4 +1,4 @@
-Require Import Cat.
+Require Import Cat Basics.
 
 Open Scope cat_scope.
 
@@ -35,3 +35,29 @@ Definition const_functor (src dst: cat) (d: dst.(ob)): functor.
     |}.
   intros a b c f g. rewrite id_left. reflexivity.
 Qed.
+
+Definition cast {X Y : Type} (H : X = Y) (x : X) : Y :=
+  match H with
+  | eq_refl => x
+  end.
+
+Definition functor_compose (G F: functor) (H: F.(dst) = G.(src)): functor.
+  refine {|
+      src := F.(src);
+      dst := G.(dst);
+      (* map_ob := compose G.(map_ob) F.(map_ob); *)
+    |}.
+  Unshelve.
+  3:{ intro x. pose (F.(map_ob) x) as y.
+      apply G.(map_ob). rewrite <- H. exact y. }
+  3:{ intros a b f. simpl. apply G.(map_hom).
+      pose (F.(map_hom) f) as g.
+      generalize dependent g.
+      remember (F.(map_ob) a) as Fa eqn:def_Fa.
+      remember (F.(map_ob) b) as Fb eqn:def_Fb.
+      intro g. rewrite <- H. simpl. exact g. }
+  - (* id *) simpl. intro a.
+    set (Fa := F.(map_ob) a).
+    pose (@preserve_id F a) as F_id.
+    Check G.(preserve_id).
+
