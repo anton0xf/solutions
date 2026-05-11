@@ -3,7 +3,7 @@ From ACat Require Import Cat.
 Record monoid :=
   mk_monoid {
       mval: Type;
-      mcomp: mval -> mval -> mval where "f * g" := (mcomp f g);
+      mcomp: mval -> mval -> mval where "f * g" := (mcomp g f);
       mid: mval;
       mid_left (x: mval): mid * x = x;
       mid_right (x: mval): x * mid = x;

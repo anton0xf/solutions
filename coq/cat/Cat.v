@@ -9,9 +9,8 @@ Record cat :=
   mk_cat {
       ob: Type;
       hom: ob -> ob -> Type where "a ~> b" := (hom a b);
-      (* TODO change functions order *)
-      comp {a b c: ob}: (a ~> b) -> (b ~> c) -> (a ~> c)
-      where "f ∘ g" := (comp g f);
+      comp {a b c: ob}: (b ~> c) -> (a ~> b) -> (a ~> c)
+      where "f ∘ g" := (comp f g);
 
       id (a: ob): a ~> a;
       id_left {a b: ob} (f: a ~> b): id b ∘ f = f;
@@ -33,8 +32,8 @@ Arguments id_right {c0 a b}.
 Arguments assoc {c0 a b c d}.
 
 Notation "a ~> b" := (hom a b): cat_scope.
-Notation "f ;; g" := (comp f g): cat_scope.
-Notation "f ∘ g" := (comp g f): cat_scope.
+Notation "f ;; g" := (comp g f): cat_scope.
+Notation "f ∘ g" := (comp f g): cat_scope.
 
 Local Open Scope cat_scope.
 (* Check (forall (C: cat) (a b: C.(ob)) (f: a ~> b), True). *)
@@ -94,7 +93,7 @@ Inductive two_hom: two_ob -> two_ob -> Type :=
 | two_mor: two_hom two0 two1.
 
 Definition two_comp (a b c: two_ob)
-  (f: two_hom a b) (g: two_hom b c): two_hom a c
+  (g: two_hom b c) (f: two_hom a b): two_hom a c
   := match f, g with
      | two_id0, _ => g
      | two_id1, _ => g

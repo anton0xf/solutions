@@ -9,7 +9,7 @@ Definition type: cat.
   refine {|
       ob := Type;
       hom X Y := X -> Y;
-      comp X Y Z f g := g ∘ f;
+      comp X Y Z g f := g ∘ f;
       id X x := x;
     |}.
   - (* id_left  *) reflexivity.

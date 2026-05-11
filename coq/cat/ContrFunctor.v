@@ -18,7 +18,7 @@ Definition op (C: cat): cat.
   refine {|
       ob := C.(ob);
       hom (a b: C.(ob)) := C.(hom) b a;
-      comp (a b c: C.(ob)) (f: b ~> a) (g: c ~> b) := f ∘ g;
+      comp (a b c: C.(ob)) (g: c ~> b) (f: b ~> a) := f ∘ g;
       id (a: C.(ob)) := C.(id);
     |}.
   - (* id_left *) intros a b f. apply C.(id_right).
