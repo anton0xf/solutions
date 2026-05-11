@@ -1,4 +1,7 @@
-Require Import Cat Functor Basics FunctionalExtensionality List.
+Require Import Basics FunctionalExtensionality List.
+Require String BinInt.
+From ACat Require Import Cat Functor.
+  
 Open Scope cat_scope.
 Open Scope program_scope.
 
@@ -17,7 +20,7 @@ Defined.
 Notation "a ~~~ b" := (@isomorphic type a b) (at level 70, no associativity).
 
 Module ObjectIso.
-  Require Import String BinInt.
+  Import String BinInt.
 
   Record object :=
     mk_object {

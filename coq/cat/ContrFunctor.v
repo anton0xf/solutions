@@ -1,4 +1,4 @@
-Require Import Cat.
+From ACat Require Import Cat.
 
 Open Scope cat_scope.
 

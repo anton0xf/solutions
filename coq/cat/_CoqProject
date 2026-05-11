@@ -1,0 +1,10 @@
+# -*- Conf -*-
+# generate Makefile by
+# coq_makefile -f _CoqProject -o CoqMakefile
+-Q . ACat
+
+Cat.v
+Functor.v
+ContrFunctor.v
+Monoid.v
+TypeC.v

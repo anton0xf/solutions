@@ -1,4 +1,4 @@
-Require Import Cat.
+From ACat Require Import Cat.
 
 Record monoid :=
   mk_monoid {
@@ -22,7 +22,7 @@ Arguments mid_right {_}.
 Notation "f * g" := (mcomp g f): monoid_scope.
 
 Local Open Scope monoid_scope.
-Check (fun (M: monoid) (f g: M.(mval)) => f * g).
+(* Check (fun (M: monoid) (f g: M.(mval)) => f * g). *)
 
 Definition monoid_as_cat (M: monoid): cat.
 Proof.

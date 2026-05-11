@@ -37,8 +37,8 @@ Notation "f ;; g" := (comp f g): cat_scope.
 Notation "f ∘ g" := (comp g f): cat_scope.
 
 Local Open Scope cat_scope.
-Check (forall (C: cat) (a b: C.(ob)) (f: a ~> b), True).
-Check (fun (C: cat) (a b c: C.(ob)) (f: a ~> b) (g: b ~> c) => g ∘ f).
+(* Check (forall (C: cat) (a b: C.(ob)) (f: a ~> b), True). *)
+(* Check (fun (C: cat) (a b c: C.(ob)) (f: a ~> b) (g: b ~> c) => g ∘ f). *)
 
 (** empty *)
 Definition empty :=
