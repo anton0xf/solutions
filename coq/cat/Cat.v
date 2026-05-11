@@ -1,6 +1,8 @@
-
+(* morphism *)
 Reserved Infix "~>" (at level 90, right associativity).
+(* composition \circ *)
 Reserved Infix "∘" (at level 40, left associativity).
+(* flipped composition - "and then" *)
 Reserved Infix ";;" (at level 50, left associativity).
 
 Record cat :=
