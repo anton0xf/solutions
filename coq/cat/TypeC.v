@@ -1,4 +1,4 @@
-Require Import Cat Functor Basics FunctionalExtensionality.
+Require Import Cat Functor Basics FunctionalExtensionality List.
 Open Scope cat_scope.
 Open Scope program_scope.
 
@@ -47,15 +47,12 @@ Record type_functor :=
       fmap_comp {A B C: Type} (f: A -> B) (g: B -> C): fmap (g ∘ f) = fmap g ∘ fmap f;
     }.
 
-Definition type_functor_to_functor (F: type_functor): functor.
-  refine {|
-      src := type;
-      dst := type;
-      map_ob := F.(tmap);
-      map_hom A B (f: A -> B) := F.(fmap) f;
-      preserve_id _ := F.(fmap_id);
-    |}.
-  intros A B C f g. simpl. apply F.(fmap_comp).
+Definition type_functor_to_functor (F: type_functor): functor type type.
+  apply (mk_functor type type
+           (* map_ob *) (F.(tmap))
+           (* map_hom *) (fun A B (f: A -> B) => F.(fmap) f)
+           (* preserve_id *) (fun _ => F.(fmap_id))).
+  (* preserve_comp *) intros A B C f g. simpl. apply F.(fmap_comp).
 Qed.
 
 Definition option_functor: type_functor.
@@ -68,3 +65,18 @@ Definition option_functor: type_functor.
   - (* comp *) intros A B C f g. apply functional_extensionality.
     intro x. destruct x; reflexivity.
 Qed.
+
+Definition list_functor: type_functor.
+  refine {|
+      tmap := list;
+      fmap := map;
+    |}.
+  - (* id *) intro A. apply functional_extensionality.
+    intro x. apply map_id.
+  - (* comp *) intros A B C f g. apply functional_extensionality.
+    intro x. unfold compose. rewrite <- map_map. reflexivity.
+Qed.
+
+(* Definition type_functor_compose: *)
+
+(* Definition option_list_functor:  *)
