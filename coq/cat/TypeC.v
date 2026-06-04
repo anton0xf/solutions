@@ -17,7 +17,7 @@ Definition type: cat.
   - (* assoc *) reflexivity.
 Defined.
 
-Notation "a ~~~ b" := (@isomorphic type a b) (at level 70, no associativity).
+Notation "a ~~~ b" := (@isomorphic type a b) (at level 70, no associativity): cat_scope.
 
 Module ObjectIso.
   Import String BinInt.
@@ -47,10 +47,10 @@ Record type_functor :=
       tmap: Type -> Type;
       fmap {A B: Type} (f: A -> B): tmap A -> tmap B;
       fmap_id {A: Type}: @fmap A A type.(id) = type.(id);
-      fmap_comp {A B C: Type} (f: A -> B) (g: B -> C): fmap (g ∘ f) = fmap g ∘ fmap f;
+      fmap_comp {A B C: Type} (g: B -> C) (f: A -> B): fmap (g ∘ f) = fmap g ∘ fmap f;
     }.
 
-Definition type_functor_to_functor (F: type_functor): functor type type.
+Definition type_functor_as_functor (F: type_functor): functor type type.
   apply (mk_functor type type
            (* map_ob *) (F.(tmap))
            (* map_hom *) (fun A B (f: A -> B) => F.(fmap) f)
@@ -80,6 +80,26 @@ Definition list_functor: type_functor.
     intro x. unfold compose. rewrite <- map_map. reflexivity.
 Qed.
 
-(* Definition type_functor_compose: *)
+Definition type_functor_compose (G F: type_functor): type_functor.
+  refine {|
+      tmap := G.(tmap) ∘ F.(tmap);
+      fmap _ _ := G.(fmap) ∘ F.(fmap);
+    |}.
+  - (* id *) intro A. unfold compose.
+    rewrite F.(fmap_id). apply G.(fmap_id).
+  - (* comp *) intros A B C g f.
+    assert (forall (X Y: Type) (h: X -> Y),
+               (G.(fmap) ∘ F.(fmap)) h = G.(fmap) (F.(fmap) h))
+      as E by reflexivity.
+    rewrite !E. rewrite F.(fmap_comp). rewrite G.(fmap_comp). reflexivity.
+Qed.
+
+(* \circledbullet *)
+Notation "F ⦿ G" := (type_functor_compose G F) (at level 40, left associativity): cat_scope.
+
+Theorem type_functor_compose_correct (G F: type_functor):
+  type_functor_as_functor (G ⦿ F) = type_functor_as_functor G ⊚ type_functor_as_functor F.
+Proof.
+  destruct F, G. simpl. unfold functor_compose.
 
 (* Definition option_list_functor:  *)
