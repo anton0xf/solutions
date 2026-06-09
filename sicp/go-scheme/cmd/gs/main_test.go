@@ -56,8 +56,12 @@ func TestRun(t *testing.T) {
 		{"(and #f 1)", "#f"},
 		{"(or #f 1)", "1"},
 		{"(or)", "#f"},
+		{"(if #t 1 2)", "1"},
+		{"(if #f 1 2)", "2"},
+		{"(if #f 1)", "#f"},
+		// TODO test if with exprs
+
 		// TODO uncomment
-		// {"(if #t 1 2)", "1"},
 		// {"(define a 1) 'a a", "a\n'a\n1"},
 		// {"(define a 7) a '() (list a 1\n()(2) )", "'a\n7\n()\n(7 1 () (2))"},
 	}
