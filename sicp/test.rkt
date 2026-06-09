@@ -1,2 +1,7 @@
-#lang sicp
-(+ 1 2)
+#lang racket
+(module+ test
+  (require rackunit)
+  (check-true #f))
+
+
+
