@@ -1,6 +1,7 @@
 #!/bin/sh
 search() {
-    ag --ignore-dir '/task/' -F "$@"
+    # ag --ignore-dir '/task/' -F "$@"
+    grep --exclude-dir='task' --exclude='AGENTS.md' -RF "$@"
     echo
 }
 
