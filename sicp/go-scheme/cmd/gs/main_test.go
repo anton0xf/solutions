@@ -57,9 +57,12 @@ func TestRun(t *testing.T) {
 		{"(or #f 1)", "1"},
 		{"(or)", "#f"},
 		{"(if #t 1 2)", "1"},
+		{"(if #t 1 err)", "1"},
 		{"(if #f 1 2)", "2"},
+		{"(if #f err 2)", "2"},
 		{"(if #f 1)", "#f"},
 		// TODO test if with exprs
+		// {"(if (< 1 2) 'a)", "a"},
 
 		// TODO uncomment
 		// {"(define a 1) 'a a", "a\n'a\n1"},

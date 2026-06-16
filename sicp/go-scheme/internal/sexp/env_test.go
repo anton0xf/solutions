@@ -91,6 +91,8 @@ func TestEnv_Eval(t *testing.T) {
 
 		// and - short-circuit evaluation
 		{defaultEnv, NewList(&Symbol{"and"}), defaultEnv, TRUE, ""},
+		{defaultEnv, NewList(&Symbol{"and"}, NULL), defaultEnv, nil,
+			"Env.Eval: empty list"},
 		{defaultEnv, NewList(&Symbol{"and"}, &Int{1}), defaultEnv, &Int{1}, ""},
 		{defaultEnv, NewList(&Symbol{"and"}, &Int{1}, &Int{2}), defaultEnv, &Int{2}, ""},
 		{defaultEnv, NewList(&Symbol{"and"}, FALSE, &Int{1}), defaultEnv, FALSE, ""},
@@ -100,12 +102,16 @@ func TestEnv_Eval(t *testing.T) {
 
 		// or - short-circuit evaluation
 		{defaultEnv, NewList(&Symbol{"or"}), defaultEnv, FALSE, ""},
+		{defaultEnv, NewList(&Symbol{"or"}, NULL), defaultEnv, nil,
+			"Env.Eval: empty list"},
 		{defaultEnv, NewList(&Symbol{"or"}, &Int{1}), defaultEnv, &Int{1}, ""},
 		{defaultEnv, NewList(&Symbol{"or"}, &Int{1}, &Int{2}), defaultEnv, &Int{1}, ""},
 		{defaultEnv, NewList(&Symbol{"or"}, FALSE, &Int{1}), defaultEnv, &Int{1}, ""},
 		{defaultEnv, NewList(&Symbol{"or"}, FALSE, FALSE, &Int{1}), defaultEnv, &Int{1}, ""},
 		{defaultEnv, NewList(&Symbol{"or"}, FALSE, FALSE), defaultEnv, FALSE, ""},
 		{defaultEnv, NewList(&Symbol{"or"}, TRUE, &Int{1}), defaultEnv, TRUE, ""},
+
+		// TODO numbers (in)equality
 
 		// TODO define
 	}
