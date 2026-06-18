@@ -106,30 +106,37 @@ var FnDiv = &Function{
 
 // numeric predicates
 
-var FnLt = &Function{
-	name: "<",
-	f: func(args ...Expr) (Expr, error) {
-		if len(args) < 2 {
-			return nil, errors.New("<: expected at least 2 arguments")
-		}
-		nums := make([]int, len(args))
-		for i, arg := range args {
-			n, ok := arg.(*Int)
-			if !ok {
-				return nil, fmt.Errorf("<: unexpected argument type: [%d] %s", i, arg)
+func inequalityFn(name string, cmp func(m, n int) bool) *Function {
+	return &Function{
+		name: name,
+		f: func(args ...Expr) (Expr, error) {
+			if len(args) < 2 {
+				return nil, fmt.Errorf("%s: expected at least 2 arguments", name)
 			}
-			if n == nil {
-				return nil, fmt.Errorf("<: nil argument %d", i)
+			nums := make([]int, len(args))
+			for i, arg := range args {
+				n, ok := arg.(*Int)
+				if !ok {
+					return nil, fmt.Errorf("%s: unexpected argument type: [%d] %s", name, i, arg)
+				}
+				if n == nil {
+					return nil, fmt.Errorf("%s: nil argument %d", name, i)
+				}
+				nums[i] = n.x
 			}
-			nums[i] = n.x
-		}
-		res := true
-		for i := range len(nums) - 1 {
-			res = res && nums[i] < nums[i+1]
-		}
-		return &Bool{res}, nil
-	},
+			res := true
+			for i := range len(nums) - 1 {
+				res = res && cmp(nums[i], nums[i+1])
+			}
+			return &Bool{res}, nil
+		},
+	}
 }
+
+var FnLt = inequalityFn("<", func(m int, n int) bool { return m < n })
+var FnLe = inequalityFn("<=", func(m int, n int) bool { return m <= n })
+var FnGt = inequalityFn(">", func(m int, n int) bool { return m > n })
+var FnGe = inequalityFn(">=", func(m int, n int) bool { return m >= n })
 
 // lists
 
