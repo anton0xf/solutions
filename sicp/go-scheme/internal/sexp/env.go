@@ -51,6 +51,7 @@ func NewEnvDefault() *Env {
 			FQuote, FIf, FAnd, FOr,
 			// functions
 			FnInc, FnDec, FnPlus, FnMinus, FnMult, FnDiv,
+			FnLt,
 			FnList, FnCons, FnCar, FnCdr,
 		},
 	)

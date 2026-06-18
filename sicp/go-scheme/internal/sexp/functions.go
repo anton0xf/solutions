@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+// numeric operations
+
 var FnInc = &Function{
 	name: "inc",
 	f: func(args ...Expr) (Expr, error) {
@@ -101,6 +103,35 @@ var FnDiv = &Function{
 		return &Int{res}, nil
 	},
 }
+
+// numeric predicates
+
+var FnLt = &Function{
+	name: "<",
+	f: func(args ...Expr) (Expr, error) {
+		if len(args) < 2 {
+			return nil, errors.New("<: expected at least 2 arguments")
+		}
+		nums := make([]int, len(args))
+		for i, arg := range args {
+			n, ok := arg.(*Int)
+			if !ok {
+				return nil, fmt.Errorf("<: unexpected argument type: [%d] %s", i, arg)
+			}
+			if n == nil {
+				return nil, fmt.Errorf("<: nil argument %d", i)
+			}
+			nums[i] = n.x
+		}
+		res := true
+		for i := range len(nums) - 1 {
+			res = res && nums[i] < nums[i+1]
+		}
+		return &Bool{res}, nil
+	},
+}
+
+// lists
 
 var FnList = &Function{
 	name: "list",

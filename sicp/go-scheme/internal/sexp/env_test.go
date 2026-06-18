@@ -112,11 +112,11 @@ func TestEnv_Eval(t *testing.T) {
 		{defaultEnv, NewList(&Symbol{"or"}, TRUE, &Int{1}), defaultEnv, TRUE, ""},
 
 		// TODO numbers (in)equality
-
+		{defaultEnv, NewList(&Symbol{"<"}, &Int{0}, &Int{1}), defaultEnv, TRUE, ""},
 		// TODO define
 	}
 	for _, ex := range examples {
-		t.Run(fmt.Sprintf("[%v] %v", ex.env, ex.expr), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%v", ex.expr), func(t *testing.T) {
 			res, err := ex.env.Eval(ex.expr)
 			if len(ex.err) > 0 {
 				assert.EqualError(t, err, ex.err)
