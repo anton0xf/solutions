@@ -66,8 +66,10 @@ func TestRun(t *testing.T) {
 		{"(<= 1 3 2)", "#f"},
 		{"(<= 1 2 2 3)", "#t"},
 		{"(and (> 2 1 0) (>= 3 2 2 1))", "#t"},
-		// TODO test if with exprs
 		{"(if (< 1 2) 'a)", "a"},
+		{"(if (< 1 2) (+ 2 3) err)", "5"},
+		{"(if (> 1 2) err (+ 2 3))", "5"},
+		{"(if (< 1 2) err)", "error: Env.Get: symbol 'err not defined"},
 
 		// TODO uncomment
 		// {"(define a 1) 'a a", "a\n'a\n1"},
