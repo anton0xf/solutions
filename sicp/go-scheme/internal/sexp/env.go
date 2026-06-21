@@ -12,6 +12,12 @@ type Env struct {
 	m map[string]Expr
 }
 
+func (e *Env) Clone() *Env {
+	m := make(map[string]Expr, len(e.m))
+	maps.Copy(m, e.m)
+	return &Env{m}
+}
+
 type FuncOrForm interface {
 	Expr
 	GetName() string
