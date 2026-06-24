@@ -54,7 +54,7 @@ func NewEnvDefault() *Env {
 		},
 		[]FuncOrForm{
 			// special forms
-			FQuote, FIf, FAnd, FOr,
+			FQuote, FIf, FAnd, FOr, FDefine,
 			// functions
 			FnInc, FnDec, FnPlus, FnMinus, FnMult, FnDiv,
 			FnLt, FnLe, FnGt, FnGe,
@@ -73,6 +73,14 @@ func (env *Env) Get(name string) (Expr, error) {
 	} else {
 		return nil, fmt.Errorf("Env.Get: symbol '%s not defined", name)
 	}
+}
+
+func (env *Env) Set(name string, val Expr) error {
+	if name == "" {
+		return errors.New("Env.Set: empty symbol name")
+	}
+	env.m[name] = val
+	return nil
 }
 
 func (e *Env) String() string {

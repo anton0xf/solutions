@@ -1,6 +1,9 @@
 package sexp
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 var FAnd = &SpecialForm{
 	name: "and",
@@ -74,5 +77,26 @@ var FIf = &SpecialForm{
 			return env.Eval(args[2])
 		}
 		return FALSE, nil
+	},
+}
+
+var FDefine = &SpecialForm{
+	name: "define",
+	f: func(env *Env, args ...Expr) (Expr, error) {
+		if len(args) != 2 {
+			return nil, errors.New("define: unexpected number of arguments")
+		}
+		switch signature := args[0].(type) {
+		case *Symbol:
+			res, err := env.Eval(args[1])
+			if err != nil {
+				return nil, fmt.Errorf("define: %w", err)
+			}
+			env.Set(signature.name, res)
+			return signature, nil
+
+		default:
+			return nil, fmt.Errorf("define: unexpected signature type: %T", signature)
+		}
 	},
 }

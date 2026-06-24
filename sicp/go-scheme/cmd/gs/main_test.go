@@ -70,10 +70,9 @@ func TestRun(t *testing.T) {
 		{"(if (< 1 2) (+ 2 3) err)", "5"},
 		{"(if (> 1 2) err (+ 2 3))", "5"},
 		{"(if (< 1 2) err)", "error: Env.Get: symbol 'err not defined"},
-
-		// TODO uncomment
-		// {"(define a 1) 'a a", "a\n'a\n1"},
-		// {"(define a 7) a '() (list a 1\n()(2) )", "'a\n7\n()\n(7 1 () (2))"},
+		// define
+		{"(define a 1) 'a a", "a\na\n1"},
+		{"(define a 7) a '() (list a 1\n'()'(2 a) )", "a\n7\n()\n(7 1 () (2 a))"},
 	}
 	for _, c := range cases {
 		t.Run(c.in, func(t *testing.T) {

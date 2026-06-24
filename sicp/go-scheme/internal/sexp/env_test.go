@@ -95,9 +95,9 @@ func TestEnv_Eval(t *testing.T) {
 	}
 
 	// check ok with changed env
-	// ok := func(env *Env, expr Expr, res Expr, expectedEnv *Env) {
-	// 	checkEvalRes(t, env, expr, res, envIsEqual(expectedEnv))
-	// }
+	ok := func(env *Env, expr Expr, res Expr, expectedEnv *Env) {
+		checkEvalRes(t, env, expr, res, envIsEqual(expectedEnv))
+	}
 
 	// literals are self-contained
 	okE(&Int{7}, &Int{7})
@@ -188,7 +188,16 @@ func TestEnv_Eval(t *testing.T) {
 	// numbers (in)equality
 	okU(defEnv(), NewList(&Symbol{"<"}, &Int{0}, &Int{1}), TRUE)
 
-	// TODO define
-	// {defEnv(), NewList(&Symbol{"define"}, &Symbol{"foo"}, &Int{1}),
-	// 	defEnv.With("foo", &Int{1}), &Symbol{"foo"}, ""},
+	// define
+	errU(defEnv(), NewList(&Symbol{"define"}), "define: unexpected number of arguments")
+	errU(defEnv(), NewList(&Symbol{"define"}, NULL), "define: unexpected number of arguments")
+	errU(defEnv(), NewList(&Symbol{"define"}, &Int{1}, NULL), "define: unexpected signature type: *sexp.Int")
+	errU(defEnv(), NewList(&Symbol{"define"}, &Symbol{"foo"}, NULL), "define: Env.Eval: empty list")
+	ok(NewEnv(nil, []FuncOrForm{FDefine}),
+		NewList(&Symbol{"define"}, &Symbol{"foo"}, &Int{1}),
+		&Symbol{"foo"},
+		NewEnv(map[string]Expr{"foo": &Int{1}},
+			[]FuncOrForm{FDefine}))
+	ok(defEnv(), NewList(&Symbol{"define"}, &Symbol{"foo"}, &Int{1}),
+		&Symbol{"foo"}, defEnv(ekv{"foo", &Int{1}}))
 }
