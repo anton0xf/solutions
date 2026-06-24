@@ -86,6 +86,19 @@ func TestEnv_Eval(t *testing.T) {
 		checkEvalErr(t, env, expr, err, envIsEqual(copy))
 	}
 
+	defEnv := func(kvs ...ekv) *Env {
+		e := NewEnvDefault()
+		for _, kv := range kvs {
+			e.m[kv.key] = kv.val
+		}
+		return e
+	}
+
+	// check ok with changed env
+	// ok := func(env *Env, expr Expr, res Expr, expectedEnv *Env) {
+	// 	checkEvalRes(t, env, expr, res, envIsEqual(expectedEnv))
+	// }
+
 	// literals are self-contained
 	okE(&Int{7}, &Int{7})
 	okE(&String{"aa"}, &String{"aa"})
@@ -104,8 +117,6 @@ func TestEnv_Eval(t *testing.T) {
 	errE(&Symbol{"x"}, "Env.Get: symbol 'x not defined")
 	okU(env(ekv{"x", &Int{4}}), &Symbol{"x"}, &Int{4})
 
-	defEnv := NewEnvDefault()
-
 	// List
 	errE(NULL, "Env.Eval: empty list")
 	errE((*Pair)(nil), "Env.EvalPair: nil parameter")
@@ -115,69 +126,69 @@ func TestEnv_Eval(t *testing.T) {
 	errE(NewList(&Symbol{"a"}), "Env.EvalPair: Env.Get: symbol 'a not defined")
 	errU(env(ekv{"a", &Int{1}}), NewList(&Symbol{"a"}),
 		"Env.EvalPair: not a special form or function: 1")
-	errU(defEnv, NewListWithTail([]Expr{&Symbol{"inc"}}, nil),
+	errU(defEnv(), NewListWithTail([]Expr{&Symbol{"inc"}}, nil),
 		"Env.EvalPair: ToArray: list expected: <nil>")
-	okU(defEnv, NewList(&Symbol{"inc"}, &Int{1}), &Int{2})
-	errU(defEnv, NewList(&Symbol{"inc"}, &Symbol{"a"}),
+	okU(defEnv(), NewList(&Symbol{"inc"}, &Int{1}), &Int{2})
+	errU(defEnv(), NewList(&Symbol{"inc"}, &Symbol{"a"}),
 		"Env.EvalPair: Env.Get: symbol 'a not defined")
-	okU(defEnv, NewList(&Symbol{"inc"}, NewList(&Symbol{"inc"}, &Int{1})),
+	okU(defEnv(), NewList(&Symbol{"inc"}, NewList(&Symbol{"inc"}, &Int{1})),
 		&Int{3})
 
 	// special forms
-	okU(defEnv, NewList(&Symbol{"quote"}, &Int{1}), &Int{1})
-	okU(defEnv, NewList(&Symbol{"quote"}, &Symbol{"a"}), &Symbol{"a"})
-	errU(defEnv, NewList(&Symbol{"quote"}, &Int{1}, &Symbol{"a"}),
+	okU(defEnv(), NewList(&Symbol{"quote"}, &Int{1}), &Int{1})
+	okU(defEnv(), NewList(&Symbol{"quote"}, &Symbol{"a"}), &Symbol{"a"})
+	errU(defEnv(), NewList(&Symbol{"quote"}, &Int{1}, &Symbol{"a"}),
 		"quote: unexpected number of arguments")
 
 	// if - true branch
-	okU(defEnv, NewList(&Symbol{"if"}, TRUE, &Int{1}, &Int{2}),
+	okU(defEnv(), NewList(&Symbol{"if"}, TRUE, &Int{1}, &Int{2}),
 		&Int{1})
-	okU(defEnv, NewList(&Symbol{"if"}, FALSE, &Int{1}, &Int{2}),
+	okU(defEnv(), NewList(&Symbol{"if"}, FALSE, &Int{1}, &Int{2}),
 		&Int{2})
-	okU(defEnv, NewList(&Symbol{"if"}, TRUE, &Int{1}),
+	okU(defEnv(), NewList(&Symbol{"if"}, TRUE, &Int{1}),
 		&Int{1})
-	okU(defEnv, NewList(&Symbol{"if"}, FALSE, &Int{1}), FALSE)
-	okU(defEnv, NewList(&Symbol{"if"}, &Int{5}, &Int{1}, &Int{2}),
+	okU(defEnv(), NewList(&Symbol{"if"}, FALSE, &Int{1}), FALSE)
+	okU(defEnv(), NewList(&Symbol{"if"}, &Int{5}, &Int{1}, &Int{2}),
 		&Int{1})
-	okU(defEnv, NewList(&Symbol{"if"}, &String{"test"}, &Int{1}, &Int{2}),
+	okU(defEnv(), NewList(&Symbol{"if"}, &String{"test"}, &Int{1}, &Int{2}),
 		&Int{1})
-	okU(defEnv, NewList(&Symbol{"if"}, &Quoted{NULL}, &Int{1}, &Int{2}),
+	okU(defEnv(), NewList(&Symbol{"if"}, &Quoted{NULL}, &Int{1}, &Int{2}),
 		&Int{1})
-	errU(defEnv, NewList(&Symbol{"if"}, NULL, &Int{1}, &Int{2}),
+	errU(defEnv(), NewList(&Symbol{"if"}, NULL, &Int{1}, &Int{2}),
 		"Env.Eval: empty list")
-	okU(defEnv, NewList(&Symbol{"if"}, TRUE,
+	okU(defEnv(), NewList(&Symbol{"if"}, TRUE,
 		NewList(&Symbol{"+"}, &Int{1}, &Int{2}), &Int{99}), &Int{3})
-	okU(defEnv, NewList(&Symbol{"if"}, FALSE, &Int{99},
+	okU(defEnv(), NewList(&Symbol{"if"}, FALSE, &Int{99},
 		NewList(&Symbol{"+"}, &Int{10}, &Int{20})), &Int{30})
-	errU(defEnv, NewList(&Symbol{"if"}),
+	errU(defEnv(), NewList(&Symbol{"if"}),
 		"if: unexpected number of arguments (expected 2 or 3)")
-	errU(defEnv, NewList(&Symbol{"if"}, TRUE),
+	errU(defEnv(), NewList(&Symbol{"if"}, TRUE),
 		"if: unexpected number of arguments (expected 2 or 3)")
 
 	// and - short-circuit evaluation
-	okU(defEnv, NewList(&Symbol{"and"}), TRUE)
-	errU(defEnv, NewList(&Symbol{"and"}, NULL), "Env.Eval: empty list")
-	okU(defEnv, NewList(&Symbol{"and"}, &Int{1}), &Int{1})
-	okU(defEnv, NewList(&Symbol{"and"}, &Int{1}, &Int{2}), &Int{2})
-	okU(defEnv, NewList(&Symbol{"and"}, FALSE, &Int{1}), FALSE)
-	okU(defEnv, NewList(&Symbol{"and"}, &Int{1}, FALSE, &Int{2}), FALSE)
-	okU(defEnv, NewList(&Symbol{"and"}, &Int{1}, &Int{2}, &Int{3}), &Int{3})
-	okU(defEnv, NewList(&Symbol{"and"}, TRUE, FALSE), FALSE)
+	okU(defEnv(), NewList(&Symbol{"and"}), TRUE)
+	errU(defEnv(), NewList(&Symbol{"and"}, NULL), "Env.Eval: empty list")
+	okU(defEnv(), NewList(&Symbol{"and"}, &Int{1}), &Int{1})
+	okU(defEnv(), NewList(&Symbol{"and"}, &Int{1}, &Int{2}), &Int{2})
+	okU(defEnv(), NewList(&Symbol{"and"}, FALSE, &Int{1}), FALSE)
+	okU(defEnv(), NewList(&Symbol{"and"}, &Int{1}, FALSE, &Int{2}), FALSE)
+	okU(defEnv(), NewList(&Symbol{"and"}, &Int{1}, &Int{2}, &Int{3}), &Int{3})
+	okU(defEnv(), NewList(&Symbol{"and"}, TRUE, FALSE), FALSE)
 
 	// or - short-circuit evaluation
-	okU(defEnv, NewList(&Symbol{"or"}), FALSE)
-	errU(defEnv, NewList(&Symbol{"or"}, NULL), "Env.Eval: empty list")
-	okU(defEnv, NewList(&Symbol{"or"}, &Int{1}), &Int{1})
-	okU(defEnv, NewList(&Symbol{"or"}, &Int{1}, &Int{2}), &Int{1})
-	okU(defEnv, NewList(&Symbol{"or"}, FALSE, &Int{1}), &Int{1})
-	okU(defEnv, NewList(&Symbol{"or"}, FALSE, FALSE, &Int{1}), &Int{1})
-	okU(defEnv, NewList(&Symbol{"or"}, FALSE, FALSE), FALSE)
-	okU(defEnv, NewList(&Symbol{"or"}, TRUE, &Int{1}), TRUE)
+	okU(defEnv(), NewList(&Symbol{"or"}), FALSE)
+	errU(defEnv(), NewList(&Symbol{"or"}, NULL), "Env.Eval: empty list")
+	okU(defEnv(), NewList(&Symbol{"or"}, &Int{1}), &Int{1})
+	okU(defEnv(), NewList(&Symbol{"or"}, &Int{1}, &Int{2}), &Int{1})
+	okU(defEnv(), NewList(&Symbol{"or"}, FALSE, &Int{1}), &Int{1})
+	okU(defEnv(), NewList(&Symbol{"or"}, FALSE, FALSE, &Int{1}), &Int{1})
+	okU(defEnv(), NewList(&Symbol{"or"}, FALSE, FALSE), FALSE)
+	okU(defEnv(), NewList(&Symbol{"or"}, TRUE, &Int{1}), TRUE)
 
 	// numbers (in)equality
-	okU(defEnv, NewList(&Symbol{"<"}, &Int{0}, &Int{1}), TRUE)
+	okU(defEnv(), NewList(&Symbol{"<"}, &Int{0}, &Int{1}), TRUE)
 
 	// TODO define
-	// {defEnv, NewList(&Symbol{"define"}, &Symbol{"foo"}, &Int{1}),
+	// {defEnv(), NewList(&Symbol{"define"}, &Symbol{"foo"}, &Int{1}),
 	// 	defEnv.With("foo", &Int{1}), &Symbol{"foo"}, ""},
 }
