@@ -3,6 +3,7 @@
 # coq_makefile -f _CoqProject -o CoqMakefile
 -Q . ACat
 
+Intro1.v Intro2.v Intro3.v Intro4.v
 Cat.v
 Functor.v
 ContrFunctor.v

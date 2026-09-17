@@ -1,4 +1,4 @@
-Require Import Basics FunctionalExtensionality List.
+Require Import Basics FunctionalExtensionality ProofIrrelevance List.
 Require String BinInt.
 From ACat Require Import Cat Functor.
   
@@ -56,7 +56,7 @@ Definition type_functor_as_functor (F: type_functor): functor type type.
            (* map_hom *) (fun A B (f: A -> B) => F.(fmap) f)
            (* preserve_id *) (fun _ => F.(fmap_id))).
   (* preserve_comp *) intros A B C f g. simpl. apply F.(fmap_comp).
-Qed.
+Defined.
 
 Definition option_functor: type_functor.
   refine {|
@@ -92,7 +92,7 @@ Definition type_functor_compose (G F: type_functor): type_functor.
                (G.(fmap) ∘ F.(fmap)) h = G.(fmap) (F.(fmap) h))
       as E by reflexivity.
     rewrite !E. rewrite F.(fmap_comp). rewrite G.(fmap_comp). reflexivity.
-Qed.
+Defined.
 
 (* \circledbullet *)
 Notation "F ⦿ G" := (type_functor_compose G F) (at level 40, left associativity): cat_scope.
@@ -100,6 +100,12 @@ Notation "F ⦿ G" := (type_functor_compose G F) (at level 40, left associativit
 Theorem type_functor_compose_correct (G F: type_functor):
   type_functor_as_functor (G ⦿ F) = type_functor_as_functor G ⊚ type_functor_as_functor F.
 Proof.
-  destruct F, G. simpl. unfold functor_compose.
+  unfold type_functor_as_functor. simpl. 
+  unfold functor_compose. simpl.
+  f_equal. apply functional_extensionality_dep.
+  intro x. f_equal. apply proof_irrelevance.
+Qed.
 
-(* Definition option_list_functor:  *)
+Definition option_list_functor: type_functor := option_functor ⦿ list_functor.
+
+
