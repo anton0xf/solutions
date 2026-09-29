@@ -35,8 +35,8 @@ Definition op_func (C: cat): contr_functor.
     |}.
   - (* preserve_id *) reflexivity.
   - (* preserve_comp *) reflexivity.
-Defined.  
-  
+Defined.
+
 Theorem terminal_op {C: cat} (x: C.(ob)):
   let C_op := op_func C in
   initial x <-> terminal (C_op.(map_ob) x).

@@ -243,6 +243,26 @@ Proof.
   apply eq_trans with g; [symmetry|]; apply H; exact I.
 Qed.
 
+(*
+ x -g-> z
+ |      ^
+ |f     | h = g ∘ f'
+ v      |
+ y -----/
+ *)
+Theorem initial_iso_to_initial {C: cat} (x y: C.(ob)):
+  initial x -> x ~~ y -> initial y.
+Proof.
+  unfold initial, isomorphic, isomorphism, inversion, inverse.
+  intros Hx [f [f' [Hfl Hfr]]] z.
+  destruct (Hx z) as [g Hg].
+  exists (f' ;; g). unfold unique in Hg |- *.
+  split; [exact I|]. destruct Hg as [_ Hg].
+  intros h _. pose (Hg (f ;; h) I) as H.
+  rewrite H. rewrite <- C.(assoc). rewrite Hfr.
+  apply C.(id_right).
+Qed.
+
 (* TODO
    - T initial object is oposite to terminal
    - T oposite cat is inversion (functor?)
