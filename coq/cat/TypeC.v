@@ -1,4 +1,5 @@
-Require Import Basics FunctionalExtensionality ProofIrrelevance List.
+Require Import Basics FunctionalExtensionality ProofIrrelevance.
+Require Import List Fin FinFun Program.Equality.
 Require String BinInt.
 From ACat Require Import Cat Functor.
   
@@ -17,7 +18,22 @@ Definition type: cat.
   - (* assoc *) reflexivity.
 Defined.
 
-Notation "a ~~~ b" := (@isomorphic type a b) (at level 70, no associativity): cat_scope.
+Notation "a ~~~ b" := (@isomorphic type a b)
+                        (at level 70, no associativity): cat_scope.
+
+Theorem iso_means_bijection (X Y: Type): X ~~~ Y <-> exists f: X -> Y, Bijective f.
+Proof.
+  unfold isomorphic, isomorphism, inversion, inverse, Bijective. split.
+  - (* -> *) intros [f [g [H1 H2]]]. unfold hom in *. simpl in *.
+    exists f, g. split; intro x.
+    + exact (f_equal (fun h => h x) H1).
+    + exact (f_equal (fun h => h x) H2).
+  - (* <- *) intros [f [g [H1 H2]]].
+    exists f, g. split; apply functional_extensionality; intro x;
+      simpl; unfold compose.
+    + apply H1.
+    + apply H2.
+Qed.
 
 Module ObjectIso.
   Import String BinInt.
@@ -40,6 +56,18 @@ Module ObjectIso.
     - intro obj. simpl. destruct obj as [lab x y]. simpl. reflexivity.
     - intros [[lab x] y]. reflexivity.
   Qed.
+
+  Example object_iso': object ~~~ (string * Z * Z)%type.
+  Proof.
+    apply iso_means_bijection.
+    pose (fun obj => (obj.(label), obj.(x), obj.(y))) as f.
+    exists f. unfold Bijective.
+    pose (fun tup => match tup with (lab, x, y) => mk_object lab x y end) as g.
+    exists g. split.
+    - intros [lab x y]. reflexivity.
+    - intros [[lab x] y]. reflexivity.
+  Qed.
+
 End ObjectIso.
 
 Record type_functor :=
@@ -95,7 +123,8 @@ Definition type_functor_compose (G F: type_functor): type_functor.
 Defined.
 
 (* \circledbullet *)
-Notation "F ⦿ G" := (type_functor_compose G F) (at level 40, left associativity): cat_scope.
+Notation "F ⦿ G" := (type_functor_compose G F)
+                      (at level 40, left associativity): cat_scope.
 
 Theorem type_functor_compose_correct (G F: type_functor):
   type_functor_as_functor (G ⦿ F) = type_functor_as_functor G ⊚ type_functor_as_functor F.
@@ -108,4 +137,25 @@ Qed.
 
 Definition option_list_functor: type_functor := option_functor ⦿ list_functor.
 
+Definition fin := Fin.t.
 
+Theorem unit_iso_one: unit ~~~ fin 1.
+Proof.
+  apply iso_means_bijection. exists (fun _ => F1).
+  unfold Bijective. exists (fun _ => tt).
+  split; intro x.
+  - destruct x. reflexivity.
+  - dependent destruction x.
+    + reflexivity.
+    + dependent destruction x.
+Qed.
+
+Theorem unit_fun_iso (X: Type): (unit -> X) ~~~ X.
+Proof.
+  apply iso_means_bijection.
+  exists (fun f => f tt). unfold Bijective.
+  exists (fun x _ => x). split.
+  - intro f. apply functional_extensionality.
+    intro x. destruct x. reflexivity.
+  - reflexivity.
+Qed.
