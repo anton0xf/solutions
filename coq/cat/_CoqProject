@@ -7,5 +7,6 @@ Intro1.v Intro2.v Intro3.v Intro4.v
 Cat.v
 Functor.v
 ContrFunctor.v
-Monoid.v
-TypeC.v
+Structures/Simple.v
+Structures/Monoid.v
+Structures/TypeC.v
