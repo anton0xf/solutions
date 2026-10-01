@@ -6,6 +6,21 @@ From ACat Require Import Cat Functor.
 Open Scope cat_scope.
 Open Scope program_scope.
 
+Definition type_as_cat (T: Type): cat.
+  unshelve refine {|
+      ob := T;
+      hom a b := a = b;
+    |}.
+  - (* comp *) intros a b c Hbc Hab. apply eq_trans with b; assumption.
+  - (* id *) reflexivity.
+  - (* id_left *) intros x y Hxy. simpl. reflexivity.
+  - (* id_right *) intros x y Hxy. simpl. apply proof_irrelevance.
+  - (* assoc *) intros x y z t Hxy Hyz Hzt. simpl.
+    apply proof_irrelevance.
+Defined.
+
+(* TODO: prove it's descrete skeletal category *)
+
 Definition type: cat.
   refine {|
       ob := Type;
