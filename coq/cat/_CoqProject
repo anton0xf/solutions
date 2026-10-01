@@ -11,3 +11,4 @@ Structures/Simple.v
 Structures/Monoid.v
 Structures/TypeC.v
 Structures/PointedType.v
+Structures/Magma.v
