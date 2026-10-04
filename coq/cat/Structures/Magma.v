@@ -1,5 +1,5 @@
 Require Import Basics FunctionalExtensionality ProofIrrelevance.
-From ACat Require Import Cat Functor.
+From ACat Require Import Cat Functor Structures.TypeC.
   
 Open Scope cat_scope.
 
@@ -58,4 +58,11 @@ Definition cat_magma: cat.
   - (* assoc *) intros x y z t f g h.
     unfold magma_hom_comp, compose. simpl. f_equal.
     apply proof_irrelevance.
+Defined.
+
+Definition forget: functor cat_magma type.
+  unshelve eapply (mk_functor cat_magma type (* map_ob *) M).
+  - (* map_hom *) intros x y [f _]. exact f.
+  - (* preserve_id *) intros x. simpl. reflexivity.
+  - (* preserve_comp *) intros x y z g f. simpl. reflexivity.
 Defined.
