@@ -12,3 +12,4 @@ Structures/Monoid.v
 Structures/TypeC.v
 Structures/PointedType.v
 Structures/Magma.v
+Structures/Semigroup.v

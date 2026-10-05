@@ -5,7 +5,7 @@ Open Scope cat_scope.
 
 Record magma :=
   mk_magma {
-      M: Type;
+      M:> Type;
       mu: M -> M -> M;
     }.
 
@@ -21,8 +21,8 @@ Open Scope magma_scope.
 
 Record magma_hom (dom cod: magma) :=
   mk_magma_hom {
-      map: dom.(M) -> cod.(M);
-      respect (x y: dom.(M)): map (x * y) = map x * map y;
+      map: dom -> cod;
+      respect (x y: dom): map (x * y) = map x * map y;
     }.
 
 Arguments map {dom} {cod}.
@@ -40,6 +40,13 @@ Definition magma_hom_comp {x y z: magma}
   rewrite g.(respect), f.(respect). reflexivity.
 Defined.
 
+Theorem magma_hom_ext {x y: magma} (f g: magma_hom x y):
+  f.(map) = g.(map) -> f = g.
+Proof.
+  intros H. destruct f as [f fr], g as [g gr].
+  simpl in H. subst g. f_equal. apply proof_irrelevance.
+Qed.
+
 Definition cat_magma: cat.
   refine {|
       ob := magma;
@@ -47,17 +54,10 @@ Definition cat_magma: cat.
       id := magma_hom_id;
       comp := @magma_hom_comp;
     |}.
-  - (* id_left *) intros x y f.
-    unfold magma_hom_id, magma_hom_comp, compose, Datatypes.id. simpl.
-    destruct f as [fmap frespect]. simpl. f_equal.
-    apply proof_irrelevance.
-  - (* id_right *) intros x y f.
-    unfold magma_hom_id, magma_hom_comp, compose, Datatypes.id. simpl.
-    destruct f as [fmap frespect]. simpl. f_equal.
-    apply proof_irrelevance.
+  - (* id_left *) intros x y f. apply magma_hom_ext. reflexivity.
+  - (* id_right *) intros x y f. apply magma_hom_ext. reflexivity.
   - (* assoc *) intros x y z t f g h.
-    unfold magma_hom_comp, compose. simpl. f_equal.
-    apply proof_irrelevance.
+    apply magma_hom_ext. reflexivity.
 Defined.
 
 Definition forget: functor cat_magma type.
