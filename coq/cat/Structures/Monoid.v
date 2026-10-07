@@ -1,5 +1,5 @@
-Require Import Basics FunctionalExtensionality ProofIrrelevance.
-From ACat Require Import Cat Functor.
+Require Import Basics FunctionalExtensionality ProofIrrelevance Description.
+From ACat Require Import Util Cat Functor.
 From ACat Require Import TypeC Magma Semigroup.
 
 Open Scope cat_scope.
@@ -16,6 +16,16 @@ Record monoid :=
 Arguments mid {_}.
 Arguments mid_left {_}.
 Arguments mid_right {_}.
+
+Theorem monoid_eq (a b: monoid)
+  (Hs: a.(monoid_semigroup) = b.(monoid_semigroup))
+  (Hid: cast (semigroup_carrier_eq Hs) a.(mid) = b.(mid)):
+  a = b.
+Proof.
+  destruct a, b. simpl in Hs. subst monoid_semigroup1.
+  simpl in Hid. subst mid1. unfold semigroup_carrier_eq.
+  f_equal; apply proof_irrelevance.
+Qed.
 
 Definition monoid_as_cat (m: monoid): cat.
 Proof.
@@ -95,3 +105,76 @@ Definition forget: functor cat_monoid cat_semigroup.
   - reflexivity.
   - reflexivity.
 Defined.
+
+Definition is_mid {m: semigroup} (e: m.(M)): Prop :=
+  forall x, e * x = x /\ x * e = x.
+
+Record monoid_alt :=
+  mk_monoid_alt {
+      monoid_alt_semigroup:> semigroup;
+      mid_exists: exists e: monoid_alt_semigroup.(M), is_mid e;
+    }.
+
+Theorem monoid_alt_eq {m n: monoid_alt}
+  (H: m.(monoid_alt_semigroup) = n.(monoid_alt_semigroup)):
+  m = n.
+Proof.
+  destruct m as [m mmid], n as [n nmid]. simpl in H.
+  subst n. f_equal. apply proof_irrelevance.
+Qed.
+
+Definition monoid_to_alt (m: monoid): monoid_alt.
+  refine {| monoid_alt_semigroup := m.(monoid_semigroup) |}.
+  exists m.(mid). intro x. split.
+  - apply m.(mid_left).
+  - apply m.(mid_right).
+Defined.
+
+Theorem mid_unique (m: monoid_alt) (e1 e2: m.(M)):
+  is_mid e1 -> is_mid e2 -> e1 = e2.
+Proof.
+  unfold is_mid. intros H1 H2.
+  destruct (H1 e2) as [_ H12r].
+  destruct (H2 e1) as [H21l _].
+  rewrite <- H21l. exact H12r.
+Qed.
+
+Definition alt_mid (m : monoid_alt) : { e : m.(M) | is_mid e }.
+  apply constructive_definite_description.
+  destruct m.(mid_exists) as [e He].
+  exists e. split.
+  - exact He.
+  - intros e' He'. apply mid_unique; assumption.
+Defined.
+
+Definition monoid_from_alt (m: monoid_alt): monoid.
+  pose (alt_mid m) as H.
+  destruct H as [e H]. unfold is_mid in H.
+  refine {|
+      monoid_semigroup := m.(monoid_alt_semigroup);
+      mid := e;
+    |}.
+  - intro x. apply H.
+  - intro x. apply H.
+Defined.
+
+Theorem monoid_alt_iso: monoid ~~~ monoid_alt.
+Proof.
+  apply iso_means_bijection.
+  exists monoid_to_alt. exists monoid_from_alt.
+  split; intro m.
+  - unfold monoid_to_alt, monoid_from_alt. simpl.
+    match goal with
+    | |- (let (x, i) := ?p in _) = _ =>
+        destruct p as [e H]
+    end.
+    simpl in e. unshelve eapply monoid_eq. { reflexivity. }
+    simpl. apply (@mid_unique (monoid_to_alt m) e mid H).
+    destruct m. simpl in e. unfold is_mid. intros x. split; auto.
+  - unfold monoid_to_alt. destruct m as [m mmid]. unfold monoid_from_alt.
+    match goal with
+    | |- context [alt_mid ?x] =>
+        destruct (alt_mid x) as [e He]
+    end.
+    simpl. f_equal. apply proof_irrelevance.
+Qed.

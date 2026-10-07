@@ -19,6 +19,16 @@ Notation "x * y" := (mu x y): magma_scope.
 
 Open Scope magma_scope.
 
+Definition cast_mu {M N: Type} (H: M = N) (mu: M -> M -> M): N -> N -> N.
+  subst M. exact mu.
+Defined.
+
+Theorem magma_eq (M N: Type) (mu: M -> M -> M) (nu: N -> N -> N)
+  (HM: M = N)
+  (Hmu: cast_mu HM mu = nu):
+  mk_magma M mu = mk_magma N nu.
+Proof. subst N nu. reflexivity. Qed.  
+
 Record magma_hom (dom cod: magma) :=
   mk_magma_hom {
       map: dom -> cod;
@@ -27,7 +37,7 @@ Record magma_hom (dom cod: magma) :=
 
 Arguments map {dom} {cod}.
 Arguments respect {dom} {cod}.
-
+  
 Definition magma_hom_id (m: magma): magma_hom m m.
   refine {| map := Datatypes.id |}.
   intros x y. unfold Datatypes.id. reflexivity.

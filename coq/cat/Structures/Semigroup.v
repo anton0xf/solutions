@@ -10,6 +10,17 @@ Record semigroup :=
       mu_assoc (x y z: semigroup_magma.(M)): x * (y * z) = (x * y) * z;
     }.
 
+Theorem semigoup_eq (a b: semigroup):
+  a.(semigroup_magma) = b.(semigroup_magma) -> a = b.
+Proof.
+  intro H. destruct a as [a a_assoc], b as [b b_assoc].
+  simpl in H. subst b. f_equal. apply proof_irrelevance.
+Qed.
+
+Definition semigroup_carrier_eq {a b: semigroup}: a = b -> a.(M) = b.(M).
+  intros H. destruct H. reflexivity.
+Defined.
+
 Definition cat_semigroup: cat.
   refine {|
       ob := semigroup;
