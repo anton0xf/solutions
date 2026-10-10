@@ -58,7 +58,7 @@ Proof.
 Defined.
 
 Record monoid_hom (dom cod: monoid) :=
-  {
+  mk_monoid_hom {
     monoid_magma_hom:> magma_hom dom cod;
     respect_mid: monoid_magma_hom.(map) dom.(mid) = cod.(mid);
   }.

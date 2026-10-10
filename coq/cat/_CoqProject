@@ -9,8 +9,9 @@ Cat.v
 Functor.v
 ContrFunctor.v
 Structures/Simple.v
-Structures/Monoid.v
 Structures/TypeC.v
 Structures/PointedType.v
 Structures/Magma.v
 Structures/Semigroup.v
+Structures/Monoid.v
+Structures/Group.v
