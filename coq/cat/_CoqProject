@@ -17,3 +17,4 @@ Structures/Semigroup.v
 Structures/Monoid.v
 Structures/Group.v
 Structures/Preorder.v
+Structures/Order.v
