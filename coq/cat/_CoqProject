@@ -1,4 +1,5 @@
 # -*- Conf -*-
+# use Coq 8.x
 # generate Makefile by
 # coq_makefile -f _CoqProject -o CoqMakefile
 -Q . ACat
@@ -15,3 +16,4 @@ Structures/Magma.v
 Structures/Semigroup.v
 Structures/Monoid.v
 Structures/Group.v
+Structures/Preorder.v
