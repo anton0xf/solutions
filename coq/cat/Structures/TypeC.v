@@ -165,12 +165,11 @@ Proof.
     + dependent destruction x.
 Qed.
 
-Theorem unit_fun_iso (X: Type): (unit -> X) ~~~ X.
+Theorem unit_choose_element (X: Type): X ~~~ (unit -> X).
 Proof.
   apply iso_means_bijection.
-  exists (fun f => f tt). unfold Bijective.
-  exists (fun x _ => x). split.
-  - intro f. apply functional_extensionality.
-    intro x. destruct x. reflexivity.
-  - reflexivity.
+  exists (fun x _ => x). unfold Bijective.
+  exists (fun f => f tt). split. { reflexivity. }
+  intro f. apply functional_extensionality.
+  intro x. destruct x. reflexivity.
 Qed.
