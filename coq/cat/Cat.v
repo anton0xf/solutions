@@ -20,18 +20,18 @@ Record cat :=
 
       assoc {a b c d: ob} (f: a ~> b) (g: b ~> c) (h: c ~> d)
       : h ∘ (g ∘ f) = (h ∘ g) ∘ f;
-    }.
+    } as cat.
 
 Declare Scope cat_scope.
 Delimit Scope cat_scope with cat.
 Bind Scope cat_scope with cat.
 
-Arguments hom {c0}.
-Arguments comp {c0 a b c}.
-Arguments id {c0 a}.
-Arguments id_left {c0 a b}.
-Arguments id_right {c0 a b}.
-Arguments assoc {c0 a b c d}.
+Arguments hom {cat}.
+Arguments comp {cat a b c}.
+Arguments id {cat a}.
+Arguments id_left {cat a b}.
+Arguments id_right {cat a b}.
+Arguments assoc {cat a b c d}.
 
 Notation "a ~> b" := (hom a b): cat_scope.
 Notation "f ;; g" := (comp g f): cat_scope.
@@ -41,6 +41,21 @@ Local Open Scope cat_scope.
 (* Check (forall (C: cat) (a b: C.(ob)) (f: a ~> b), True). *)
 (* Check (fun (C: cat) (a b c: C.(ob)) (f: a ~> b) (g: b ~> c) => g ∘ f). *)
 
+Definition prodc (A B: cat): cat.
+  refine {|
+      ob := A.(ob) * B.(ob);
+      hom x y := prod (A.(hom) (fst x) (fst y))
+                   (B.(hom) (snd x) (snd y));
+      id p := (A.(@id) (fst p), B.(@id) (snd p));
+      comp a b c f g := (fst f ∘ fst g, snd f ∘ snd g);
+    |}.
+  - (* id_left *) intros a b [f1 f2]. simpl.
+    rewrite A.(id_left), B.(id_left). reflexivity.
+  - (* id_right *) intros a b [f1 f2]. simpl.
+    rewrite A.(id_right), B.(id_right). reflexivity.
+  - (* assoc *) intros a b c d [f1 f2] [g1 g2] [h1 h2]. simpl.
+    rewrite A.(assoc), B.(assoc). reflexivity.
+Defined.
 
 (* left-side inverse *)
 Definition inverse {C: cat} {a b: C.(ob)}
