@@ -165,11 +165,24 @@ Proof.
     + dependent destruction x.
 Qed.
 
-Theorem unit_choose_element (X: Type): X ~~~ (unit -> X).
+Definition choose {X: Type} (x: X): unit -> X := fun _ => x.
+
+Theorem unit_choose_element {X: Type}: X ~~~ (unit -> X).
 Proof.
   apply iso_means_bijection.
-  exists (fun x _ => x). unfold Bijective.
+  exists choose. unfold Bijective.
   exists (fun f => f tt). split. { reflexivity. }
   intro f. apply functional_extensionality.
   intro x. destruct x. reflexivity.
 Qed.
+
+Theorem app_is_comp {X Y: Type} (f: X -> Y) (x: X) (y: Y):
+  f x = y <-> f ∘ (choose x) = choose y.
+Proof.
+  split; intro H.
+  - (* -> *) apply functional_extensionality. intro u.
+    unfold choose, compose. exact H.
+  - (* <- *) unfold choose, compose in H.
+    apply f_equal with (f := fun g => g tt) in H. exact H.
+Qed.
+    
