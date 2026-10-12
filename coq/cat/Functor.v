@@ -3,6 +3,8 @@ From ACat Require Import Cat.
 
 Open Scope cat_scope.
 
+Set Universe Polymorphism.
+
 Record functor (src dst: cat) :=
   mk_functor {
       map_ob: src.(ob) -> dst.(ob);
@@ -50,29 +52,19 @@ Defined.
 (* \circledcirc *)
 Notation "F ⊚ G" := (functor_compose G F) (at level 40, left associativity): cat_scope.
 
-(* Check eq_ind. *)
-(*[ forall [A: Type] (x: A) (P: A -> Prop), P x -> forall y: A, x = y -> P y ]*)
-
-(* Check eq_rec. *)
-(*[ forall [A: Type] (x: A) (P: A -> Set),  P x -> forall y: A, x = y -> P y ]*)
-
-(* Check eq_rect. *)
-(*[ forall [A: Type] (x: A) (P: A -> Type), P x -> forall y: A, x = y -> P y ]*)
-
 Definition cast_hom_type (A B : cat) (m : A.(ob) -> B.(ob)) : Type :=
   forall a b : A.(ob), A.(hom) a b -> B.(hom) (m a) (m b).
 
-Check (fun (A B: cat) (F: functor A B) => @map_hom A B F).
-(* fun (A B : cat) (F : functor A B) => @map_hom A B F *)
-(*      : forall (A B : cat) (F : functor A B) (a b : ob A), a ~> b -> map_ob a ~> map_ob b *)
+(* Check (fun (A B: cat) (F: functor A B) => @map_hom A B F). *)
+(* forall (A B : cat) (F : functor A B) (a b : ob A), a ~> b -> map_ob a ~> map_ob b *)
 
 Definition cast_map_hom_type {A B: cat} (F G: functor A B) (H: F.(map_ob) = G.(map_ob))
   : forall a b: A.(ob), a ~> b -> G.(map_ob) a ~> G.(map_ob) b := 
   eq_rect F.(map_ob) (cast_hom_type A B) (@map_hom A B F) G.(map_ob) H.
 
-Check (forall (A B: cat) (F G: functor A B),
-        exists H_ob : @map_ob A B F = @map_ob A B G,
-          cast_map_hom_type F G H_ob = (@map_hom A B G)).
+(* Check (forall (A B: cat) (F G: functor A B), *)
+(*         exists H_ob : @map_ob A B F = @map_ob A B G, *)
+(*           cast_map_hom_type F G H_ob = (@map_hom A B G)). *)
 
 Theorem functor_eq {A B: cat} (F G: functor A B):
   F = G <-> (exists H: F.(map_ob) = G.(map_ob), cast_map_hom_type F G H = @map_hom A B G).

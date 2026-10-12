@@ -1,3 +1,5 @@
+Set Universe Polymorphism.
+
 (* morphism *)
 Reserved Infix "~>" (at level 90, right associativity).
 (* composition \circ *)
@@ -185,6 +187,5 @@ Qed.
    - T initial object is oposite to terminal
    - T oposite cat is inversion (functor?)
    - D (co)product
-
-   - pre-order, partial order and total order cats
  *)
+
