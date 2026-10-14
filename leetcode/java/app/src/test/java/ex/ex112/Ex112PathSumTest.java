@@ -1,5 +1,6 @@
 package ex.ex112;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -35,5 +36,40 @@ class Ex112PathSumTest {
     @DisplayName("root = []: the tree is empty, so there are no root-to-leaf paths")
     void example3() {
         assertFalse(solution.hasPathSum(null, 0));
+    }
+
+    @Test
+    void oneOk() {
+        assertTrue(solution.hasPathSum(node(1), 1));
+    }
+
+    @Test
+    void oneFail() {
+        assertFalse(solution.hasPathSum(node(1), 0));
+    }
+
+    @Test
+    void leftOk() {
+        assertTrue(solution.hasPathSum(node(1, node(2), null), 3));
+    }
+
+    @Test
+    void leftFail() {
+        assertFalse(solution.hasPathSum(node(1, node(2), null), 0));
+    }
+
+    @Test
+    void rightFail() {
+        assertFalse(solution.hasPathSum(node(1, null, node(2)), 1));
+    }
+
+    @Test
+    void rightOk() {
+        assertTrue(solution.hasPathSum(node(1, null, node(2)), 3));
+    }
+
+    @Test
+    void bothOk() {
+        assertTrue(solution.hasPathSum(node(1, node(10), node(2)), 3));
     }
 }
