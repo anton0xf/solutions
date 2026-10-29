@@ -1,40 +1,29 @@
 package ex.ex437;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+
 /* https://leetcode.com/problems/path-sum-iii/ */
 public class Ex437PathSumIII {
     public int pathSum(TreeNode root, int targetSum) {
         if (root == null) {
             return 0;
         }
-        return dfs(root, targetSum);
+        return dfs(root, targetSum, List.of((long)targetSum));
     }
 
-    private int dfs(TreeNode node, long targetSum) {
+    private int dfs(TreeNode node, long targetSum, List<Long> targetSums) {
         int num = 0;
-        if (node.val == targetSum) {
-            num++;
-        }
+        num += Collections.frequency(targetSums, (long)node.val);
+        List<Long> sums = Stream.concat(Stream.of(targetSum),
+                targetSums.stream().map(sum -> sum - node.val))
+                .toList();
         if (node.left != null) {
-            num += from(node.left, targetSum - node.val)
-                    + dfs(node.left, targetSum);
+            num += dfs(node.left, targetSum, sums);
         }
         if(node.right != null){
-            num += from(node.right, targetSum - node.val)
-                    + dfs(node.right, targetSum);
-        }
-        return num;
-    }
-
-    private int from(TreeNode node, long targetSum) {
-        int num = 0;
-        if (node.val == targetSum) {
-            num++;
-        }
-        if (node.left != null) {
-            num += from(node.left, targetSum - node.val);
-        }
-        if(node.right != null){
-            num += from(node.right, targetSum - node.val);
+            num += dfs(node.right, targetSum, sums);
         }
         return num;
     }
