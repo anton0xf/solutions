@@ -1,5 +1,6 @@
 package ex.ex113;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -40,5 +41,46 @@ class Ex113PathSumIITest {
     @DisplayName("root = [1,2]: the only root-to-leaf path is 1 -> 2 (sum 3), not 0")
     void example3() {
         assertEquals(List.of(), solution.pathSum(node(1, node(2), null), 0));
+    }
+
+    @Test
+    void empty() {
+        assertEquals(List.of(), solution.pathSum(null, 0));
+    }
+
+    @Test
+    void rootSome() {
+        assertEquals(List.of(List.of(1)), solution.pathSum(node(1), 1));
+    }
+
+    @Test
+    void rootNone() {
+        assertEquals(List.of(), solution.pathSum(node(1), 0));
+    }
+
+    @Test
+    void leftNone() {
+        assertEquals(List.of(), solution.pathSum(node(1, node(2), null), 1));
+    }
+
+    @Test
+    void leftSome() {
+        assertEquals(List.of(List.of(1, 2)), solution.pathSum(node(1, node(2), null), 3));
+    }
+
+    @Test
+    void rightNone() {
+        assertEquals(List.of(), solution.pathSum(node(1, null, node(2)), 1));
+    }
+
+    @Test
+    void rightSome() {
+        assertEquals(List.of(List.of(1, 2)), solution.pathSum(node(1, null, node(2)), 3));
+    }
+
+    @Test
+    void twoAll() {
+        assertEquals(List.of(List.of(1, 2), List.of(1, 2)),
+                solution.pathSum(node(1, node(2), node(2)), 3));
     }
 }
