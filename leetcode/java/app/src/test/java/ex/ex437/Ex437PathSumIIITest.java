@@ -1,5 +1,6 @@
 package ex.ex437;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -33,4 +34,68 @@ class Ex437PathSumIIITest {
                 node(8, node(13), node(4, node(5), node(1))));
         assertEquals(3, solution.pathSum(root, 22));
     }
+
+    @Test
+    void empty() {
+        assertEquals(0, solution.pathSum(null, 0));
+    }
+
+    @Test
+    void rootOk() {
+        assertEquals(1, solution.pathSum(node(1), 1));
+    }
+
+    @Test
+    void rootFail() {
+        assertEquals(0, solution.pathSum(node(1), 0));
+    }
+
+    @Test
+    void leftOk() {
+        assertEquals(1, solution.pathSum(node(1, node(2), null), 3));
+    }
+
+    @Test
+    void leftFail() {
+        assertEquals(0, solution.pathSum(node(1, node(2), null), 0));
+    }
+
+    @Test
+    void leftTopOk() {
+        assertEquals(1, solution.pathSum(node(1, node(2), null), 1));
+    }
+
+    @Test
+    void leftLeafOk() {
+        assertEquals(1, solution.pathSum(node(1, node(2), null), 2));
+    }
+
+    @Test
+    void leftTwoFail() {
+        assertEquals(1,
+                solution.pathSum(node(1, node(2, node(4), null), null), 4));
+    }
+
+    @Test
+    void leftMiddleOk() {
+        assertEquals(1,
+                solution.pathSum(node(1, node(2, node(3), null), null), 2));
+    }
+
+    @Test
+    void rightOk() {
+        assertEquals(1, solution.pathSum(node(1, null, node(2)), 3));
+    }
+
+    @Test
+    void rightFail() {
+        assertEquals(0, solution.pathSum(node(1, null, node(2)), 0));
+    }
+
+    @Test
+    void continuous() {
+        TreeNode root = node(1, node(2, node(3), null), null);
+        assertEquals(0, solution.pathSum(root, 4));
+    }
+
 }
