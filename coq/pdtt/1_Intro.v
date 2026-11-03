@@ -1,5 +1,5 @@
-Require Import Arith.
-Import Nat.
+Require Import Arith String List.
+Import Nat Ascii ListNotations.
 
 Inductive Vec (A: Set): nat -> Set :=
 | vnil: Vec A 0
@@ -85,3 +85,97 @@ Proof.
   - apply le_n_S. exact IH.
   - apply le_S. exact IH.
 Qed.
+
+(** nary *)
+
+Fixpoint nary (A: Set) (n: nat): Set :=
+  match n with
+  | 0 => A
+  | S n => A -> nary A n
+  end.
+
+Fixpoint apply {A: Set} {n: nat} (f: nary A n) (xs: Vec A n): A :=
+  match xs in Vec _ k return nary A k -> A with
+  | [] => fun f => f
+  | x :: xs => fun f => apply (f x) xs
+  end f.
+
+Compute apply (S: nary nat 1) (1 :: []).
+Compute apply (add: nary nat 2) (1 :: 2 :: []).
+Compute apply (n := 2) add (1 :: 2 :: []).
+
+Definition apply' {A : Set} {n : nat}
+  (xs : Vec A n) (f : nary A n) : A :=
+  apply (n := n) f xs.
+
+Compute apply' (1 :: 2 :: []) add.
+
+Section DependentMatch.
+  
+  Definition T (b: bool) : Set := if b then nat else bool.
+
+  Fail Definition f (b: bool) (x: T b): nat :=
+    match b with
+    | true => x (* The term "x" has type "T b" while it is expected to have type "nat". *)
+    | false => if x then 1 else 0
+    end.
+  
+  Definition f (b: bool) (x: T b): nat :=
+    (match b return T b -> nat with
+     | true => fun x => x
+     | false => fun x => if x then 1 else 0
+     end) x.
+  
+  Definition f' (b: bool) (x: T b): nat.
+    destruct b.
+    - simpl in x. exact x.
+    - simpl in x. exact (if x then 1 else 0).
+  Defined.
+
+  Definition f'' (b: bool) (x: T b): nat :=
+    (if b return (T b -> nat)
+     then fun x: T true => x
+     else fun x: T false => if x then 1 else 0
+    ) x.
+
+End DependentMatch.
+
+(** printf *)
+Open Scope list_scope.
+Open Scope string_scope.
+
+Inductive Token :=
+| char: ascii -> Token
+| strTok.
+
+Open Scope char_scope.
+
+Fixpoint lex (s: string): list Token :=
+  match s with
+  | ""%string => []
+  | String "%" (String "%" s) => char "%" :: lex s
+  | String "%" (String "s" s) => strTok :: lex s
+  | String c s => char c :: lex s
+  end.
+
+Fixpoint args (ts: list Token) :=
+  match ts with
+  | [] => string
+  | char _ :: ts => args ts
+  | strTok :: ts => string -> args ts
+  end.
+
+Definition printfType (s: string) := args (lex s).
+
+Definition sprintf (s: string): printfType s :=
+  let fix iter (ts: list Token) (acc: string): args ts :=
+    match ts with
+    | [] => acc
+    | char c :: ts => iter ts (acc ++ (String c ""%string))
+    | strTok :: ts => fun s => iter ts (acc ++ s) 
+    end
+  in iter (lex s) ""%string.
+
+Close Scope char_scope.
+Compute printfType "%%a: %s, b: %s".
+Compute sprintf "%%a: %s, b: %s" "aa" "bb".
