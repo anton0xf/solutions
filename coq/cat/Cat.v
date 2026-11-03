@@ -7,6 +7,7 @@ Reserved Infix "∘" (at level 40, left associativity).
 (* flipped composition - "and then" *)
 Reserved Infix ";;" (at level 50, left associativity).
 
+#[universes(cumulative)]
 Record cat :=
   mk_cat {
       ob: Type;

@@ -8,9 +8,10 @@ Intro1.v Intro2.v Intro3.v Intro4.v
 Util.v
 Cat.v
 Functor.v
-CatC.v
 ContrFunctor.v
+CatC.v
 Structures/Simple.v
+SubCat.v # uses examples and catc
 Structures/TypeC.v
 Structures/PointedType.v
 Structures/Magma.v

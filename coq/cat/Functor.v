@@ -1,4 +1,4 @@
-Require Import Basics ProofIrrelevance.
+Require Import Basics FunctionalExtensionality ProofIrrelevance JMeq.
 From ACat Require Import Cat.
 
 Open Scope cat_scope.
@@ -29,6 +29,10 @@ Definition id_functor (C: cat): endofunctor C :=
     preserve_id _ := eq_refl;
     preserve_comp _ _ _ _ _ := eq_refl;
   |}.
+
+Definition id_functor_map_ob {C: cat}: (id_functor C).(map_ob) = fun x => x.
+  reflexivity.
+Defined.
 
 Definition const_functor (src dst: cat) (d: dst.(ob)): functor src dst.
   refine {|
@@ -73,4 +77,21 @@ Proof.
   intros [Eob Ehom]. destruct F as [Fob Fhom Fid Fcomp], G as [Gob Ghom Gid Gcomp].
   simpl in *. destruct Eob. simpl in Ehom. destruct Ehom.
   f_equal; apply proof_irrelevance.
+Qed.
+
+Theorem functor_ext {A B: cat} (F G: functor A B):
+  (forall x, F.(map_ob) x = G.(map_ob) x) ->
+  (forall x y (f: x ~> y), JMeq (F.(map_hom) f) (G.(map_hom) f)) ->
+  F = G.
+Proof.
+  intros Hob Hhom.
+  destruct F as [Fob Fhom Fid Fcomp], G as [Gob Ghom Gid Gcomp]; simpl in *.
+  assert (Fob = Gob) as Hob_ext.
+  { apply functional_extensionality. exact Hob. }
+  subst Gob. assert (Fhom = Ghom) as Hob_ext.
+  { apply functional_extensionality_dep. intro x.
+    apply functional_extensionality_dep. intro y.
+    apply functional_extensionality. intro f.
+    apply JMeq_eq. apply Hhom. }
+  subst Ghom. f_equal; apply proof_irrelevance.
 Qed.

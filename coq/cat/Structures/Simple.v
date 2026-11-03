@@ -4,7 +4,7 @@ From ACat Require Import Cat Functor.
 Open Scope cat_scope.
 
 (** empty *)
-Definition empty :=
+Definition empty: cat :=
   mk_cat Empty_set (fun _ _ => Empty_set)
     (fun a _ _ _ _ => match a with end)
     (fun a => match a with end)
