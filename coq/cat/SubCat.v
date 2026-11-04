@@ -52,6 +52,13 @@ Proof.
     simpl in *. subst g. f_equal. apply proof_irrelevance.
 Qed.
 
+Definition full_subcat {C: cat} (sub_ob: C.(ob) -> Prop): subcat C.
+  refine {|
+      sub_ob := sub_ob;
+      sub_hom _ _ _ := True;
+    |}; intros; exact I.
+Defined.
+
 Module Empty.
 
   Definition E: cat.
