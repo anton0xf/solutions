@@ -95,3 +95,13 @@ Proof.
     apply JMeq_eq. apply Hhom. }
   subst Ghom. f_equal; apply proof_irrelevance.
 Qed.
+
+(* TODO where to put it? *)
+Definition injective {A B: Type} (f: A -> B): Prop := forall x y: A, f x = f y -> x = y.
+
+Definition ob_injective {A B: cat} (F: functor A B) := injective F.(map_ob).
+
+Definition faithful {A B: cat} (F: functor A B): Prop :=
+  forall x y: A.(ob), injective (fun f: x ~> y => F.(map_hom) f).
+
+Definition embedding {A B: cat} (F: functor A B) := ob_injective F /\ faithful F.

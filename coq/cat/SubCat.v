@@ -19,7 +19,7 @@ Arguments sub_hom {C s x y}.
 Arguments sub_id {C s}.
 Arguments sub_comp {C s x y z f g}.
 
-Definition subcat_as_cat (C: cat) (s: subcat C): cat.
+Definition subcat_as_cat {C: cat} (s: subcat C): cat.
   refine {|
       ob := { x: C.(ob) | s.(sub_ob) x };
       hom x y := { f: (proj1_sig x) ~> (proj1_sig y) | s.(sub_hom) f };
@@ -35,10 +35,27 @@ Definition subcat_as_cat (C: cat) (s: subcat C): cat.
     apply subset_eq_compat. apply assoc.
 Defined.
 
+Definition inclusion {C: cat} (s: subcat C): functor (subcat_as_cat s) C.
+  unfold subcat_as_cat. simpl.
+  refine {|
+      map_ob (x: (subcat_as_cat s).(ob)) := proj1_sig x;
+      map_hom (x y: (subcat_as_cat s).(ob)) (f: x ~> y) := proj1_sig f;
+    |}; reflexivity.
+Defined.
+
+Theorem inclusion_is_embedding {C: cat} (s: subcat C): embedding (inclusion s).
+Proof.
+  split.
+  - unfold ob_injective, injective. intros [x Hx] [y Hy] H.
+    simpl in H. subst y. f_equal. apply proof_irrelevance.
+  - unfold faithful, injective. intros x y [f Hf] [g Hg] H.
+    simpl in *. subst g. f_equal. apply proof_irrelevance.
+Qed.
+
 Module Empty.
 
   Definition E: cat.
-    apply (subcat_as_cat singleton).
+    apply (@subcat_as_cat singleton).
     refine {|
         sub_ob _ := False;
         sub_hom _ _ _ := False;
@@ -74,7 +91,7 @@ End Empty.
 Module Singleton.
 
   Definition S: cat.
-    apply (subcat_as_cat singleton).
+    apply (@subcat_as_cat singleton).
     refine {|
         sub_ob _ := True;
         sub_hom _ _ _ := True;
