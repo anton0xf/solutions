@@ -1,3 +1,5 @@
+Require Import ProofIrrelevance.
+
 Set Universe Polymorphism.
 
 (* morphism *)
@@ -205,3 +207,20 @@ Qed.
    - D (co)product
  *)
 
+Definition discrete_cat (ob: Type): cat.
+  refine {|
+      ob := ob;
+      hom x y := x = y;
+      id x := eq_refl;
+      comp x y z (Hyz: y = z) (Hxy: x = y) := eq_trans Hxy Hyz;
+    |}; intros; apply proof_irrelevance.
+Defined.
+
+Definition skeletal (C: cat) := forall x y: C.(ob), x ~~ y -> x = y.
+
+Theorem discrete_is_skeletal {ob: Type}: skeletal (discrete_cat ob).
+Proof.
+  unfold discrete_cat.
+  intros x y H. simpl in *.
+  destruct H as [f H]. simpl in f. exact f.
+Qed.
