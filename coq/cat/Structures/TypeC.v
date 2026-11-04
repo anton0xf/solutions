@@ -1,12 +1,24 @@
 Require Import Basics FunctionalExtensionality ProofIrrelevance.
 Require Import List Fin FinFun Program.Equality.
 Require String BinInt.
-From ACat Require Import Cat Functor.
-  
+From ACat Require Import Cat Functor CatC.
+
+Set Universe Polymorphism.
+
 Open Scope cat_scope.
 Open Scope program_scope.
 
 Definition type_as_cat (T: Type): cat := discrete_cat T.
+
+Definition fun_as_functor {A B: Type} (f: A -> B)
+  : functor (type_as_cat A) (type_as_cat B).
+  refine {|
+      map_ob (x: (type_as_cat A).(ob)) := f x : (type_as_cat B).(ob);
+      map_hom x y (H: x = y) := f_equal f H;
+    |}.
+  - intros. simpl. reflexivity.
+  - intros. simpl. apply proof_irrelevance.
+Defined.
 
 Definition type: cat.
   refine {|
@@ -19,6 +31,27 @@ Definition type: cat.
   - (* id_rigth *) reflexivity.
   - (* assoc *) reflexivity.
 Defined.
+
+Definition type_embedding: functor type catc.
+  refine {|
+      map_ob (x: type.(ob)) := type_as_cat x : catc.(ob);
+      map_hom (x y: type.(ob)) f := fun_as_functor f;
+    |}.
+  - intros. simpl. apply functor_ext. { reflexivity. }
+    intros x y H. simpl in *. destruct H. simpl. reflexivity.
+  - intros. simpl. apply functor_ext. { reflexivity. }
+    intros x y H. simpl in *. destruct H. simpl. reflexivity.
+Defined.
+
+Theorem type_embedding_correct: embedding type_embedding.
+Proof.
+  split.
+  - unfold ob_injective, injective. intros x y H.
+    simpl in H. inversion H. reflexivity.
+  - unfold faithful, injective. intros x y f g H.
+    simpl in H. inversion H as [H1]. apply functional_extensionality.
+    intro t. exact (f_equal (fun h => h t) H1).
+Qed.
 
 Notation "a ~~~ b" := (@isomorphic type a b)
                         (at level 70, no associativity): cat_scope.
