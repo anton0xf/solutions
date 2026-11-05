@@ -54,7 +54,7 @@ Definition functor_compose {A B C: cat} (G: functor B C) (F: functor A B)
 Defined.
 
 (* \circledcirc *)
-Notation "F ⊚ G" := (functor_compose G F) (at level 40, left associativity): cat_scope.
+Notation "G ⊚ F" := (functor_compose G F) (at level 40, left associativity): cat_scope.
 
 Definition cast_hom_type (A B : cat) (m : A.(ob) -> B.(ob)) : Type :=
   forall a b : A.(ob), A.(hom) a b -> B.(hom) (m a) (m b).

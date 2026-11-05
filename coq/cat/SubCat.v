@@ -121,7 +121,7 @@ Module Singleton.
       |}; reflexivity.
   Defined.
 
-  Theorem FG: F ⊚ G = id_functor S.
+  Theorem GF: G ⊚ F = id_functor S.
   Proof.
     apply functor_ext.
     - intros [[] Hx]. simpl in *. f_equal. apply proof_irrelevance.
@@ -130,7 +130,7 @@ Module Singleton.
       reflexivity.
   Qed.
 
-  Theorem GF: G ⊚ F = id_functor singleton.
+  Theorem FG: F ⊚ G = id_functor singleton.
     apply functor_ext.
     - intros []. simpl. reflexivity.
     - intros [] [] []. simpl. reflexivity.
@@ -139,7 +139,7 @@ Module Singleton.
   Theorem S_is_singleton: S ~~~ singleton.
   Proof.
     exists F, G. unfold inversion, inverse. simpl.
-    split; [apply FG | apply GF].
+    split; [apply GF | apply FG].
   Qed.
 
 End Singleton.
