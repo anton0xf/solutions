@@ -13,12 +13,12 @@ Record functor (src dst: cat) :=
 
       preserve_comp {a b c: src.(ob)} (g: src.(hom) b c) (f: src.(hom) a b):
       map_hom (g ∘ f) = map_hom g ∘ map_hom f;
-    }.
+    } as f.
 
-Arguments map_ob {src dst f0}.
-Arguments map_hom {src dst f0 a b}.
-Arguments preserve_id {src dst f0 a}.
-Arguments preserve_comp {src dst f0 a b c}.
+Arguments map_ob {src dst} f.
+Arguments map_hom {src dst} f {a b}.
+Arguments preserve_id {src dst f a}.
+Arguments preserve_comp {src dst f a b c}.
 
 Definition endofunctor (C: cat) := functor C C.
 
