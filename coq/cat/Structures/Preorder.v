@@ -30,6 +30,11 @@ Definition preorder_as_cat (p: preorder): cat.
     |}; intros; apply proof_irrelevance.
 Defined.
 
+Theorem preorder_is_thin (p: preorder): thin (preorder_as_cat p).
+Proof.
+  unfold thin. intros. simpl in *. apply proof_irrelevance.
+Qed.
+
 Record preorder_hom (dom cod: preorder) :=
   mk_preorder_hom {
     map: dom.(X) -> cod.(X);

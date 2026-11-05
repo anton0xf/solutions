@@ -224,3 +224,6 @@ Proof.
   intros x y H. simpl in *.
   destruct H as [f H]. simpl in f. exact f.
 Qed.
+
+Definition thin (C: cat) := forall (x y: C.(ob)) (f g: x ~> y), f = g.
+
