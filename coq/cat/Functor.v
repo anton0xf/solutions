@@ -105,3 +105,29 @@ Definition faithful {A B: cat} (F: functor A B): Prop :=
   forall x y: A.(ob), injective (fun f: x ~> y => F.(map_hom) f).
 
 Definition embedding {A B: cat} (F: functor A B) := ob_injective F /\ faithful F.
+
+Theorem faithful_JMeq {A B: cat}
+  (F: functor A B) {x1 x2 y1 y2: A.(ob)} {g: x1 ~> x2} {h: y1 ~> y2}:
+  faithful F -> x1 = y1 -> x2 = y2 ->
+  JMeq (map_hom F g) (map_hom F h) -> JMeq g h.
+Proof.
+  intros HF H1 H2 H. unfold faithful, injective in HF.
+  subst y1 y2. apply JMeq_eq, HF in H. subst h. reflexivity.
+Qed.
+
+Theorem const_functor_eq {A B: cat} (a: A.(ob)) (b1 b2: B.(ob)):
+  const_functor A B b1 = const_functor A B b2 -> b1 = b2.
+Proof.
+  intros H. inversion H. clear H2.
+  change ((fun _ : ob A => b1) a = (fun _ : ob A => b2) a).
+  rewrite H1. reflexivity.
+Qed.
+
+Theorem const_functor_comp {A B C: cat} (b: B.(ob)) (F: functor B C):
+  F ⊚ const_functor A B b = const_functor A C (map_ob F b).
+Proof.
+  apply functor_ext.
+  - intro x. reflexivity.
+  - intros. unfold const_functor. simpl.
+    rewrite F.(preserve_id). reflexivity.
+Qed.

@@ -1,5 +1,5 @@
 Require Import Basics FunctionalExtensionality ProofIrrelevance JMeq.
-From ACat Require Import Cat Functor.
+From ACat Require Import Cat Functor Simple.
   
 Open Scope cat_scope.
 
@@ -29,12 +29,17 @@ Proof.
       rewrite H. reflexivity. }
     apply functor_ext.
     + apply Hg.
-    + unfold faithful, injective in H2.
-      intros a1 a2 h.
-      assert (H2': forall (i: map_ob g1 a1 ~> map_ob g1 a2)
-                     (j: map_ob g2 a1 ~> map_ob g2 a2),
-                 JMeq (map_hom f i) (map_hom f j) -> JMeq i j).
-      { intros i j Hij. rewrite <- !Hg in j.
-        apply JMeq_eq in Hij.
-        apply H2 in Hij. subst j. reflexivity. }
-      apply H2'.
+    + intros a1 a2 h. apply (faithful_JMeq f H2); try apply Hg.
+      change (JMeq (map_hom (f ⊚ g1) h) (map_hom (f ⊚ g2) h)).
+      rewrite H. reflexivity.
+  - unfold monomorphism. intro HM. split.
+    + intros x y H.
+      apply (const_functor_eq (tt: singleton.(ob))).
+      remember (const_functor singleton b x) as g1 eqn:H1.
+      remember (const_functor singleton b y) as g2 eqn:H2.
+      apply (HM singleton g1 g2).
+      subst g1 g2. rewrite !const_functor_comp.
+      rewrite <- H. reflexivity.
+    + intros x y i j H.
+
+

@@ -9,8 +9,8 @@ Util.v
 Cat.v
 Functor.v
 ContrFunctor.v
-CatC.v
 Structures/Simple.v
+CatC.v
 SubCat.v # uses examples and catc
 Structures/TypeC.v
 Structures/PointedType.v
