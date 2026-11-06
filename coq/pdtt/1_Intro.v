@@ -28,7 +28,11 @@ Fixpoint append {A: Set} {n m: nat} (xs: Vec A n) (ys: Vec A m): Vec A (n + m) :
   end.
 
 Definition three := append (1 :: []) (2 :: 3 :: []).
-Compute three.
+Compute three. (* = 1 :: 2 :: 3 :: [] : Vec nat (1 + 2) *)
+
+Definition type_of {A : Type} (_ : A) : Type := A.
+
+Compute (type_of three). (* = Vec nat 3 : Type *)
 Compute head three.
 Compute tail three.
 
@@ -179,3 +183,9 @@ Definition sprintf (s: string): printfType s :=
 Close Scope char_scope.
 Compute printfType "%%a: %s, b: %s".
 Compute sprintf "%%a: %s, b: %s" "aa" "bb".
+
+Compute sprintf "a:%s".
+Compute type_of (sprintf "a:%s").
+
+Compute sprintf "a:%s, %s".
+Compute type_of (sprintf "a:%s, %s").

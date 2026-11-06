@@ -158,7 +158,7 @@ Definition type_functor_compose (G F: type_functor): type_functor.
 Defined.
 
 (* \circledbullet *)
-Notation "F ⦿ G" := (type_functor_compose G F)
+Notation "G ⦿ F" := (type_functor_compose G F)
                       (at level 40, left associativity): cat_scope.
 
 Theorem type_functor_compose_correct (G F: type_functor):
