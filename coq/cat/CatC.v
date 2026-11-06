@@ -40,6 +40,6 @@ Proof.
       apply (HM singleton g1 g2).
       subst g1 g2. rewrite !const_functor_comp.
       rewrite <- H. reflexivity.
-    + intros x y i j H.
-
-
+    + intros x y i j H. apply pick_hom_eq. apply HM.
+      rewrite !pick_hom_comp. rewrite H. reflexivity.
+Qed.

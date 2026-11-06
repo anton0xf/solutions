@@ -1,4 +1,4 @@
-Require Import Basics FunctionalExtensionality ProofIrrelevance.
+Require Import Basics FunctionalExtensionality ProofIrrelevance Equality JMeq.
 From ACat Require Import Cat Functor.
   
 Open Scope cat_scope.
@@ -84,4 +84,41 @@ Proof.
   intros [f [g [H0 H1]]]. destruct a, b; try reflexivity.
   - inversion g.
   - inversion f.
+Qed.
+
+Definition pick_hom {C: cat} {a b: C.(ob)} (h: a ~> b): functor two C.
+  unshelve refine {|
+      map_ob (x: two.(ob)) := match x with two0 => a | two1 => b end;
+      map_hom (x y: two.(ob)) (f: x ~> y) :=
+        match f with two_id0 => id | two_id1 => id | two_mor => h end;
+    |}.
+  - (* id *) intros [|]; reflexivity.
+  - (* comp *) intros x y z g f; simpl. destruct f eqn:Hf; simpl.
+    + (* f: 0 ~> 0 *) inversion g; subst z.
+      { (* g: 0 ~> 0 *) rewrite id_right. reflexivity. }
+      (* g: 0 ~> 1 *) change (two_hom two0 two1) in g.
+      dependent destruction g. rewrite id_right. reflexivity.
+    + (* f: 1 ~> 1 *) inversion g. subst z.
+      (* g: 1 ~> 1 *) rewrite id_right. reflexivity.
+    + (* f: 0 ~> 1 *) inversion g. subst z.
+      (* g: 1 ~> 1 *) change (two_hom two1 two1) in g.
+      dependent destruction g. rewrite id_left. reflexivity.
+Defined.
+
+Theorem pick_hom_eq {C: cat} {a b: C.(ob)} (g1 g2: a ~> b):
+  pick_hom g1 = pick_hom g2 -> g1 = g2.
+Proof.
+  intro H. apply JMeq_eq.
+  change (JMeq (map_hom (pick_hom g1) two_mor) (map_hom (pick_hom g2) two_mor)).
+  rewrite H. reflexivity.
+Qed.
+
+Theorem pick_hom_comp {C D: cat} {a b: C.(ob)} (g: a ~> b) (F: functor C D):
+  F ⊚ pick_hom g = pick_hom (map_hom F g).
+Proof.
+  apply functor_ext. { (* ob *) intros [|]; reflexivity. }
+  (* hom *) intros x y f. destruct f eqn:Hf.
+  - (* 0 ~> 0 *) simpl. rewrite preserve_id. reflexivity.
+  - (* 1 ~> 1 *) simpl. rewrite preserve_id. reflexivity.
+  - (* 0 ~> 1 *) simpl. reflexivity.
 Qed.
